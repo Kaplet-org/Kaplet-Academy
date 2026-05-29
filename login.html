@@ -217,17 +217,19 @@ async function handleLogin(e) {
     const { data, error } = await sb.auth.signInWithPassword({ email, password });
     if (error) throw error;
  
-    // FIX CHIAVE: aspetta che onAuthStateChange confermi SIGNED_IN
-    // prima di fare il redirect — così il token è sicuramente in localStorage
-    await new Promise((resolve) => {
-      sb.auth.onAuthStateChange((event, session) => {
-        if (event === 'SIGNED_IN' && session) {
-          resolve(session);
-        }
-      });
-      // Fallback: se dopo 2 secondi non arriva l'evento, usa la sessione già disponibile
-      setTimeout(() => resolve(data.session), 2000);
-    });
+    // Aspetta che il token sia EFFETTIVAMENTE scritto in localStorage.
+    // Controlla ogni 100ms fino a max 3 secondi, verificando che getSession()
+    // ritorni davvero una sessione valida prima di fare il redirect.
+    let confermata = false;
+    for (let i = 0; i < 30; i++) {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session && session.user) { confermata = true; break; }
+      await new Promise(r => setTimeout(r, 100));
+    }
+ 
+    if (!confermata) {
+      throw new Error('Sessione non salvata correttamente. Riprova.');
+    }
  
     await redirectByRole(data.user.id);
  
@@ -236,6 +238,7 @@ async function handleLogin(e) {
     let msg = 'Email o password non corretti. Riprova.';
     if (error.message?.includes('Email not confirmed')) msg = 'Email non ancora confermata.';
     else if (error.message?.includes('too many')) msg = 'Troppi tentativi. Attendi qualche minuto.';
+    else if (error.message?.includes('non salvata')) msg = error.message;
     err.textContent = msg;
     err.classList.add('show');
     btn.disabled = false;
@@ -299,3 +302,4 @@ async function handleReset(e) {
 </script>
 </body>
 </html>
+ 
