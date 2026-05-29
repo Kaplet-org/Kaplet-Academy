@@ -333,7 +333,12 @@ setTimeout(async () => {
   if (!session) window.location.href = 'login.html';
 }, 3000);
  
-async function doLogout() { await sb.auth.signOut(); window.location.href = 'login.html'; }
+async function doLogout() {
+  await sb.auth.signOut();
+  localStorage.clear();
+  sessionStorage.clear();
+  window.location.replace('login.html');
+}
  
 /* ── CARICA ── */
 async function caricaDati() {
