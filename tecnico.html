@@ -255,6 +255,40 @@ let ME = null, CERTS = [], CORSI_ASS = [], fileSelezionato = null, editId = null
  
 const BC = {"AVIXA":"#F59E0B","DANTE":"#EF4444","NDI":"#38BDF8","AXIS":"#4ADE80","FORTINET":"#F87171","CISCO":"#22D3EE","CRESTRON":"#4ADE80","BARCO CTRL":"#FB923C","BARCO VIDEO":"#FBBF24","NOVASTAR":"#C084FC","MILESTONE":"#F472B6","ALTA ACCESS":"#38BDF8","ALTA VIDEO":"#60A5FA","AVIGILON UNITY":"#818CF8","SHURE":"#A78BFA","Q-SYS":"#F87171","YAMAHA":"#FCD34D","POWERSOFT":"#34D399","TELEVIC":"#A78BFA","EXTRON":"#F87171","K-ARRAY":"#4ADE80","K-SCAPE":"#34D399","BRIGHTSIGN":"#60A5FA","ELMO":"#FCA5A1","KSENIA":"#C084FC","NOTIFIER":"#FB923C","TECNOFIRE":"#F87171","KNX & DALI":"#818CF8","MAXHUB":"#38BDF8"};
 const bc  = b => BC[b?.toUpperCase()] || '#36CD81';
+ 
+// Mappa portali formativi ufficiali per brand
+const PORTAL = {
+  "AVIXA":"https://www.avixa.org/training",
+  "CRESTRON":"https://training.crestron.com",
+  "CISCO":"https://learningnetwork.cisco.com",
+  "FORTINET":"https://training.fortinet.com",
+  "AXIS":"https://www.axis.com/learning",
+  "MILESTONE":"https://www.milestonesys.com/training",
+  "DANTE":"https://www.audinate.com/learning",
+  "NDI":"https://ndi.video/learn",
+  "SHURE":"https://pubs.shure.com/guide/learn",
+  "Q-SYS":"https://training.qsc.com",
+  "YAMAHA":"https://europe.yamaha.com/it/products/proaudio/",
+  "EXTRON":"https://www.extron.com/training",
+  "BARCO CTRL":"https://www.barco.com/en/support",
+  "BARCO VIDEO":"https://www.barco.com/en/support",
+  "NOVASTAR":"https://www.novastar.tech",
+  "ALTA ACCESS":"https://www.avigilon.com/training",
+  "ALTA VIDEO":"https://www.avigilon.com/training",
+  "AVIGILON UNITY":"https://www.avigilon.com/training",
+  "POWERSOFT":"https://www.powersoft.com/en/support/",
+  "TELEVIC":"https://www.televic.com",
+  "K-ARRAY":"https://www.k-array.com",
+  "K-SCAPE":"https://www.k-array.com",
+  "BRIGHTSIGN":"https://www.brightsign.biz/support/",
+  "ELMO":"https://www.elmoeurope.com",
+  "KSENIA":"https://www.kseniasecurity.com",
+  "NOTIFIER":"https://www.notifier.it",
+  "TECNOFIRE":"https://www.tecnofire.it",
+  "KNX & DALI":"https://www.knx.org/knx-en/for-professionals/training/",
+  "MAXHUB":"https://www.maxhub.com/en/"
+};
+const portalUrl = b => PORTAL[b?.toUpperCase()] || null;
 const gg  = d => d ? Math.ceil((new Date(d) - new Date()) / 86400000) : null;
 const fmt = d => d ? new Date(d).toLocaleDateString('it-IT', {day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
 const csClass = s => ({da_fare:'da_fare', in_corso:'in_corso', completato:'completato'}[s] || 'da_fare');
@@ -359,11 +393,14 @@ function renderCorsi() {
   grid.innerHTML = filtered.map(c => {
     const col = bc(c.brand); const g = gg(c.scadenza);
     const scadHtml = c.scadenza ? `<div style="font-size:.65rem;color:${g<0?'var(--danger)':g<=30?'var(--warn)':'var(--gray)'}">Scadenza: ${fmt(c.scadenza)}</div>` : '';
+    const url = portalUrl(c.brand);
+    const linkHtml = url ? `<a href="${url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;font-size:.62rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--green);text-decoration:none;margin-bottom:0.75rem">Vai al portale formativo ↗</a>` : '';
     return `<div class="corso-card ${csClass(c.stato)}">
       <div class="cc-brand" style="color:${col}">${c.brand}</div>
       <div class="cc-nome">${c.corso}</div>
       <div class="cc-meta">Anno ${c.anno}${c.note ? ' · ' + c.note : ''}</div>
       ${scadHtml}
+      ${linkHtml}
       <div class="cc-stato-btns">
         ${['da_fare','in_corso','completato'].map(s => `
           <button class="btn-stato ${c.stato===s?'active':''}" onclick="aggiornaStato('${c.id}','${s}')">${csLabel(s)}</button>
