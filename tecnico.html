@@ -334,7 +334,7 @@ setTimeout(async () => {
 }, 3000);
  
 async function doLogout() {
-  await sb.auth.signOut();
+  try { await sb.auth.signOut(); } catch(e) {}
   localStorage.clear();
   sessionStorage.clear();
   window.location.replace('login.html');
