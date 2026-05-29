@@ -263,7 +263,15 @@ const csLabel = s => ({da_fare:'Da fare', in_corso:'In corso', completato:'Compl
 /* ── INIT ── */
 (async () => {
   try {
-    const { data: { session } } = await sb.auth.getSession();
+    // Riprova a leggere la sessione fino a 3 secondi (il token potrebbe
+    // non essere ancora scritto subito dopo il redirect dal login)
+    let session = null;
+    for (let i = 0; i < 30; i++) {
+      const { data } = await sb.auth.getSession();
+      if (data && data.session) { session = data.session; break; }
+      await new Promise(r => setTimeout(r, 100));
+    }
+ 
     if (!session) { window.location.replace('login.html'); return; }
  
     const { data, error } = await sb.from('tecnici').select('*').eq('id', session.user.id).single();
