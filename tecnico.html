@@ -6,38 +6,21 @@
 <title>La mia Academy | Kaplet</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,200;9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
 <style>
-/* ── STESSE VARIABILI DEL LOGIN.HTML ── */
 :root {
-  --black: #0C0E0D;
-  --green: #36CD81;
-  --white: #FFFFFF;
-  --gray: rgba(255,255,255,0.55);
-  --border: rgba(255,255,255,0.08);
-  --card: #141614;
-  --card2: #1A1C1A;
-  --font: 'DM Sans', sans-serif;
-  --warn: #F59E0B;
-  --danger: #EF4444;
-  --green-dim: rgba(54,205,129,0.08);
-  --green-border: rgba(54,205,129,0.2);
+  --black: #0C0E0D; --green: #36CD81; --white: #FFFFFF;
+  --gray: rgba(255,255,255,0.55); --border: rgba(255,255,255,0.08);
+  --card: #141614; --card2: #1A1C1A; --font: 'DM Sans', sans-serif;
+  --warn: #F59E0B; --danger: #EF4444;
+  --green-dim: rgba(54,205,129,0.08); --green-border: rgba(54,205,129,0.2);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: var(--font); background: var(--black); color: var(--white); min-height: 100vh; -webkit-font-smoothing: antialiased; }
- 
-/* BACKGROUND LINES — identico al login */
 .bg-lines { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
 .bg-line { position: absolute; height: 1px; width: 70%; background: linear-gradient(90deg, transparent, rgba(54,205,129,0.08), transparent); }
-.bg-line:nth-child(1) { top: 20%;  left: -10%; transform: rotate(-8deg); }
-.bg-line:nth-child(2) { top: 40%;  left: -5%;  transform: rotate(-5deg); opacity:.6; }
-.bg-line:nth-child(3) { top: 65%;  left: 15%;  transform: rotate(-3deg); opacity:.4; }
- 
-/* NAV */
-nav {
-  position: sticky; top: 0; z-index: 100;
-  background: var(--black); border-bottom: 1px solid var(--border);
-  height: 64px; display: flex; align-items: center;
-  padding: 0 2.5rem; justify-content: space-between;
-}
+.bg-line:nth-child(1) { top: 20%; left: -10%; transform: rotate(-8deg); }
+.bg-line:nth-child(2) { top: 40%; left: -5%; transform: rotate(-5deg); opacity:.6; }
+.bg-line:nth-child(3) { top: 65%; left: 15%; transform: rotate(-3deg); opacity:.4; }
+nav { position: sticky; top: 0; z-index: 100; background: var(--black); border-bottom: 1px solid var(--border); height: 64px; display: flex; align-items: center; padding: 0 2.5rem; justify-content: space-between; }
 .nav-logo { font-size: 1rem; font-weight: 400; letter-spacing: 0.3em; text-transform: uppercase; color: var(--white); text-decoration: none; }
 .nav-logo span { color: var(--green); }
 .nav-center { display: flex; gap: 0; }
@@ -48,8 +31,6 @@ nav {
 .nav-user { font-size: 0.75rem; font-weight: 300; color: var(--gray); }
 .btn-nav { height: 34px; padding: 0 16px; background: transparent; border: 1px solid var(--border); color: var(--gray); font-family: var(--font); font-size: 0.7rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; border-radius: 0; }
 .btn-nav:hover { border-color: rgba(255,255,255,0.3); color: var(--white); }
- 
-/* HERO */
 .hero { position: relative; z-index: 1; padding: 3rem 2.5rem 2rem; border-bottom: 1px solid var(--border); }
 .hero-inner { max-width: 1200px; margin: 0 auto; }
 .hero-label { font-size: 0.62rem; font-weight: 400; letter-spacing: 0.15em; text-transform: uppercase; color: var(--green); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px; }
@@ -63,13 +44,9 @@ nav {
 .stat-num { font-size: 2rem; font-weight: 200; line-height: 1; margin-bottom: 4px; }
 .stat-num.green { color: var(--green); } .stat-num.warn { color: var(--warn); } .stat-num.danger { color: var(--danger); }
 .stat-label { font-size: 0.6rem; font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; color: var(--green); }
- 
-/* MAIN */
 .main { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 2rem 2.5rem 5rem; }
 .section { display: none; } .section.active { display: block; }
 .section-title { font-size: 1.1rem; font-weight: 200; color: var(--white); margin-bottom: 1.5rem; }
- 
-/* PROGRESS ANNUALE */
 .prog-card { background: var(--card); border: 1px solid var(--border); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; }
 .prog-left { flex: 1; min-width: 180px; }
 .prog-label { font-size: 0.6rem; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); margin-bottom: 0.4rem; }
@@ -80,18 +57,14 @@ nav {
 .prog-pct { font-size: 0.75rem; font-weight: 300; color: var(--gray); margin-bottom: 5px; }
 .prog-bar-bg { height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; }
 .prog-bar-fill { height: 3px; background: var(--green); border-radius: 2px; transition: width 0.5s; }
- 
-/* FILTRI */
 .filter-row { display: flex; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
 .fsel-sm { height: 36px; background: var(--card); border: 1px solid var(--border); color: var(--white); font-family: var(--font); font-size: 0.75rem; padding: 0 10px; outline: none; border-radius: 0; min-width: 160px; }
 .fsel-sm:focus { border-color: var(--green); } .fsel-sm option { background: #141614; }
- 
-/* CORSI GRID */
 .corsi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1px; background: var(--border); }
 .corso-card { background: var(--card); padding: 1.25rem; border-left: 2px solid transparent; transition: background 0.15s; }
 .corso-card:hover { background: var(--card2); }
-.corso-card.da_fare    { border-left-color: rgba(255,255,255,0.1); }
-.corso-card.in_corso   { border-left-color: var(--warn); }
+.corso-card.da_fare { border-left-color: rgba(255,255,255,0.1); }
+.corso-card.in_corso { border-left-color: var(--warn); }
 .corso-card.completato { border-left-color: var(--green); }
 .cc-brand { font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 400; margin-bottom: 0.5rem; }
 .cc-nome { font-size: 0.9rem; font-weight: 300; color: var(--white); line-height: 1.35; margin-bottom: 0.75rem; }
@@ -100,16 +73,14 @@ nav {
 .btn-stato { height: 28px; padding: 0 10px; background: transparent; border: 1px solid var(--border); color: var(--gray); font-family: var(--font); font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; border-radius: 0; }
 .btn-stato:hover { border-color: var(--green); color: var(--green); }
 .btn-stato.active { background: var(--green); border-color: var(--green); color: var(--black); }
- 
-/* CERT CARDS */
 .cert-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1px; background: var(--border); margin-bottom: 2rem; }
 .cert-card { background: var(--card); padding: 1.5rem; border-left: 2px solid transparent; transition: all 0.2s; }
 .cert-card:hover { background: var(--card2); border-left-color: var(--green); }
 .cert-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.85rem; }
 .cert-brand-tag { font-size: 0.58rem; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; padding: 3px 9px; border: 1px solid; }
 .cert-stato-badge { font-size: 0.58rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 8px; border: 1px solid; }
-.stato-attiva   { color: var(--green); border-color: var(--green-border); background: var(--green-dim); }
-.stato-scaduta  { color: var(--danger); border-color: rgba(239,68,68,0.25); background: rgba(239,68,68,0.05); }
+.stato-attiva { color: var(--green); border-color: var(--green-border); background: var(--green-dim); }
+.stato-scaduta { color: var(--danger); border-color: rgba(239,68,68,0.25); background: rgba(239,68,68,0.05); }
 .stato-attenzione { color: var(--warn); border-color: rgba(245,158,11,0.25); background: rgba(245,158,11,0.05); }
 .cert-nome { font-size: 0.95rem; font-weight: 300; color: var(--white); line-height: 1.35; margin-bottom: 0.4rem; }
 .cert-meta { font-size: 0.72rem; font-weight: 300; color: var(--gray); }
@@ -122,20 +93,14 @@ nav {
 .btn-sm:hover { border-color: var(--green); color: var(--green); }
 .btn-danger-sm { height: 30px; padding: 0 12px; background: transparent; border: 1px solid rgba(239,68,68,0.25); color: #f87171; font-family: var(--font); font-size: 0.68rem; cursor: pointer; transition: all 0.2s; border-radius: 0; }
 .btn-danger-sm:hover { border-color: var(--danger); }
- 
-/* BOTTONI PRIMARI */
 .btn-primary { height: 38px; padding: 0 20px; background: var(--green); border: 1px solid var(--green); color: var(--black); font-family: var(--font); font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; border-radius: 0; display: inline-flex; align-items: center; gap: 6px; }
 .btn-primary:hover { background: transparent; color: var(--green); }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-secondary { height: 36px; padding: 0 16px; background: transparent; border: 1px solid var(--border); color: var(--gray); font-family: var(--font); font-size: 0.7rem; font-weight: 400; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; border-radius: 0; }
 .btn-secondary:hover { border-color: rgba(255,255,255,0.3); color: var(--white); }
- 
-/* EMPTY */
 .empty { text-align: center; padding: 4rem 2rem; color: var(--gray); grid-column: 1/-1; }
 .empty-icon { font-size: 1.5rem; opacity: 0.3; margin-bottom: 0.75rem; }
 .empty-title { font-size: 0.95rem; font-weight: 200; color: var(--white); }
- 
-/* MODAL — stessa struttura card del login */
 .overlay { display: none; position: fixed; inset: 0; background: rgba(12,14,13,0.88); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
 .overlay.open { display: flex; }
 .modal { background: var(--card); border: 1px solid var(--border); width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
@@ -145,8 +110,6 @@ nav {
 .modal-close:hover { color: var(--white); }
 .modal-body { padding: 1.5rem; }
 .modal-foot { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; gap: 0.75rem; justify-content: flex-end; }
- 
-/* FORM — identico al login */
 .fld { margin-bottom: 1.1rem; }
 label.flabel { display: block; font-size: 0.6rem; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); margin-bottom: 6px; }
 .finput, .fsel { width: 100%; height: 44px; background: var(--black); border: 1px solid var(--border); color: var(--white); font-family: var(--font); font-size: 0.875rem; font-weight: 300; padding: 0 14px; outline: none; transition: border-color 0.2s; border-radius: 0; appearance: none; }
@@ -159,23 +122,16 @@ label.flabel { display: block; font-size: 0.6rem; font-weight: 400; letter-spaci
 .msg { display: none; margin-top: 0.75rem; padding: 0.75rem 1rem; font-size: 0.78rem; font-weight: 300; }
 .msg.error { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); color: #f87171; }
 .msg.show { display: block; }
- 
-/* FILE ZONE */
 .file-zone { border: 1px dashed var(--border); padding: 1.25rem; text-align: center; cursor: pointer; transition: border-color 0.2s; }
 .file-zone:hover { border-color: var(--green); }
 .file-zone-label { font-size: 0.72rem; font-weight: 300; color: var(--gray); }
 .file-zone-label strong { color: var(--green); }
 .file-name { font-size: 0.72rem; color: var(--green); margin-top: 6px; }
- 
-/* TOAST */
 .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--card); border: 1px solid var(--border); padding: 0.85rem 1.25rem; font-size: 0.78rem; font-weight: 300; color: var(--white); z-index: 300; display: none; align-items: center; gap: 0.75rem; max-width: 320px; }
 .toast.show { display: flex; }
 .toast-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
- 
-/* SPINNER */
 .spinner { width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.2); border-top-color: var(--black); border-radius: 50%; animation: spin 0.6s linear infinite; display: none; }
 @keyframes spin { to { transform: rotate(360deg); } }
- 
 @media(max-width:768px) { nav { padding: 0 1.25rem; } .hero, .main { padding-left: 1.25rem; padding-right: 1.25rem; } .stats-row { flex-wrap: wrap; } }
 </style>
 </head>
@@ -214,8 +170,6 @@ label.flabel { display: block; font-size: 0.6rem; font-weight: 400; letter-spaci
 </div>
  
 <div class="main">
- 
-  <!-- TAB CORSI ASSEGNATI -->
   <div class="section active" id="tab-corsi">
     <div id="prog-card"></div>
     <div class="filter-row">
@@ -232,7 +186,6 @@ label.flabel { display: block; font-size: 0.6rem; font-weight: 400; letter-spaci
     </div>
   </div>
  
-  <!-- TAB CERTIFICAZIONI -->
   <div class="section" id="tab-cert">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
       <div class="section-title" style="margin:0">Le mie certificazioni</div>
@@ -246,19 +199,16 @@ label.flabel { display: block; font-size: 0.6rem; font-weight: 400; letter-spaci
     </div>
   </div>
  
-  <!-- TAB PERCORSO -->
   <div class="section" id="tab-percorso">
     <div class="section-title">Corsi consigliati per il tuo ruolo</div>
     <div class="corsi-grid" id="percorso-grid">
       <div class="empty"><div class="empty-icon">◌</div><div class="empty-title">Caricamento...</div></div>
     </div>
   </div>
- 
 </div>
  
 <div class="toast" id="toast"><div class="toast-dot"></div><span id="toast-msg"></span></div>
  
-<!-- MODAL CERTIFICAZIONE — stessa struttura card del login -->
 <div class="overlay" id="modal-cert">
   <div class="modal">
     <div class="modal-head">
@@ -310,28 +260,27 @@ const fmt = d => d ? new Date(d).toLocaleDateString('it-IT', {day:'2-digit',mont
 const csClass = s => ({da_fare:'da_fare', in_corso:'in_corso', completato:'completato'}[s] || 'da_fare');
 const csLabel = s => ({da_fare:'Da fare', in_corso:'In corso', completato:'Completato'}[s] || s);
  
-/* ── INIT ── */
-let initDone = false;
-sb.auth.onAuthStateChange(async (event, session) => {
-  if (initDone) return;
-  if (event === 'SIGNED_OUT') { window.location.href = 'login.html'; return; }
-  if (!session) return;
-  initDone = true;
-  const { data } = await sb.from('tecnici').select('*').eq('id', session.user.id).single();
-  if (!data) { window.location.href = 'login.html'; return; }
-  if (data.is_admin) { window.location.href = 'admin.html'; return; }
-  ME = data;
-  document.getElementById('nav-nome').textContent = data.nome + ' ' + data.cognome;
-  document.getElementById('hero-nome').textContent = data.nome;
-  document.getElementById('hero-sub').textContent = (data.ruolo || '') + ' · Formazione anno ' + new Date().getFullYear();
-  popolaBrand();
-  await caricaDati();
-});
-setTimeout(async () => {
-  if (initDone) return;
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) window.location.href = 'login.html';
-}, 3000);
+/* ── INIT — usa getSession() diretto, più affidabile di onAuthStateChange ── */
+(async () => {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.replace('login.html'); return; }
+ 
+    const { data, error } = await sb.from('tecnici').select('*').eq('id', session.user.id).single();
+    if (error || !data) { window.location.replace('login.html'); return; }
+    if (data.is_admin) { window.location.replace('admin.html'); return; }
+ 
+    ME = data;
+    document.getElementById('nav-nome').textContent = data.nome + ' ' + data.cognome;
+    document.getElementById('hero-nome').textContent = data.nome;
+    document.getElementById('hero-sub').textContent = (data.ruolo || '') + ' · Formazione anno ' + new Date().getFullYear();
+    popolaBrand();
+    await caricaDati();
+  } catch(e) {
+    console.error('Init error:', e);
+    window.location.replace('login.html');
+  }
+})();
  
 async function doLogout() {
   try { await sb.auth.signOut(); } catch(e) {}
@@ -340,7 +289,6 @@ async function doLogout() {
   window.location.replace('login.html');
 }
  
-/* ── CARICA ── */
 async function caricaDati() {
   const [r1, r2] = await Promise.all([
     sb.from('certificazioni').select('*').eq('tech_id', ME.id).order('data_conseguimento', {ascending:false}),
@@ -364,7 +312,6 @@ function aggiornaStats() {
   document.getElementById('s-exp').textContent  = exp.length;
   document.getElementById('s-ca').textContent   = CORSI_ASS.length;
   document.getElementById('s-done').textContent = done;
-  // Progress card
   const inCorso = CORSI_ASS.filter(c => c.stato === 'in_corso').length;
   const todo    = CORSI_ASS.filter(c => c.stato === 'da_fare').length;
   const pct     = CORSI_ASS.length > 0 ? Math.round(done / CORSI_ASS.length * 100) : 0;
@@ -385,7 +332,6 @@ function aggiornaStats() {
     </div>`;
 }
  
-/* ── CORSI ── */
 function renderCorsi() {
   const fs = document.getElementById('cf-stato').value;
   const fb = document.getElementById('cf-brand').value;
@@ -405,7 +351,7 @@ function renderCorsi() {
     return `<div class="corso-card ${csClass(c.stato)}">
       <div class="cc-brand" style="color:${col}">${c.brand}</div>
       <div class="cc-nome">${c.corso}</div>
-      <div class="cc-meta">Anno ${c.anno}${scadHtml ? ' · ' : ''}${c.note||''}</div>
+      <div class="cc-meta">Anno ${c.anno}${c.note ? ' · ' + c.note : ''}</div>
       ${scadHtml}
       <div class="cc-stato-btns">
         ${['da_fare','in_corso','completato'].map(s => `
@@ -422,7 +368,6 @@ async function aggiornaStato(id, stato) {
   else toast('Errore: ' + error.message);
 }
  
-/* ── CERTIFICAZIONI ── */
 function renderCert() {
   const oggi = new Date();
   const grid = document.getElementById('cert-grid');
@@ -466,7 +411,6 @@ function renderCert() {
   }).join('');
 }
  
-/* ── PERCORSO ── */
 function renderPercorso() {
   if (!ME || !COURSES) return;
   const ruolo = ME.ruolo || '';
@@ -486,7 +430,6 @@ function renderPercorso() {
   }).join('');
 }
  
-/* ── NAV TABS ── */
 function showTab(id, btn) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -494,17 +437,18 @@ function showTab(id, btn) {
   btn.classList.add('active');
 }
  
-/* ── MODAL CERT ── */
 function popolaBrand() {
   const sel = document.getElementById('m-brand');
   const brands = [...new Set(COURSES.map(c => c.brand))].sort();
   brands.forEach(b => { const o = document.createElement('option'); o.value=b; o.textContent=b; sel.appendChild(o); });
 }
+ 
 function fillCorsi() {
   const b = document.getElementById('m-brand').value;
   document.getElementById('m-corso').innerHTML = !b ? '<option value="">Prima seleziona un brand…</option>'
     : COURSES.filter(c => c.brand === b).map(c => `<option value="${c.nome||c.name}">${c.nome||c.name}</option>`).join('');
 }
+ 
 function openModalCert() {
   editId = null;
   document.getElementById('modal-cert-title').textContent = 'Nuova certificazione';
@@ -517,6 +461,7 @@ function openModalCert() {
   document.getElementById('m-err').classList.remove('show');
   document.getElementById('modal-cert').classList.add('open');
 }
+ 
 function editCert(id) {
   const c = CERTS.find(x => x.id === id); if (!c) return;
   editId = id;
@@ -528,12 +473,14 @@ function editCert(id) {
   document.getElementById('m-note').value = c.note || '';
   document.getElementById('modal-cert').classList.add('open');
 }
+ 
 function handleFile(input) {
   if (input.files && input.files[0]) {
     fileSelezionato = input.files[0];
     const d = document.getElementById('file-name-display'); d.textContent = fileSelezionato.name; d.style.display = 'block';
   }
 }
+ 
 async function salvaCert() {
   const brand=document.getElementById('m-brand').value, corso=document.getElementById('m-corso').value;
   const cons=document.getElementById('m-cons').value, scad=document.getElementById('m-scad').value;
@@ -560,14 +507,15 @@ async function salvaCert() {
   } catch(e) { err.textContent='Errore: ' + e.message; err.classList.add('show'); }
   finally { btn.disabled=false; txt.style.display='block'; spin.style.display='none'; }
 }
+ 
 async function deleteCert(id, nome) {
   if (!confirm(`Eliminare la certificazione "${nome}"?`)) return;
   const {error} = await sb.from('certificazioni').delete().eq('id', id);
   if (!error) { toast('Eliminata.'); await caricaDati(); } else toast('Errore.');
 }
  
-/* ── HELPERS ── */
 function closeOverlay(id) { document.getElementById(id).classList.remove('open'); }
+ 
 function toast(msg) {
   const el=document.getElementById('toast'); document.getElementById('toast-msg').textContent=msg;
   el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 3000);
