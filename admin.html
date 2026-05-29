@@ -493,8 +493,10 @@ const csLabel = s => ({da_fare:'Da fare', in_corso:'In corso', completato:'Compl
 })();
  
 async function doLogout() {
-  await sb.auth.signOut();
-  window.location.href = 'login.html';
+  try { await sb.auth.signOut(); } catch(e) {}
+  localStorage.clear();
+  sessionStorage.clear();
+  window.location.replace('login.html');
 }
  
 /* ── LOAD ── */
