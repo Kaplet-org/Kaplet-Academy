@@ -260,10 +260,22 @@ const fmt = d => d ? new Date(d).toLocaleDateString('it-IT', {day:'2-digit',mont
 const csClass = s => ({da_fare:'da_fare', in_corso:'in_corso', completato:'completato'}[s] || 'da_fare');
 const csLabel = s => ({da_fare:'Da fare', in_corso:'In corso', completato:'Completato'}[s] || s);
  
-/* ── INIT — usa getSession() diretto, più affidabile di onAuthStateChange ── */
+/* ── INIT ── */
 (async () => {
   try {
-    const { data: { session } } = await sb.auth.getSession();
+    // Prima prova diretta
+    let session = null;
+    const r1 = await sb.auth.getSession();
+    session = r1.data?.session;
+ 
+    // Se non c'è sessione, aspetta 800ms e riprova (il token potrebbe non essere ancora scritto)
+    if (!session) {
+      await new Promise(res => setTimeout(res, 800));
+      const r2 = await sb.auth.getSession();
+      session = r2.data?.session;
+    }
+ 
+    // Ancora niente — vai al login
     if (!session) { window.location.replace('login.html'); return; }
  
     const { data, error } = await sb.from('tecnici').select('*').eq('id', session.user.id).single();
@@ -523,3 +535,4 @@ function toast(msg) {
 </script>
 </body>
 </html>
+ 
