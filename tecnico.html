@@ -275,11 +275,23 @@ const csLabel = s => ({da_fare:'Da fare', in_corso:'In corso', completato:'Compl
       session = r2.data?.session;
     }
  
-    // Ancora niente — vai al login
-    if (!session) { window.location.replace('login.html'); return; }
+    // Ancora niente — mostra pagina debug invece di fare loop
+    if (!session) {
+      document.body.innerHTML = `<div style="color:white;padding:2rem;font-family:sans-serif;background:#0C0E0D;min-height:100vh">
+        <h2 style="color:#36CD81;margin-bottom:1rem">Sessione non trovata</h2>
+        <p>Il browser non riesce a mantenere la sessione dopo il login.</p>
+        <p style="margin-top:1rem;color:rgba(255,255,255,0.5)">Apri la console (Cmd+Option+J) e dimmi cosa vedi in rosso.</p>
+        <a href="login.html" style="display:inline-block;margin-top:1.5rem;color:#36CD81">← Torna al login</a>
+      </div>`;
+      console.log('DEBUG: nessuna sessione trovata. localStorage keys:', Object.keys(localStorage));
+      return;
+    }
  
     const { data, error } = await sb.from('tecnici').select('*').eq('id', session.user.id).single();
-    if (error || !data) { window.location.replace('login.html'); return; }
+    if (error || !data) {
+      console.error('DEBUG: errore caricamento tecnico', error);
+      window.location.replace('login.html'); return;
+    }
     if (data.is_admin) { window.location.replace('admin.html'); return; }
  
     ME = data;
