@@ -3,679 +3,569 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin | Kaplet Academy</title>
+<title>La mia Academy | Kaplet</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,200;9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
 <style>
-:root{--black:#0C0E0D;--card:#141614;--card2:#1A1A1A;--green:#36CD81;--gdim:rgba(54,205,129,0.08);--gborder:rgba(54,205,129,0.2);--white:#FFFFFF;--gray:rgba(255,255,255,0.55);--border:rgba(255,255,255,0.08);--warn:#F59E0B;--danger:#EF4444;--font:'DM Sans',sans-serif;}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:var(--font);background:var(--black);color:var(--white);min-height:100vh;-webkit-font-smoothing:antialiased;}
-nav{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:1px solid var(--border);height:70px;display:flex;align-items:center;padding:0 3rem;justify-content:space-between;}
-.logo{font-size:1rem;font-weight:400;letter-spacing:.3em;text-transform:uppercase;color:var(--white);text-decoration:none;}
-.logo span{color:var(--green);}
-.nav-tabs{display:flex;}
-.ntab{padding:0 1.25rem;height:70px;display:flex;align-items:center;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;transition:all .2s;font-family:var(--font);}
-.ntab:hover{color:var(--white);}
-.ntab.active{color:var(--green);border-bottom-color:var(--green);}
-.nav-r{display:flex;align-items:center;gap:1rem;}
-.btn-nav{padding:8px 18px;border:1px solid var(--border);background:transparent;color:var(--gray);font-family:var(--font);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;}
-.btn-nav:hover{border-color:var(--green);color:var(--green);}
-.hero{padding:4rem 3rem 2.5rem;border-bottom:1px solid var(--border);}
-.hero-inner{max-width:1300px;margin:0 auto;}
-.hero-lbl{font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--green);margin-bottom:1rem;display:flex;align-items:center;gap:8px;}
-.hero-lbl::before{content:'';display:block;width:20px;height:1px;background:var(--green);}
-h1{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:200;letter-spacing:-.02em;margin-bottom:.5rem;}
-.hero-sub{font-size:.88rem;font-weight:300;color:var(--gray);}
-.stats{display:flex;gap:0;margin-top:2.5rem;border-top:1px solid var(--border);}
-.stat{flex:1;padding:1.5rem 1.5rem 1rem 0;border-right:1px solid var(--border);margin-right:1.5rem;}
-.stat:last-child{border-right:none;margin-right:0;}
-.sn{font-size:2rem;font-weight:200;line-height:1;margin-bottom:4px;}
-.s-g{color:var(--green);}.s-w{color:var(--warn);}.s-d{color:var(--danger);}.s-wh{color:var(--white);}
-.sl{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--green);}
-.main{max-width:1300px;margin:0 auto;padding:2.5rem 3rem 5rem;}
-.sec{display:none;}.sec.active{display:block;}
-.sec-hd{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem;}
-.sec-title{font-size:1.2rem;font-weight:200;}
-.tw{overflow-x:auto;background:var(--border);}
-table{width:100%;border-collapse:collapse;}
-thead{background:var(--card2);}
-th{padding:.75rem 1rem;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;}
-td{padding:.9rem 1rem;border-bottom:1px solid var(--border);background:var(--card);vertical-align:middle;font-size:.82rem;font-weight:300;}
-tr:hover td{background:var(--card2);}
-.av{width:32px;height:32px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:600;color:var(--black);flex-shrink:0;}
-.tec-info{display:flex;align-items:center;gap:.75rem;}
-.tec-nome{font-weight:400;}
-.tec-email{font-size:.7rem;color:var(--gray);margin-top:2px;}
-.pills{display:flex;flex-wrap:wrap;gap:4px;}
-.pill{font-size:.56rem;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border:1px solid;}
-.p-ok{color:var(--green);border-color:var(--gborder);background:var(--gdim);}
-.p-wa{color:var(--warn);border-color:rgba(245,158,11,.25);background:rgba(245,158,11,.05);}
-.p-no{color:rgba(255,255,255,.3);border-color:var(--border);}
-.prog-bg{height:3px;background:rgba(255,255,255,.06);border-radius:2px;margin-bottom:3px;}
-.prog-fill{height:3px;background:var(--green);border-radius:2px;}
-.prog-lbl{font-size:.62rem;color:var(--gray);}
-.btn-sm{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:8px 16px;border:1px solid var(--green);background:transparent;color:var(--green);cursor:pointer;transition:all .2s;font-family:var(--font);}
-.btn-sm:hover{background:var(--green);color:var(--black);}
-/* SCADENZE */
-.stabs{display:flex;gap:0;margin-bottom:1.5rem;border-bottom:1px solid var(--border);}
-.stab{padding:.5rem 1.25rem;font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gray);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;transition:all .2s;font-family:var(--font);}
-.stab.active{color:var(--green);border-bottom-color:var(--green);}
-.slist{display:flex;flex-direction:column;gap:1px;background:var(--border);}
-.sitem{background:var(--card);padding:1rem 1.25rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;}
-.surg{font-size:.58rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border:1px solid;flex-shrink:0;min-width:70px;text-align:center;}
-.u-d{color:var(--danger);border-color:rgba(239,68,68,.3);}
-.u-w{color:var(--warn);border-color:rgba(245,158,11,.3);}
-.u-ok{color:var(--gray);border-color:var(--border);}
-.sinfo{flex:1;min-width:200px;}
-.s-nome{font-size:.88rem;font-weight:300;}
-.s-corso{font-size:.72rem;color:var(--gray);margin-top:2px;}
-.s-data{font-size:.75rem;font-weight:400;flex-shrink:0;}
-/* MAPPA */
-.mx-hd{display:flex;gap:1px;background:var(--border);margin-bottom:1px;}
-.mhc{background:var(--card2);padding:.6rem 1rem;font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gray);min-width:72px;text-align:center;}
-.mhb{min-width:160px;text-align:left;}
-.mx-row{display:flex;gap:1px;background:var(--border);margin-bottom:1px;}
-.mbrand{background:var(--card);padding:.85rem 1rem;min-width:160px;display:flex;align-items:center;gap:8px;}
-.mdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-.mname{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;}
-.mcell{background:var(--card);padding:.85rem 1rem;min-width:72px;text-align:center;}
-.mb{display:inline-block;font-size:.56rem;padding:2px 6px;border:1px solid;}
-.mb-ok{color:var(--green);border-color:var(--gborder);background:var(--gdim);}
-.mb-wa{color:var(--warn);border-color:rgba(245,158,11,.25);background:rgba(245,158,11,.05);}
-.mb-no{color:rgba(239,68,68,.7);border-color:rgba(239,68,68,.25);background:rgba(239,68,68,.05);}
-.mb-none{color:rgba(255,255,255,.2);border-color:var(--border);}
-/* DOCUMENTO btn */
-.btn-doc{display:inline-flex;align-items:center;gap:4px;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border:1px solid var(--gborder);background:var(--gdim);color:var(--green);cursor:pointer;font-family:var(--font);transition:all .2s;white-space:nowrap;}
-.btn-doc:hover{background:var(--green);color:var(--black);}
+/* ── STESSE VARIABILI DEL LOGIN.HTML ── */
+:root {
+  --black: #0C0E0D;
+  --green: #36CD81;
+  --white: #FFFFFF;
+  --gray: rgba(255,255,255,0.55);
+  --border: rgba(255,255,255,0.08);
+  --card: #141614;
+  --card2: #1A1C1A;
+  --font: 'DM Sans', sans-serif;
+  --warn: #F59E0B;
+  --danger: #EF4444;
+  --green-dim: rgba(54,205,129,0.08);
+  --green-border: rgba(54,205,129,0.2);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--black); color: var(--white); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+ 
+/* BACKGROUND LINES — identico al login */
+.bg-lines { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+.bg-line { position: absolute; height: 1px; width: 70%; background: linear-gradient(90deg, transparent, rgba(54,205,129,0.08), transparent); }
+.bg-line:nth-child(1) { top: 20%;  left: -10%; transform: rotate(-8deg); }
+.bg-line:nth-child(2) { top: 40%;  left: -5%;  transform: rotate(-5deg); opacity:.6; }
+.bg-line:nth-child(3) { top: 65%;  left: 15%;  transform: rotate(-3deg); opacity:.4; }
+ 
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--black); border-bottom: 1px solid var(--border);
+  height: 64px; display: flex; align-items: center;
+  padding: 0 2.5rem; justify-content: space-between;
+}
+.nav-logo { font-size: 1rem; font-weight: 400; letter-spacing: 0.3em; text-transform: uppercase; color: var(--white); text-decoration: none; }
+.nav-logo span { color: var(--green); }
+.nav-center { display: flex; gap: 0; }
+.nav-tab { height: 64px; padding: 0 1.25rem; font-size: 0.68rem; font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray); background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-family: var(--font); transition: all 0.2s; }
+.nav-tab:hover { color: var(--white); }
+.nav-tab.active { color: var(--green); border-bottom-color: var(--green); }
+.nav-right { display: flex; align-items: center; gap: 0.75rem; }
+.nav-user { font-size: 0.75rem; font-weight: 300; color: var(--gray); }
+.btn-nav { height: 34px; padding: 0 16px; background: transparent; border: 1px solid var(--border); color: var(--gray); font-family: var(--font); font-size: 0.7rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; border-radius: 0; }
+.btn-nav:hover { border-color: rgba(255,255,255,0.3); color: var(--white); }
+ 
+/* HERO */
+.hero { position: relative; z-index: 1; padding: 3rem 2.5rem 2rem; border-bottom: 1px solid var(--border); }
+.hero-inner { max-width: 1200px; margin: 0 auto; }
+.hero-label { font-size: 0.62rem; font-weight: 400; letter-spacing: 0.15em; text-transform: uppercase; color: var(--green); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px; }
+.hero-label::before { content: ''; display: block; width: 20px; height: 1px; background: var(--green); }
+.hero h1 { font-size: 2rem; font-weight: 200; letter-spacing: -0.02em; margin-bottom: 0.4rem; }
+.hero h1 span { color: var(--green); }
+.hero-sub { font-size: 0.82rem; font-weight: 300; color: var(--gray); }
+.stats-row { display: flex; gap: 0; margin-top: 2rem; border-top: 1px solid var(--border); }
+.stat { flex: 1; padding: 1.5rem 1.5rem 1rem 0; border-right: 1px solid var(--border); margin-right: 1.5rem; }
+.stat:last-child { border-right: none; margin-right: 0; }
+.stat-num { font-size: 2rem; font-weight: 200; line-height: 1; margin-bottom: 4px; }
+.stat-num.green { color: var(--green); } .stat-num.warn { color: var(--warn); } .stat-num.danger { color: var(--danger); }
+.stat-label { font-size: 0.6rem; font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; color: var(--green); }
+ 
+/* MAIN */
+.main { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 2rem 2.5rem 5rem; }
+.section { display: none; } .section.active { display: block; }
+.section-title { font-size: 1.1rem; font-weight: 200; color: var(--white); margin-bottom: 1.5rem; }
+ 
+/* PROGRESS ANNUALE */
+.prog-card { background: var(--card); border: 1px solid var(--border); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; }
+.prog-left { flex: 1; min-width: 180px; }
+.prog-label { font-size: 0.6rem; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); margin-bottom: 0.4rem; }
+.prog-nums { display: flex; gap: 1.5rem; margin-bottom: 0.75rem; }
+.prog-n { font-size: 1.6rem; font-weight: 200; line-height: 1; }
+.prog-nl { font-size: 0.58rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray); margin-top: 2px; }
+.prog-right { flex: 2; min-width: 180px; }
+.prog-pct { font-size: 0.75rem; font-weight: 300; color: var(--gray); margin-bottom: 5px; }
+.prog-bar-bg { height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; }
+.prog-bar-fill { height: 3px; background: var(--green); border-radius: 2px; transition: width 0.5s; }
+ 
+/* FILTRI */
+.filter-row { display: flex; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+.fsel-sm { height: 36px; background: var(--card); border: 1px solid var(--border); color: var(--white); font-family: var(--font); font-size: 0.75rem; padding: 0 10px; outline: none; border-radius: 0; min-width: 160px; }
+.fsel-sm:focus { border-color: var(--green); } .fsel-sm option { background: #141614; }
+ 
+/* CORSI GRID */
+.corsi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1px; background: var(--border); }
+.corso-card { background: var(--card); padding: 1.25rem; border-left: 2px solid transparent; transition: background 0.15s; }
+.corso-card:hover { background: var(--card2); }
+.corso-card.da_fare    { border-left-color: rgba(255,255,255,0.1); }
+.corso-card.in_corso   { border-left-color: var(--warn); }
+.corso-card.completato { border-left-color: var(--green); }
+.cc-brand { font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 400; margin-bottom: 0.5rem; }
+.cc-nome { font-size: 0.9rem; font-weight: 300; color: var(--white); line-height: 1.35; margin-bottom: 0.75rem; }
+.cc-meta { font-size: 0.68rem; color: var(--gray); margin-bottom: 0.75rem; }
+.cc-stato-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; padding-top: 0.75rem; border-top: 1px solid var(--border); }
+.btn-stato { height: 28px; padding: 0 10px; background: transparent; border: 1px solid var(--border); color: var(--gray); font-family: var(--font); font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; border-radius: 0; }
+.btn-stato:hover { border-color: var(--green); color: var(--green); }
+.btn-stato.active { background: var(--green); border-color: var(--green); color: var(--black); }
+ 
+/* CERT CARDS */
+.cert-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1px; background: var(--border); margin-bottom: 2rem; }
+.cert-card { background: var(--card); padding: 1.5rem; border-left: 2px solid transparent; transition: all 0.2s; }
+.cert-card:hover { background: var(--card2); border-left-color: var(--green); }
+.cert-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.85rem; }
+.cert-brand-tag { font-size: 0.58rem; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; padding: 3px 9px; border: 1px solid; }
+.cert-stato-badge { font-size: 0.58rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 8px; border: 1px solid; }
+.stato-attiva   { color: var(--green); border-color: var(--green-border); background: var(--green-dim); }
+.stato-scaduta  { color: var(--danger); border-color: rgba(239,68,68,0.25); background: rgba(239,68,68,0.05); }
+.stato-attenzione { color: var(--warn); border-color: rgba(245,158,11,0.25); background: rgba(245,158,11,0.05); }
+.cert-nome { font-size: 0.95rem; font-weight: 300; color: var(--white); line-height: 1.35; margin-bottom: 0.4rem; }
+.cert-meta { font-size: 0.72rem; font-weight: 300; color: var(--gray); }
+.cert-scad-bar { margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px solid var(--border); }
+.scad-bar-bg { height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; margin: 4px 0; }
+.scad-bar-fill { height: 3px; border-radius: 2px; }
+.fill-ok { background: var(--green); } .fill-warn { background: var(--warn); } .fill-danger { background: var(--danger); }
+.cert-actions { display: flex; gap: 0.5rem; margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px solid var(--border); }
+.btn-sm { height: 30px; padding: 0 12px; background: transparent; border: 1px solid var(--border); color: var(--gray); font-family: var(--font); font-size: 0.68rem; cursor: pointer; transition: all 0.2s; border-radius: 0; }
+.btn-sm:hover { border-color: var(--green); color: var(--green); }
+.btn-danger-sm { height: 30px; padding: 0 12px; background: transparent; border: 1px solid rgba(239,68,68,0.25); color: #f87171; font-family: var(--font); font-size: 0.68rem; cursor: pointer; transition: all 0.2s; border-radius: 0; }
+.btn-danger-sm:hover { border-color: var(--danger); }
+ 
+/* BOTTONI PRIMARI */
+.btn-primary { height: 38px; padding: 0 20px; background: var(--green); border: 1px solid var(--green); color: var(--black); font-family: var(--font); font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; border-radius: 0; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary:hover { background: transparent; color: var(--green); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-secondary { height: 36px; padding: 0 16px; background: transparent; border: 1px solid var(--border); color: var(--gray); font-family: var(--font); font-size: 0.7rem; font-weight: 400; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; border-radius: 0; }
+.btn-secondary:hover { border-color: rgba(255,255,255,0.3); color: var(--white); }
+ 
 /* EMPTY */
-.empty{text-align:center;padding:4rem 2rem;color:var(--gray);}
-.empty-ic{font-size:2rem;opacity:.3;margin-bottom:.75rem;}
-.empty-t{font-size:1rem;font-weight:200;}
-/* MODAL */
-.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;}
-.ov.open{display:flex;}
-.modal{background:var(--card);border:1px solid var(--border);padding:2rem;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;}
-.modal-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;}
-.modal-title{font-size:1rem;font-weight:200;}
-.modal-x{background:none;border:none;color:var(--gray);cursor:pointer;font-size:1.2rem;line-height:1;}
-.modal-x:hover{color:var(--white);}
-.fg{margin-bottom:1rem;}
-.fl{display:block;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:6px;}
-.fi,.fs{width:100%;height:42px;background:var(--black);border:1px solid var(--border);color:var(--white);font-family:var(--font);font-size:.875rem;padding:0 12px;outline:none;transition:border-color .2s;appearance:none;}
-.fi:focus,.fs:focus{border-color:var(--green);}
-.fs{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2336CD81' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px;}
-.fs option{background:#1a1a1a;}
-.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.empty { text-align: center; padding: 4rem 2rem; color: var(--gray); grid-column: 1/-1; }
+.empty-icon { font-size: 1.5rem; opacity: 0.3; margin-bottom: 0.75rem; }
+.empty-title { font-size: 0.95rem; font-weight: 200; color: var(--white); }
+ 
+/* MODAL — stessa struttura card del login */
+.overlay { display: none; position: fixed; inset: 0; background: rgba(12,14,13,0.88); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+.overlay.open { display: flex; }
+.modal { background: var(--card); border: 1px solid var(--border); width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
+.modal-head { background: var(--black); padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); position: sticky; top: 0; }
+.modal-title { font-size: 0.75rem; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: var(--white); }
+.modal-close { background: transparent; border: none; color: var(--gray); cursor: pointer; font-size: 1.2rem; padding: 0; line-height: 1; }
+.modal-close:hover { color: var(--white); }
+.modal-body { padding: 1.5rem; }
+.modal-foot { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; gap: 0.75rem; justify-content: flex-end; }
+ 
+/* FORM — identico al login */
+.fld { margin-bottom: 1.1rem; }
+label.flabel { display: block; font-size: 0.6rem; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); margin-bottom: 6px; }
+.finput, .fsel { width: 100%; height: 44px; background: var(--black); border: 1px solid var(--border); color: var(--white); font-family: var(--font); font-size: 0.875rem; font-weight: 300; padding: 0 14px; outline: none; transition: border-color 0.2s; border-radius: 0; appearance: none; }
+.finput:focus, .fsel:focus { border-color: var(--green); }
+.finput::placeholder { color: rgba(255,255,255,0.2); }
+.fsel { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2336CD81' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 30px; }
+.fsel option { background: #141614; }
+.fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.fhint { font-size: 0.63rem; color: var(--gray); margin-top: 4px; }
+.msg { display: none; margin-top: 0.75rem; padding: 0.75rem 1rem; font-size: 0.78rem; font-weight: 300; }
+.msg.error { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); color: #f87171; }
+.msg.show { display: block; }
+ 
 /* FILE ZONE */
-.fzone{border:1px dashed rgba(255,255,255,.15);padding:1.25rem;text-align:center;cursor:pointer;transition:all .2s;margin-top:.25rem;}
-.fzone:hover,.fzone.over{border-color:var(--green);background:var(--gdim);}
-.fzone-ic{font-size:1.3rem;margin-bottom:.4rem;opacity:.5;}
-.fzone-txt{font-size:.72rem;font-weight:300;color:var(--gray);line-height:1.5;}
-.fzone-txt strong{color:var(--green);font-weight:400;}
-.fsel{display:none;margin-top:.5rem;padding:.5rem .75rem;background:rgba(54,205,129,.05);border:1px solid var(--gborder);align-items:center;gap:.5rem;}
-.fsel.show{display:flex;}
-.fsel-nm{font-size:.7rem;color:var(--green);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.fsel-x{background:none;border:none;color:var(--gray);cursor:pointer;font-size:.85rem;padding:0;}
-.fsel-x:hover{color:var(--danger);}
-/* doc esistente */
-.doc-ex{display:flex;align-items:center;gap:.5rem;padding:.5rem .75rem;background:rgba(255,255,255,.03);border:1px solid var(--border);margin-bottom:.5rem;}
-.doc-ex-link{font-size:.7rem;color:var(--green);cursor:pointer;text-decoration:underline;flex:1;}
-/* progress */
-.uprog{display:none;margin-top:.5rem;}
-.uprog.show{display:block;}
-.uprog-bg{height:3px;background:rgba(255,255,255,.08);border-radius:2px;margin-bottom:3px;}
-.uprog-fill{height:3px;background:var(--green);border-radius:2px;width:0%;transition:width .3s;}
-.uprog-lbl{font-size:.62rem;color:var(--gray);}
-.btn-primary{width:100%;height:46px;background:var(--green);border:none;color:var(--black);font-family:var(--font);font-size:.82rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-top:.5rem;}
-.btn-primary:hover{opacity:.85;}
-.btn-primary:disabled{opacity:.4;cursor:not-allowed;}
-.msg-err{display:none;margin-top:.75rem;padding:.75rem 1rem;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#f87171;font-size:.78rem;}
-.msg-err.show{display:block;}
-/* LIGHTBOX */
-.lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:500;flex-direction:column;align-items:center;justify-content:center;}
-.lb.open{display:flex;}
-.lb-head{position:absolute;top:0;left:0;right:0;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(rgba(0,0,0,.8),transparent);}
-.lb-title{font-size:.75rem;font-weight:300;color:var(--white);}
-.lb-acts{display:flex;gap:.75rem;align-items:center;}
-.lb-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border:1px solid rgba(255,255,255,.2);background:transparent;color:var(--white);font-family:var(--font);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .2s;}
-.lb-btn:hover{border-color:var(--green);color:var(--green);}
-.lb-x{background:none;border:none;color:var(--gray);cursor:pointer;font-size:1.4rem;padding:0;}
-.lb-x:hover{color:var(--white);}
-.lb-body{max-width:90vw;max-height:85vh;display:flex;align-items:center;justify-content:center;}
-.lb-img{max-width:90vw;max-height:82vh;object-fit:contain;border:1px solid rgba(255,255,255,.1);}
-.lb-pdf{width:min(860px,90vw);height:82vh;border:none;}
+.file-zone { border: 1px dashed var(--border); padding: 1.25rem; text-align: center; cursor: pointer; transition: border-color 0.2s; }
+.file-zone:hover { border-color: var(--green); }
+.file-zone-label { font-size: 0.72rem; font-weight: 300; color: var(--gray); }
+.file-zone-label strong { color: var(--green); }
+.file-name { font-size: 0.72rem; color: var(--green); margin-top: 6px; }
+ 
 /* TOAST */
-.toast{position:fixed;bottom:2rem;right:2rem;background:var(--card);border:1px solid var(--border);padding:.85rem 1.25rem;font-size:.78rem;font-weight:300;z-index:300;display:none;align-items:center;gap:.75rem;max-width:340px;}
-.toast.show{display:flex;}
-.tdot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--green);}
-@media(max-width:900px){nav{padding:0 1.5rem;}.hero,.main{padding-left:1.5rem;padding-right:1.5rem;}.stats{flex-wrap:wrap;}}
+.toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--card); border: 1px solid var(--border); padding: 0.85rem 1.25rem; font-size: 0.78rem; font-weight: 300; color: var(--white); z-index: 300; display: none; align-items: center; gap: 0.75rem; max-width: 320px; }
+.toast.show { display: flex; }
+.toast-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+ 
+/* SPINNER */
+.spinner { width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.2); border-top-color: var(--black); border-radius: 50%; animation: spin 0.6s linear infinite; display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+ 
+@media(max-width:768px) { nav { padding: 0 1.25rem; } .hero, .main { padding-left: 1.25rem; padding-right: 1.25rem; } .stats-row { flex-wrap: wrap; } }
 </style>
 </head>
 <body>
+ 
+<div class="bg-lines">
+  <div class="bg-line"></div><div class="bg-line"></div><div class="bg-line"></div>
+</div>
+ 
 <nav>
-  <a class="logo" href="index.html"><span>·</span>KAPLET Academy</a>
-  <div class="nav-tabs">
-    <button class="ntab active" onclick="showSec('team',this)">Team</button>
-    <button class="ntab" onclick="showSec('scad',this)">Scadenze</button>
-    <button class="ntab" onclick="showSec('mx',this)">Mappa cert.</button>
+  <a class="nav-logo" href="index.html"><span>·</span>KAPLET Academy</a>
+  <div class="nav-center">
+    <button class="nav-tab active" onclick="showTab('corsi',this)">I miei corsi</button>
+    <button class="nav-tab" onclick="showTab('cert',this)">Certificazioni</button>
+    <button class="nav-tab" onclick="showTab('percorso',this)">Percorso consigliato</button>
   </div>
-  <div class="nav-r">
-    <a href="index.html" class="btn-nav">Catalogo</a>
+  <div class="nav-right">
+    <span class="nav-user" id="nav-nome"></span>
     <button class="btn-nav" onclick="doLogout()">Esci</button>
   </div>
 </nav>
  
 <div class="hero">
   <div class="hero-inner">
-    <div class="hero-lbl">Pannello amministratore</div>
-    <h1>·KAPLET Academy</h1>
-    <p class="hero-sub">Panoramica certificazioni del team.</p>
-    <div class="stats">
-      <div class="stat"><div class="sn s-wh" id="s-tec">—</div><div class="sl">Tecnici</div></div>
-      <div class="stat"><div class="sn s-g"  id="s-att">—</div><div class="sl">Certificazioni attive</div></div>
-      <div class="stat"><div class="sn s-w"  id="s-s60">—</div><div class="sl">In scadenza (60gg)</div></div>
-      <div class="stat"><div class="sn s-d"  id="s-sca">—</div><div class="sl">Scadute</div></div>
+    <div class="hero-label">La mia area personale</div>
+    <h1>Ciao, <span id="hero-nome">—</span></h1>
+    <p class="hero-sub" id="hero-sub">Gestisci le tue certificazioni e monitora i corsi assegnati.</p>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-num green" id="s-att">—</div><div class="stat-label">Cert. attive</div></div>
+      <div class="stat"><div class="stat-num warn"  id="s-ins">—</div><div class="stat-label">In scadenza 60gg</div></div>
+      <div class="stat"><div class="stat-num danger" id="s-exp">—</div><div class="stat-label">Scadute</div></div>
+      <div class="stat"><div class="stat-num"        id="s-ca">—</div><div class="stat-label">Corsi assegnati</div></div>
+      <div class="stat"><div class="stat-num green"  id="s-done">—</div><div class="stat-label">Corsi completati</div></div>
     </div>
   </div>
 </div>
  
 <div class="main">
-  <!-- TEAM -->
-  <div class="sec active" id="sec-team">
-    <div class="sec-hd">
-      <div class="sec-title">Tutti i tecnici</div>
-      <button class="btn-sm" onclick="openModal()">+ Aggiungi certificazione</button>
+ 
+  <!-- TAB CORSI ASSEGNATI -->
+  <div class="section active" id="tab-corsi">
+    <div id="prog-card"></div>
+    <div class="filter-row">
+      <select class="fsel-sm" id="cf-stato" onchange="renderCorsi()">
+        <option value="">Tutti gli stati</option>
+        <option value="da_fare">Da fare</option>
+        <option value="in_corso">In corso</option>
+        <option value="completato">Completato</option>
+      </select>
+      <select class="fsel-sm" id="cf-brand" onchange="renderCorsi()"><option value="">Tutti i brand</option></select>
     </div>
-    <div class="tw">
-      <table>
-        <thead><tr><th>Tecnico</th><th>Ruolo</th><th>Certificazioni</th><th>Progresso</th></tr></thead>
-        <tbody id="team-body"><tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--gray)">Caricamento...</td></tr></tbody>
-      </table>
+    <div class="corsi-grid" id="corsi-grid">
+      <div class="empty"><div class="empty-icon">◌</div><div class="empty-title">Caricamento...</div></div>
     </div>
   </div>
  
-  <!-- SCADENZE -->
-  <div class="sec" id="sec-scad">
-    <div class="sec-hd"><div class="sec-title">Scadenze certificazioni</div></div>
-    <div class="stabs">
-      <button class="stab active" onclick="switchStab('prox',this)">In scadenza (60gg)</button>
-      <button class="stab" onclick="switchStab('sca',this)">Già scadute</button>
+  <!-- TAB CERTIFICAZIONI -->
+  <div class="section" id="tab-cert">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+      <div class="section-title" style="margin:0">Le mie certificazioni</div>
+      <button class="btn-primary" onclick="openModalCert()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Aggiungi certificazione
+      </button>
     </div>
-    <div class="slist" id="scad-body"></div>
+    <div class="cert-grid" id="cert-grid">
+      <div class="empty"><div class="empty-icon">◌</div><div class="empty-title">Caricamento...</div></div>
+    </div>
   </div>
  
-  <!-- MAPPA -->
-  <div class="sec" id="sec-mx">
-    <div class="sec-hd"><div class="sec-title">Mappa certificazioni per brand</div></div>
-    <p style="font-size:.78rem;color:var(--gray);margin-bottom:1.5rem;font-weight:300">Verde = attiva · Giallo = in scadenza 60gg · Rosso = scaduta · Grigio = assente</p>
-    <div id="mx-body" style="overflow-x:auto"></div>
+  <!-- TAB PERCORSO -->
+  <div class="section" id="tab-percorso">
+    <div class="section-title">Corsi consigliati per il tuo ruolo</div>
+    <div class="corsi-grid" id="percorso-grid">
+      <div class="empty"><div class="empty-icon">◌</div><div class="empty-title">Caricamento...</div></div>
+    </div>
   </div>
+ 
 </div>
  
-<div class="toast" id="toast"><div class="tdot"></div><span id="toast-msg"></span></div>
+<div class="toast" id="toast"><div class="toast-dot"></div><span id="toast-msg"></span></div>
  
-<!-- MODAL AGGIUNGI / MODIFICA CERTIFICAZIONE -->
-<div class="ov" id="modal">
+<!-- MODAL CERTIFICAZIONE — stessa struttura card del login -->
+<div class="overlay" id="modal-cert">
   <div class="modal">
-    <div class="modal-hd">
-      <div class="modal-title" id="modal-title">Aggiungi certificazione</div>
-      <button class="modal-x" onclick="closeModal()">✕</button>
+    <div class="modal-head">
+      <div class="modal-title" id="modal-cert-title">Nuova certificazione</div>
+      <button class="modal-close" onclick="closeOverlay('modal-cert')">✕</button>
     </div>
-    <input type="hidden" id="cert-id">
-    <input type="hidden" id="doc-url-ex">
- 
-    <div class="fg">
-      <label class="fl">Tecnico *</label>
-      <select class="fs" id="m-tec"><option value="">Seleziona...</option></select>
-    </div>
-    <div class="fg">
-      <label class="fl">Brand *</label>
-      <select class="fs" id="m-brand" onchange="fillCorsi()"><option value="">Seleziona brand...</option></select>
-    </div>
-    <div class="fg">
-      <label class="fl">Corso *</label>
-      <select class="fs" id="m-corso"><option value="">Prima seleziona brand...</option></select>
-    </div>
-    <div class="fgrid">
-      <div class="fg">
-        <label class="fl">Data conseguimento *</label>
-        <input type="date" class="fi" id="m-cons">
+    <div class="modal-body">
+      <input type="hidden" id="cert-edit-id">
+      <div class="fld"><label class="flabel">Brand / Vendor *</label><select class="fsel" id="m-brand" onchange="fillCorsi()"><option value="">Seleziona brand…</option></select></div>
+      <div class="fld"><label class="flabel">Corso / Certificazione *</label><select class="fsel" id="m-corso"><option value="">Prima seleziona un brand…</option></select></div>
+      <div class="fgrid">
+        <div class="fld"><label class="flabel">Data conseguimento *</label><input type="date" class="finput" id="m-cons"></div>
+        <div class="fld"><label class="flabel">Data scadenza <span style="color:var(--gray)">(se applicabile)</span></label><input type="date" class="finput" id="m-scad"><div class="fhint">Lascia vuoto se non scade</div></div>
       </div>
-      <div class="fg">
-        <label class="fl">Data scadenza</label>
-        <input type="date" class="fi" id="m-scad">
+      <div class="fld">
+        <label class="flabel">Documento di prova</label>
+        <div class="file-zone" onclick="document.getElementById('file-input').click()">
+          <div class="file-zone-label">Clicca per caricare · <strong>PDF, JPG, PNG</strong> max 10MB</div>
+          <div class="file-name" id="file-name-display" style="display:none"></div>
+        </div>
+        <input type="file" id="file-input" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleFile(this)">
       </div>
+      <div class="fld"><label class="flabel">Note</label><input type="text" class="finput" id="m-note" placeholder="Es. livello, ente esaminatore…"></div>
+      <div class="msg error" id="m-err"></div>
     </div>
- 
-    <!-- documento esistente (solo in modifica) -->
-    <div id="doc-ex-wrap" style="display:none">
-      <label class="fl">Documento attuale</label>
-      <div class="doc-ex">
-        <span id="doc-ex-ic">📄</span>
-        <span class="doc-ex-link" onclick="openLB(document.getElementById('doc-url-ex').value,'Documento')">Visualizza / Scarica</span>
-        <button class="fsel-x" onclick="removeDocEx()">✕</button>
-      </div>
-    </div>
- 
-    <div class="fg">
-      <label class="fl" id="doc-lbl">Documento (PDF, JPG, PNG — max 10 MB)</label>
-      <div class="fzone" id="fzone"
-        onclick="document.getElementById('finput').click()"
-        ondragover="event.preventDefault();this.classList.add('over')"
-        ondragleave="this.classList.remove('over')"
-        ondrop="onDrop(event)">
-        <div class="fzone-ic">📎</div>
-        <div class="fzone-txt">Trascina qui o <strong>clicca per selezionare</strong></div>
-      </div>
-      <div class="fsel" id="fsel">
-        <span id="fsel-ic">📄</span>
-        <span class="fsel-nm" id="fsel-nm"></span>
-        <button class="fsel-x" onclick="clearFile()">✕</button>
-      </div>
-      <div class="uprog" id="uprog">
-        <div class="uprog-bg"><div class="uprog-fill" id="uprog-fill"></div></div>
-        <div class="uprog-lbl" id="uprog-lbl">Caricamento...</div>
-      </div>
-      <input type="file" id="finput" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="onFileChange(this)">
-    </div>
- 
-    <div class="fg">
-      <label class="fl">Note</label>
-      <input type="text" class="fi" id="m-note" placeholder="Es. numero certificato...">
-    </div>
-    <button class="btn-primary" id="btn-salva" onclick="salva()">Salva certificazione</button>
-    <div class="msg-err" id="m-err"></div>
-  </div>
-</div>
- 
-<!-- LIGHTBOX -->
-<div class="lb" id="lb" onclick="if(event.target===this)closeLB()">
-  <div class="lb-head">
-    <div class="lb-title" id="lb-title">Documento</div>
-    <div class="lb-acts">
-      <button class="lb-btn" onclick="dlDoc()">↓ Scarica</button>
-      <button class="lb-btn" onclick="extDoc()">↗ Apri</button>
-      <button class="lb-x" onclick="closeLB()">✕</button>
+    <div class="modal-foot">
+      <button class="btn-secondary" onclick="closeOverlay('modal-cert')">Annulla</button>
+      <button class="btn-primary" id="btn-salva" onclick="salvaCert()">
+        <span id="btn-salva-txt">Salva certificazione</span>
+        <div class="spinner" id="btn-spin"></div>
+      </button>
     </div>
   </div>
-  <div class="lb-body" id="lb-body"></div>
 </div>
  
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/courses.js"></script>
 <script>
-window.COURSES      = window.COURSES      || [];
-window.BRAND_COLORS = window.BRAND_COLORS || {};
+const SUPA_URL = 'https://mcgerrvorboagkukzuzc.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jZ2VycnZvcmJvYWdrdWt6dXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NjEyNzIsImV4cCI6MjA5MzQzNzI3Mn0.eDHZ-QUQLM2tFU4KPDEiIqXZsdfk_Cxnz7Ywxt6T46o';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
  
-const SB = supabase.createClient(
-  'https://mcgerrvorboagkukzuzc.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jZ2VycnZvcmJvYWdrdWt6dXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NjEyNzIsImV4cCI6MjA5MzQzNzI3Mn0.eDHZ-QUQLM2tFU4KPDEiIqXZsdfk_Cxnz7Ywxt6T46o'
-);
+let ME = null, CERTS = [], CORSI_ASS = [], fileSelezionato = null, editId = null;
  
-let TECNICI = [], CERTS = [], stabAttivo = 'prox';
-let fileObj = null, editId = null, lbUrl = '';
+const BC = {"AVIXA":"#F59E0B","DANTE":"#EF4444","NDI":"#38BDF8","AXIS":"#4ADE80","FORTINET":"#F87171","CISCO":"#22D3EE","CRESTRON":"#4ADE80","BARCO CTRL":"#FB923C","BARCO VIDEO":"#FBBF24","NOVASTAR":"#C084FC","MILESTONE":"#F472B6","ALTA ACCESS":"#38BDF8","ALTA VIDEO":"#60A5FA","AVIGILON UNITY":"#818CF8","SHURE":"#A78BFA","Q-SYS":"#F87171","YAMAHA":"#FCD34D","POWERSOFT":"#34D399","TELEVIC":"#A78BFA","EXTRON":"#F87171","K-ARRAY":"#4ADE80","K-SCAPE":"#34D399","BRIGHTSIGN":"#60A5FA","ELMO":"#FCA5A1","KSENIA":"#C084FC","NOTIFIER":"#FB923C","TECNOFIRE":"#F87171","KNX & DALI":"#818CF8","MAXHUB":"#38BDF8"};
+const bc  = b => BC[b?.toUpperCase()] || '#36CD81';
+const gg  = d => d ? Math.ceil((new Date(d) - new Date()) / 86400000) : null;
+const fmt = d => d ? new Date(d).toLocaleDateString('it-IT', {day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
+const csClass = s => ({da_fare:'da_fare', in_corso:'in_corso', completato:'completato'}[s] || 'da_fare');
+const csLabel = s => ({da_fare:'Da fare', in_corso:'In corso', completato:'Completato'}[s] || s);
  
-// ── INIT ─────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', async () => {
-  try {
-    const { data: { session } } = await SB.auth.getSession();
-    if (!session) { location.replace('login.html'); return; }
-    const { data: me } = await SB.from('tecnici').select('is_admin').eq('id', session.user.id).single();
-    if (!me || me.is_admin !== true) { location.replace('tecnico.html'); return; }
-    await load();
-  } catch(e) { console.error(e); location.replace('login.html'); }
+/* ── INIT ── */
+let initDone = false;
+sb.auth.onAuthStateChange(async (event, session) => {
+  if (initDone) return;
+  if (event === 'SIGNED_OUT') { window.location.href = 'login.html'; return; }
+  if (!session) return;
+  initDone = true;
+  const { data } = await sb.from('tecnici').select('*').eq('id', session.user.id).single();
+  if (!data) { window.location.href = 'login.html'; return; }
+  if (data.is_admin) { window.location.href = 'admin.html'; return; }
+  ME = data;
+  document.getElementById('nav-nome').textContent = data.nome + ' ' + data.cognome;
+  document.getElementById('hero-nome').textContent = data.nome;
+  document.getElementById('hero-sub').textContent = (data.ruolo || '') + ' · Formazione anno ' + new Date().getFullYear();
+  popolaBrand();
+  await caricaDati();
 });
+setTimeout(async () => {
+  if (initDone) return;
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) window.location.href = 'login.html';
+}, 3000);
  
-// ── LOGOUT ───────────────────────────────────────────────
-async function doLogout() {
-  await SB.auth.signOut();
-  location.replace('login.html');
-}
+async function doLogout() { await sb.auth.signOut(); window.location.href = 'login.html'; }
  
-// ── CARICA ───────────────────────────────────────────────
-async function load() {
+/* ── CARICA ── */
+async function caricaDati() {
   const [r1, r2] = await Promise.all([
-    SB.from('tecnici').select('*').order('cognome'),
-    SB.from('certificazioni').select('*').order('inserita_il', { ascending: false })
+    sb.from('certificazioni').select('*').eq('tech_id', ME.id).order('data_conseguimento', {ascending:false}),
+    sb.from('corsi_assegnati').select('*').eq('tech_id', ME.id).order('assegnato_il', {ascending:false})
   ]);
-  TECNICI = r1.data || [];
-  CERTS   = r2.data || [];
- 
-  const oggi = new Date();
-  const att  = CERTS.filter(c => c.stato==='attiva' && (!c.data_scadenza || new Date(c.data_scadenza)>=oggi));
-  const sca  = CERTS.filter(c => c.stato==='scaduta' || (c.data_scadenza && new Date(c.data_scadenza)<oggi));
-  const s60  = att.filter(c => { const g=gg(c.data_scadenza); return g!==null && g>=0 && g<=60; });
- 
-  document.getElementById('s-tec').textContent = TECNICI.length;
-  document.getElementById('s-att').textContent = att.length;
-  document.getElementById('s-s60').textContent = s60.length;
-  document.getElementById('s-sca').textContent = sca.length;
- 
-  renderTeam(); renderScad(); renderMx();
+  CERTS = r1.data || []; CORSI_ASS = r2.data || [];
+  aggiornaStats(); renderCorsi(); renderCert(); renderPercorso();
+  const brands = [...new Set(CORSI_ASS.map(c => c.brand))].sort();
+  const sel = document.getElementById('cf-brand');
+  sel.innerHTML = '<option value="">Tutti i brand</option>' + brands.map(b => `<option value="${b}">${b}</option>`).join('');
 }
  
-// ── UTILS ────────────────────────────────────────────────
-const gg   = d => d ? Math.ceil((new Date(d)-new Date())/864e5) : null;
-const fmt  = d => d ? new Date(d).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
-const ini  = t => ((t.nome||'')[0]||'').toUpperCase() + ((t.cognome||'')[0]||'').toUpperCase();
-const bc   = b => (BRAND_COLORS||{})[b] || '#36CD81';
- 
-// ── RENDER TEAM ──────────────────────────────────────────
-function renderTeam() {
+function aggiornaStats() {
   const oggi = new Date();
-  if (!TECNICI.length) {
-    document.getElementById('team-body').innerHTML =
-      '<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--gray)">Nessun tecnico</td></tr>';
+  const att  = CERTS.filter(c => c.stato==='attiva' && (!c.data_scadenza || new Date(c.data_scadenza) >= oggi));
+  const ins  = att.filter(c => { const g = gg(c.data_scadenza); return g !== null && g >= 0 && g <= 60; });
+  const exp  = CERTS.filter(c => c.data_scadenza && new Date(c.data_scadenza) < oggi);
+  const done = CORSI_ASS.filter(c => c.stato === 'completato').length;
+  document.getElementById('s-att').textContent  = att.length;
+  document.getElementById('s-ins').textContent  = ins.length;
+  document.getElementById('s-exp').textContent  = exp.length;
+  document.getElementById('s-ca').textContent   = CORSI_ASS.length;
+  document.getElementById('s-done').textContent = done;
+  // Progress card
+  const inCorso = CORSI_ASS.filter(c => c.stato === 'in_corso').length;
+  const todo    = CORSI_ASS.filter(c => c.stato === 'da_fare').length;
+  const pct     = CORSI_ASS.length > 0 ? Math.round(done / CORSI_ASS.length * 100) : 0;
+  document.getElementById('prog-card').innerHTML = `
+    <div class="prog-card">
+      <div class="prog-left">
+        <div class="prog-label">Avanzamento formazione ${new Date().getFullYear()}</div>
+        <div class="prog-nums">
+          <div><div class="prog-n" style="color:var(--green)">${done}</div><div class="prog-nl">Completati</div></div>
+          <div><div class="prog-n" style="color:var(--warn)">${inCorso}</div><div class="prog-nl">In corso</div></div>
+          <div><div class="prog-n" style="color:var(--gray)">${todo}</div><div class="prog-nl">Da fare</div></div>
+        </div>
+      </div>
+      <div class="prog-right">
+        <div class="prog-pct">${pct}% completato</div>
+        <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:${pct}%"></div></div>
+      </div>
+    </div>`;
+}
+ 
+/* ── CORSI ── */
+function renderCorsi() {
+  const fs = document.getElementById('cf-stato').value;
+  const fb = document.getElementById('cf-brand').value;
+  const filtered = CORSI_ASS.filter(c => {
+    if (fs && c.stato !== fs) return false;
+    if (fb && c.brand !== fb) return false;
+    return true;
+  });
+  const grid = document.getElementById('corsi-grid');
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty"><div class="empty-icon">◌</div><div class="empty-title">${CORSI_ASS.length ? 'Nessun corso con questi filtri' : 'Nessun corso assegnato ancora'}</div><p style="font-size:.8rem;margin-top:.5rem;color:var(--gray)">L'admin ti assegnerà i corsi da seguire.</p></div>`;
     return;
   }
-  document.getElementById('team-body').innerHTML = TECNICI.map(t => {
-    const certs = CERTS.filter(c => c.tech_id===t.id);
-    const att   = certs.filter(c => c.stato==='attiva' && (!c.data_scadenza || new Date(c.data_scadenza)>=oggi));
-    const pills = certs.map(c => {
-      const g   = gg(c.data_scadenza);
-      const isS = c.data_scadenza && new Date(c.data_scadenza)<oggi;
-      const cls = isS ? 'p-no' : (g!==null && g<=60 ? 'p-wa' : 'p-ok');
-      const doc = c.documento_url
-        ? `<button class="btn-doc" onclick="openLB('${encodeURIComponent(c.documento_url)}','${encodeURIComponent(c.brand+' — '+c.corso)}')">📄</button>`
-        : '';
-      return `<span style="display:inline-flex;align-items:center;gap:2px">
-        <span class="pill ${cls}" style="border-color:${bc(c.brand)}44" title="${c.corso}">${c.brand}</span>${doc}
-      </span>`;
-    }).join('');
-    const pct = Math.min(100, att.length*10);
-    return `<tr>
-      <td><div class="tec-info"><div class="av">${ini(t)}</div><div>
-        <div class="tec-nome">${t.nome} ${t.cognome}</div>
-        <div class="tec-email">${t.email}</div>
-      </div></div></td>
-      <td style="color:var(--gray);font-size:.75rem">${t.ruolo||'—'}</td>
-      <td><div class="pills">${pills||'<span style="font-size:.7rem;color:rgba(255,255,255,.2)">Nessuna</span>'}</div>
-        <div style="font-size:.62rem;color:var(--gray);margin-top:4px">${att.length} attive · ${certs.length} totali</div></td>
-      <td><div style="min-width:100px">
-        <div class="prog-bg"><div class="prog-fill" style="width:${pct}%"></div></div>
-        <div class="prog-lbl">${att.length} cert.</div>
-      </div></td>
-    </tr>`;
+  grid.innerHTML = filtered.map(c => {
+    const col = bc(c.brand); const g = gg(c.scadenza);
+    const scadHtml = c.scadenza ? `<div style="font-size:.65rem;color:${g<0?'var(--danger)':g<=30?'var(--warn)':'var(--gray)'}">Scadenza: ${fmt(c.scadenza)}</div>` : '';
+    return `<div class="corso-card ${csClass(c.stato)}">
+      <div class="cc-brand" style="color:${col}">${c.brand}</div>
+      <div class="cc-nome">${c.corso}</div>
+      <div class="cc-meta">Anno ${c.anno}${scadHtml ? ' · ' : ''}${c.note||''}</div>
+      ${scadHtml}
+      <div class="cc-stato-btns">
+        ${['da_fare','in_corso','completato'].map(s => `
+          <button class="btn-stato ${c.stato===s?'active':''}" onclick="aggiornaStato('${c.id}','${s}')">${csLabel(s)}</button>
+        `).join('')}
+      </div>
+    </div>`;
   }).join('');
 }
  
-// ── RENDER SCADENZE ──────────────────────────────────────
-function switchStab(tab, btn) {
-  stabAttivo = tab;
-  document.querySelectorAll('.stab').forEach(t=>t.classList.remove('active'));
-  btn.classList.add('active');
-  renderScad();
+async function aggiornaStato(id, stato) {
+  const {error} = await sb.from('corsi_assegnati').update({stato}).eq('id', id);
+  if (!error) { await caricaDati(); toast('Stato aggiornato!'); }
+  else toast('Errore: ' + error.message);
 }
  
-function renderScad() {
+/* ── CERTIFICAZIONI ── */
+function renderCert() {
   const oggi = new Date();
-  let lista;
-  if (stabAttivo==='prox') {
-    lista = CERTS.filter(c => c.data_scadenza && gg(c.data_scadenza)>=0 && gg(c.data_scadenza)<=60)
-      .sort((a,b) => new Date(a.data_scadenza)-new Date(b.data_scadenza));
-  } else {
-    lista = CERTS.filter(c => c.stato==='scaduta' || (c.data_scadenza && new Date(c.data_scadenza)<oggi))
-      .sort((a,b) => new Date(b.data_scadenza)-new Date(a.data_scadenza));
-  }
-  const empty = stabAttivo==='prox' ? 'Nessuna scadenza nei prossimi 60 giorni' : 'Nessuna certificazione scaduta';
-  document.getElementById('scad-body').innerHTML = !lista.length
-    ? `<div class="empty"><div class="empty-ic">✓</div><div class="empty-t">${empty}</div></div>`
-    : lista.map(c => {
-        const g   = gg(c.data_scadenza);
-        const t   = TECNICI.find(x=>x.id===c.tech_id);
-        const isS = g!==null && g<0;
-        const cls = (isS||g===0) ? 'u-d' : g<=7 ? 'u-d' : g<=30 ? 'u-w' : 'u-ok';
-        const lbl = isS ? `SCADUTA ${Math.abs(g)}gg fa` : `${g}gg`;
-        const doc = c.documento_url
-          ? `<button class="btn-doc" onclick="openLB('${encodeURIComponent(c.documento_url)}','${encodeURIComponent((t?t.nome+' '+t.cognome:'')+'— '+c.brand)}')">📄 Documento</button>`
-          : '';
-        return `<div class="sitem">
-          <span class="surg ${cls}">${lbl}</span>
-          <div class="sinfo">
-            <div class="s-nome">${t?t.nome+' '+t.cognome:'—'}</div>
-            <div class="s-corso">${c.brand} — ${c.corso}</div>
-          </div>
-          <div class="s-data">${fmt(c.data_scadenza)}</div>
-          ${doc}
-        </div>`;
-      }).join('');
-}
- 
-// ── RENDER MAPPA ─────────────────────────────────────────
-function renderMx() {
-  const oggi  = new Date();
-  const brands = [...new Set(CERTS.map(c=>c.brand))].sort();
-  const el    = document.getElementById('mx-body');
-  if (!brands.length || !TECNICI.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-ic">◌</div><div class="empty-t">Nessuna certificazione ancora</div></div>';
+  const grid = document.getElementById('cert-grid');
+  if (!CERTS.length) {
+    grid.innerHTML = '<div class="empty"><div class="empty-icon">◌</div><div class="empty-title">Nessuna certificazione ancora</div><p style="font-size:.8rem;margin-top:.5rem;color:var(--gray)">Clicca "Aggiungi certificazione" per iniziare.</p></div>';
     return;
   }
-  let h = `<div class="mx-hd"><div class="mhc mhb">Brand</div>${TECNICI.map(t=>`<div class="mhc" title="${t.nome} ${t.cognome}">${ini(t)}</div>`).join('')}</div>`;
-  brands.forEach(b => {
-    h += `<div class="mx-row"><div class="mbrand"><div class="mdot" style="background:${bc(b)}"></div><div class="mname">${b}</div></div>`;
-    TECNICI.forEach(t => {
-      const c = CERTS.find(x=>x.tech_id===t.id && x.brand===b);
-      if (!c) { h += `<div class="mcell"><span class="mb mb-none">—</span></div>`; return; }
-      const g   = gg(c.data_scadenza);
-      const isS = c.data_scadenza && new Date(c.data_scadenza)<oggi;
-      const cls = isS ? 'mb-no' : (g!==null && g<=60 ? 'mb-wa' : 'mb-ok');
-      const lbl = isS ? '✕' : (g!==null && g<=60 ? `${g}gg` : '✓');
-      const docBtn = c.documento_url
-        ? `<br><button class="btn-doc" style="margin-top:3px;font-size:.5rem;padding:2px 5px" onclick="openLB('${encodeURIComponent(c.documento_url)}','${encodeURIComponent(c.brand+' '+t.nome)}')">📄</button>`
-        : '';
-      h += `<div class="mcell" title="${c.corso} — ${fmt(c.data_scadenza)}"><span class="mb ${cls}">${lbl}</span>${docBtn}</div>`;
-    });
-    h += '</div>';
-  });
-  el.innerHTML = h;
+  grid.innerHTML = CERTS.map(c => {
+    const col = bc(c.brand); const g = gg(c.data_scadenza);
+    const isExp = c.data_scadenza && new Date(c.data_scadenza) < oggi;
+    let sbadge = 'stato-attiva', slabel = 'Attiva';
+    if (isExp) { sbadge = 'stato-scaduta'; slabel = 'Scaduta'; }
+    else if (g !== null && g <= 30) { sbadge = 'stato-attenzione'; slabel = `${g}gg`; }
+    else if (g !== null && g <= 60) { sbadge = 'stato-attenzione'; slabel = 'In scadenza'; }
+    let scadHtml = '';
+    if (c.data_scadenza) {
+      const tot = Math.ceil((new Date(c.data_scadenza) - new Date(c.data_conseguimento)) / 86400000);
+      const rim = Math.max(0, g || 0); const pct = Math.min(100, Math.max(0, (rim/tot)*100));
+      const fc = isExp ? 'fill-danger' : g <= 30 ? 'fill-danger' : g <= 60 ? 'fill-warn' : 'fill-ok';
+      const gc = isExp ? 'var(--danger)' : g <= 60 ? 'var(--warn)' : 'var(--gray)';
+      scadHtml = `<div class="cert-scad-bar">
+        <div style="font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gray)">Scadenza</div>
+        <div class="scad-bar-bg"><div class="scad-bar-fill ${fc}" style="width:${pct}%"></div></div>
+        <div style="font-size:.65rem;color:${gc}">${isExp?'Scaduta il':'Scade il'} ${fmt(c.data_scadenza)}${!isExp&&g!==null?` · ${g} giorni`:''}</div>
+      </div>`;
+    }
+    return `<div class="cert-card">
+      <div class="cert-top">
+        <span class="cert-brand-tag" style="color:${col};border-color:${col}44;background:${col}12">${c.brand}</span>
+        <span class="cert-stato-badge ${sbadge}">${slabel}</span>
+      </div>
+      <div class="cert-nome">${c.corso}</div>
+      <div class="cert-meta">Conseguita: ${fmt(c.data_conseguimento)}${c.note?` · ${c.note}`:''}</div>
+      ${scadHtml}
+      <div class="cert-actions">
+        ${c.documento_url ? `<button class="btn-sm" onclick="window.open('${c.documento_url}','_blank')">Documento</button>` : ''}
+        <button class="btn-sm" onclick="editCert('${c.id}')">Modifica</button>
+        <button class="btn-danger-sm" onclick="deleteCert('${c.id}','${c.corso.replace(/'/g,"\\'")}')">Elimina</button>
+      </div>
+    </div>`;
+  }).join('');
 }
  
-// ── NAVIGAZIONE ───────────────────────────────────────────
-function showSec(id, btn) {
-  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('sec-'+id).classList.add('active');
+/* ── PERCORSO ── */
+function renderPercorso() {
+  if (!ME || !COURSES) return;
+  const ruolo = ME.ruolo || '';
+  const corsiRuolo = COURSES.filter(c => c.roles && c.roles.some(r => ruolo.toLowerCase().includes(r.toLowerCase())));
+  const grid = document.getElementById('percorso-grid');
+  if (!corsiRuolo.length) {
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">◌</div><div class="empty-title">Aggiorna il profilo con il tuo ruolo per vedere i corsi consigliati.</div></div>';
+    return;
+  }
+  grid.innerHTML = corsiRuolo.slice(0, 12).map(c => {
+    const col = bc(c.brand); const haCert = CERTS.some(cert => cert.brand === c.brand && cert.corso === (c.nome||c.name));
+    return `<div class="corso-card" style="border-left-color:${haCert?'var(--green)':'transparent'}">
+      <div class="cc-brand" style="color:${col}">${c.brand}</div>
+      <div class="cc-nome">${c.nome||c.name}</div>
+      <div class="cc-meta">${haCert ? '<span style="color:var(--green)">✓ Certificato</span>' : '<span style="color:rgba(255,255,255,.25)">◌ Non ancora conseguito</span>'}</div>
+    </div>`;
+  }).join('');
+}
+ 
+/* ── NAV TABS ── */
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
   btn.classList.add('active');
 }
  
-// ── MODAL ────────────────────────────────────────────────
-function openModal(certId) {
-  editId = certId || null;
-  fileObj = null;
-  clearFile(); hideProgress();
- 
-  // Popola tecnici
-  const selT = document.getElementById('m-tec');
-  selT.innerHTML = '<option value="">Seleziona...</option>';
-  TECNICI.forEach(t => { selT.add(new Option(`${t.nome} ${t.cognome}`, t.id)); });
- 
-  // Popola brand
-  const selB = document.getElementById('m-brand');
-  selB.innerHTML = '<option value="">Seleziona brand...</option>';
-  [...new Set((COURSES||[]).map(c=>c.brand))].sort().forEach(b=>selB.add(new Option(b,b)));
-  document.getElementById('m-corso').innerHTML = '<option value="">Prima seleziona brand...</option>';
- 
-  if (editId) {
-    // Modalità modifica
-    const c = CERTS.find(x=>x.id===editId);
-    document.getElementById('modal-title').textContent = 'Modifica certificazione';
-    document.getElementById('cert-id').value = editId;
-    selT.value = c.tech_id;
-    selB.value = c.brand;
-    fillCorsi();
-    document.getElementById('m-corso').value = c.corso;
-    document.getElementById('m-cons').value  = c.data_conseguimento||'';
-    document.getElementById('m-scad').value  = c.data_scadenza||'';
-    document.getElementById('m-note').value  = c.note||'';
-    if (c.documento_url) {
-      document.getElementById('doc-url-ex').value = c.documento_url;
-      document.getElementById('doc-ex-ic').textContent = /\.pdf/i.test(c.documento_url)?'📄':'🖼️';
-      document.getElementById('doc-ex-wrap').style.display = 'block';
-      document.getElementById('doc-lbl').textContent = 'Sostituisci documento (opzionale)';
-    } else {
-      document.getElementById('doc-ex-wrap').style.display = 'none';
-      document.getElementById('doc-lbl').textContent = 'Documento (PDF, JPG, PNG — max 10 MB)';
-    }
-  } else {
-    document.getElementById('modal-title').textContent = 'Aggiungi certificazione';
-    document.getElementById('cert-id').value = '';
-    document.getElementById('doc-url-ex').value = '';
-    document.getElementById('m-cons').value = new Date().toISOString().split('T')[0];
-    document.getElementById('m-scad').value = '';
-    document.getElementById('m-note').value = '';
-    document.getElementById('doc-ex-wrap').style.display = 'none';
-    document.getElementById('doc-lbl').textContent = 'Documento (PDF, JPG, PNG — max 10 MB)';
-  }
-  document.getElementById('m-err').classList.remove('show');
-  document.getElementById('modal').classList.add('open');
+/* ── MODAL CERT ── */
+function popolaBrand() {
+  const sel = document.getElementById('m-brand');
+  const brands = [...new Set(COURSES.map(c => c.brand))].sort();
+  brands.forEach(b => { const o = document.createElement('option'); o.value=b; o.textContent=b; sel.appendChild(o); });
 }
- 
-function closeModal() { document.getElementById('modal').classList.remove('open'); }
-function removeDocEx() {
-  document.getElementById('doc-url-ex').value = '__REMOVE__';
-  document.getElementById('doc-ex-wrap').style.display = 'none';
-  document.getElementById('doc-lbl').textContent = 'Documento (PDF, JPG, PNG — max 10 MB)';
-}
- 
 function fillCorsi() {
-  const b   = document.getElementById('m-brand').value;
-  const sel = document.getElementById('m-corso');
-  sel.innerHTML = '';
-  if (!b) { sel.add(new Option('Prima seleziona brand...', '')); return; }
-  const corsi = (COURSES||[]).filter(c=>c.brand===b);
-  corsi.forEach(c => sel.add(new Option(c.name, c.name)));
-  if (!corsi.length) sel.add(new Option('Nessun corso disponibile',''));
+  const b = document.getElementById('m-brand').value;
+  document.getElementById('m-corso').innerHTML = !b ? '<option value="">Prima seleziona un brand…</option>'
+    : COURSES.filter(c => c.brand === b).map(c => `<option value="${c.nome||c.name}">${c.nome||c.name}</option>`).join('');
 }
- 
-// FILE
-function onDrop(e) {
-  e.preventDefault();
-  document.getElementById('fzone').classList.remove('over');
-  if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+function openModalCert() {
+  editId = null;
+  document.getElementById('modal-cert-title').textContent = 'Nuova certificazione';
+  document.getElementById('cert-edit-id').value = '';
+  document.getElementById('m-brand').value = '';
+  document.getElementById('m-corso').innerHTML = '<option value="">Prima seleziona un brand…</option>';
+  document.getElementById('m-cons').value = new Date().toISOString().split('T')[0];
+  document.getElementById('m-scad').value = ''; document.getElementById('m-note').value = '';
+  document.getElementById('file-name-display').style.display = 'none'; fileSelezionato = null;
+  document.getElementById('m-err').classList.remove('show');
+  document.getElementById('modal-cert').classList.add('open');
 }
-function onFileChange(inp) { if (inp.files[0]) setFile(inp.files[0]); }
-function setFile(f) {
-  if (f.size>10*1024*1024) { toast('File troppo grande (max 10 MB)'); return; }
-  const ext = f.name.split('.').pop().toLowerCase();
-  if (!['pdf','jpg','jpeg','png'].includes(ext)) { toast('Formato non supportato'); return; }
-  fileObj = f;
-  document.getElementById('fsel-ic').textContent = ext==='pdf'?'📄':'🖼️';
-  document.getElementById('fsel-nm').textContent  = f.name;
-  document.getElementById('fsel').classList.add('show');
+function editCert(id) {
+  const c = CERTS.find(x => x.id === id); if (!c) return;
+  editId = id;
+  document.getElementById('modal-cert-title').textContent = 'Modifica certificazione';
+  document.getElementById('m-brand').value = c.brand; fillCorsi();
+  document.getElementById('m-corso').value = c.corso;
+  document.getElementById('m-cons').value = c.data_conseguimento;
+  document.getElementById('m-scad').value = c.data_scadenza || '';
+  document.getElementById('m-note').value = c.note || '';
+  document.getElementById('modal-cert').classList.add('open');
 }
-function clearFile() {
-  fileObj = null;
-  document.getElementById('fsel').classList.remove('show');
-  const fi = document.getElementById('finput');
-  if (fi) fi.value = '';
-}
-function setProgress(pct,lbl) {
-  document.getElementById('uprog').classList.add('show');
-  document.getElementById('uprog-fill').style.width = pct+'%';
-  document.getElementById('uprog-lbl').textContent = lbl;
-}
-function hideProgress() { document.getElementById('uprog').classList.remove('show'); }
- 
-// SALVA
-async function salva() {
-  const techId = document.getElementById('m-tec').value;
-  const brand  = document.getElementById('m-brand').value;
-  const corso  = document.getElementById('m-corso').value;
-  const cons   = document.getElementById('m-cons').value;
-  const scad   = document.getElementById('m-scad').value;
-  const note   = document.getElementById('m-note').value;
-  const docEx  = document.getElementById('doc-url-ex').value;
-  const errEl  = document.getElementById('m-err');
-  errEl.classList.remove('show');
- 
-  if (!techId||!brand||!corso||!cons) {
-    errEl.textContent = 'Compila tutti i campi obbligatori (*)';
-    errEl.classList.add('show'); return;
+function handleFile(input) {
+  if (input.files && input.files[0]) {
+    fileSelezionato = input.files[0];
+    const d = document.getElementById('file-name-display'); d.textContent = fileSelezionato.name; d.style.display = 'block';
   }
- 
-  const btn = document.getElementById('btn-salva');
-  btn.disabled=true; btn.textContent='Salvataggio…';
- 
+}
+async function salvaCert() {
+  const brand=document.getElementById('m-brand').value, corso=document.getElementById('m-corso').value;
+  const cons=document.getElementById('m-cons').value, scad=document.getElementById('m-scad').value;
+  const note=document.getElementById('m-note').value; const err=document.getElementById('m-err');
+  if (!brand||!corso||!cons) { err.textContent='Compila brand, corso e data conseguimento.'; err.classList.add('show'); return; }
+  const btn=document.getElementById('btn-salva'), txt=document.getElementById('btn-salva-txt'), spin=document.getElementById('btn-spin');
+  btn.disabled=true; txt.style.display='none'; spin.style.display='block'; err.classList.remove('show');
   try {
     let docUrl = null;
-    if (fileObj) {
-      setProgress(20,'Caricamento documento…');
-      const ext  = fileObj.name.split('.').pop().toLowerCase();
-      const path = `admin/${Date.now()}.${ext}`;
-      setProgress(50,'Invio…');
-      const { error: upErr } = await SB.storage.from('certificati').upload(path, fileObj, { upsert: false });
-      if (upErr) throw upErr;
-      setProgress(85,'URL…');
-      const { data: ud } = SB.storage.from('certificati').getPublicUrl(path);
-      docUrl = ud.publicUrl;
-      setProgress(100,'Fatto!');
-      await new Promise(r=>setTimeout(r,400));
-      hideProgress();
+    if (fileSelezionato) {
+      const ext = fileSelezionato.name.split('.').pop();
+      const path = `${ME.id}/${Date.now()}.${ext}`;
+      const {error:ue} = await sb.storage.from('certificati').upload(path, fileSelezionato);
+      if (!ue) { const {data:sd} = await sb.storage.from('certificati').createSignedUrl(path, 60*60*24*365); docUrl = sd?.signedUrl; }
     }
- 
-    const payload = { brand, corso, data_conseguimento:cons, data_scadenza:scad||null, note:note||null };
-    if (docUrl)                    payload.documento_url = docUrl;
-    else if (docEx==='__REMOVE__') payload.documento_url = null;
- 
-    const certId = document.getElementById('cert-id').value;
-    if (certId) {
-      const { error } = await SB.from('certificazioni').update(payload).eq('id', certId);
-      if (error) throw error;
-      toast('Certificazione aggiornata!');
+    if (editId) {
+      await sb.from('certificazioni').update({brand,corso,data_conseguimento:cons,data_scadenza:scad||null,note:note||null,...(docUrl&&{documento_url:docUrl})}).eq('id', editId);
+      toast('Certificazione aggiornata.');
     } else {
-      payload.tech_id = techId;
-      payload.stato   = 'attiva';
-      const { error } = await SB.from('certificazioni').insert(payload);
-      if (error) throw error;
+      await sb.from('certificazioni').insert({tech_id:ME.id,brand,corso,data_conseguimento:cons,data_scadenza:scad||null,documento_url:docUrl,note:note||null,stato:'attiva'});
       toast('Certificazione aggiunta!');
     }
- 
-    closeModal();
-    await load();
-  } catch(err) {
-    console.error(err);
-    hideProgress();
-    errEl.textContent = 'Errore: '+(err.message||'riprova');
-    errEl.classList.add('show');
-  } finally {
-    btn.disabled=false; btn.textContent='Salva certificazione';
-  }
+    closeOverlay('modal-cert'); await caricaDati();
+  } catch(e) { err.textContent='Errore: ' + e.message; err.classList.add('show'); }
+  finally { btn.disabled=false; txt.style.display='block'; spin.style.display='none'; }
+}
+async function deleteCert(id, nome) {
+  if (!confirm(`Eliminare la certificazione "${nome}"?`)) return;
+  const {error} = await sb.from('certificazioni').delete().eq('id', id);
+  if (!error) { toast('Eliminata.'); await caricaDati(); } else toast('Errore.');
 }
  
-// ── LIGHTBOX ─────────────────────────────────────────────
-function openLB(urlEnc, titEnc) {
-  const url = decodeURIComponent(urlEnc);
-  const tit = decodeURIComponent(titEnc||'Documento');
-  lbUrl = url;
-  document.getElementById('lb-title').textContent = tit;
-  const body = document.getElementById('lb-body');
-  const isPdf = /\.pdf($|\?)/i.test(url);
-  body.innerHTML = isPdf
-    ? `<iframe class="lb-pdf" src="${url}"></iframe>`
-    : `<img class="lb-img" src="${url}" alt="doc">`;
-  document.getElementById('lb').classList.add('open');
-  document.body.style.overflow='hidden';
-}
-function closeLB() {
-  document.getElementById('lb').classList.remove('open');
-  document.getElementById('lb-body').innerHTML='';
-  document.body.style.overflow='';
-  lbUrl='';
-}
-function dlDoc() {
-  if (!lbUrl) return;
-  const a=document.createElement('a');
-  a.href=lbUrl; a.download=lbUrl.split('/').pop().split('?')[0]; a.target='_blank'; a.click();
-}
-function extDoc() { if (lbUrl) window.open(lbUrl,'_blank'); }
-document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeLB(); });
- 
-// ── TOAST ────────────────────────────────────────────────
+/* ── HELPERS ── */
+function closeOverlay(id) { document.getElementById(id).classList.remove('open'); }
 function toast(msg) {
-  const el=document.getElementById('toast');
-  document.getElementById('toast-msg').textContent=msg;
-  el.classList.add('show');
-  clearTimeout(el._t);
-  el._t=setTimeout(()=>el.classList.remove('show'),3000);
+  const el=document.getElementById('toast'); document.getElementById('toast-msg').textContent=msg;
+  el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 3000);
 }
 </script>
 </body>
