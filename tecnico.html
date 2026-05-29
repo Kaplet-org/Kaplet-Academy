@@ -260,11 +260,16 @@ const fmt = d => d ? new Date(d).toLocaleDateString('it-IT', {day:'2-digit',mont
 const csClass = s => ({da_fare:'da_fare', in_corso:'in_corso', completato:'completato'}[s] || 'da_fare');
 const csLabel = s => ({da_fare:'Da fare', in_corso:'In corso', completato:'Completato'}[s] || s);
  
-/* ── INIT ── */
+/* ── INIT — MODALITÀ DEBUG: non fa redirect, mostra cosa succede ── */
 (async () => {
+  function debug(msg, color) {
+    document.body.innerHTML = '<div style="color:white;padding:3rem;font-family:monospace;background:#0C0E0D;min-height:100vh;line-height:1.8">'
+      + '<h2 style="color:' + (color||'#36CD81') + ';margin-bottom:1.5rem">DEBUG TECNICO.HTML</h2>'
+      + '<div style="font-size:14px">' + msg + '</div>'
+      + '<a href="login.html" style="display:inline-block;margin-top:2rem;color:#36CD81">← Torna al login</a>'
+      + '</div>';
+  }
   try {
-    // Riprova a leggere la sessione fino a 3 secondi (il token potrebbe
-    // non essere ancora scritto subito dopo il redirect dal login)
     let session = null;
     for (let i = 0; i < 30; i++) {
       const { data } = await sb.auth.getSession();
@@ -272,11 +277,27 @@ const csLabel = s => ({da_fare:'Da fare', in_corso:'In corso', completato:'Compl
       await new Promise(r => setTimeout(r, 100));
     }
  
-    if (!session) { window.location.replace('login.html'); return; }
+    if (!session) {
+      debug('❌ NESSUNA SESSIONE trovata dopo 3 secondi.<br><br>Il login non sta salvando il token.<br>localStorage keys: ' + JSON.stringify(Object.keys(localStorage)), '#f87171');
+      return;
+    }
+ 
+    debug('✅ Sessione OK<br>User ID: ' + session.user.id + '<br>Email: ' + session.user.email + '<br><br>Ora carico i dati dalla tabella tecnici...');
  
     const { data, error } = await sb.from('tecnici').select('*').eq('id', session.user.id).single();
-    if (error || !data) { window.location.replace('login.html'); return; }
-    if (data.is_admin) { window.location.replace('admin.html'); return; }
+ 
+    if (error) {
+      debug('❌ ERRORE query tabella tecnici:<br><br><b>' + error.message + '</b><br><br>Codice: ' + (error.code||'?') + '<br>Dettagli: ' + (error.details||'-') + '<br>Hint: ' + (error.hint||'-'), '#f87171');
+      return;
+    }
+    if (!data) {
+      debug('❌ Query OK ma NESSUN DATO. Il tecnico con questo id non esiste nella tabella.<br>User ID cercato: ' + session.user.id, '#f87171');
+      return;
+    }
+ 
+    debug('✅ Tecnico trovato: ' + data.nome + ' ' + data.cognome + '<br>is_admin: ' + data.is_admin + '<br><br>Tutto OK! Se vedi questo, il problema era il redirect. Rimuovo il debug.');
+ 
+    if (data.is_admin) { debug('Questo utente è ADMIN, dovrebbe andare su admin.html'); return; }
  
     ME = data;
     document.getElementById('nav-nome').textContent = data.nome + ' ' + data.cognome;
@@ -285,8 +306,7 @@ const csLabel = s => ({da_fare:'Da fare', in_corso:'In corso', completato:'Compl
     popolaBrand();
     await caricaDati();
   } catch(e) {
-    console.error('Init error:', e);
-    window.location.replace('login.html');
+    debug('❌ ECCEZIONE: ' + e.message + '<br><br>' + (e.stack||''), '#f87171');
   }
 })();
  
