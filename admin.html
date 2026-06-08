@@ -344,7 +344,7 @@ label.flabel {
     </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Tecnico</th><th>Ruolo</th><th>Certificazioni</th><th>Corsi assegnati</th><th>Avanzamento</th></tr></thead>
+        <thead><tr><th>Tecnico</th><th>Ruolo</th><th>Certificazioni</th><th>Corsi assegnati</th><th>Avanzamento</th><th>Azioni</th></tr></thead>
         <tbody id="team-body"><tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--gray)">Caricamento...</td></tr></tbody>
       </table>
     </div>
@@ -378,7 +378,7 @@ label.flabel {
   <!-- MATRIX -->
   <div class="section" id="section-matrix">
     <div class="section-head"><div class="section-title">Mappa certificazioni per brand</div></div>
-    <p style="font-size:0.75rem;color:var(--gray);margin-bottom:1.5rem;font-weight:300">Verde = attiva · Giallo = in scadenza 60gg · Grigio = assente</p>
+    <p style="font-size:0.75rem;color:var(--gray);margin-bottom:1.5rem;font-weight:300">Per ogni brand, i tecnici certificati. Verde = attiva · Giallo = in scadenza 60gg · Grigio = scaduta</p>
     <div class="mx-wrap" id="matrix-body"></div>
   </div>
 
@@ -533,6 +533,80 @@ label.flabel {
   </div>
 </div>
 
+<!-- MODAL MODIFICA UTENTE -->
+<div class="overlay" id="modal-modifica">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Modifica utente</div>
+      <button class="modal-close" onclick="closeOverlay('modal-modifica')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="mm-id">
+      <div class="fgrid">
+        <div class="fld"><label class="flabel">Nome *</label><input type="text" class="finput" id="mm-nome"></div>
+        <div class="fld"><label class="flabel">Cognome *</label><input type="text" class="finput" id="mm-cognome"></div>
+      </div>
+      <div class="fld"><label class="flabel">Email</label><input type="email" class="finput" id="mm-email" disabled style="opacity:0.5"><div class="fhint">L'email non è modificabile</div></div>
+      <div class="fld"><label class="flabel">Ruolo professionale</label>
+        <select class="fsel" id="mm-ruolo">
+          <option value="">— Nessun ruolo —</option>
+          <optgroup label="Engineer AV">
+            <option value="Engineer AV | Junior">Engineer AV | Junior</option>
+            <option value="Engineer AV | Senior">Engineer AV | Senior</option>
+            <option value="Engineer AV | Specialist">Engineer AV | Specialist</option>
+          </optgroup>
+          <optgroup label="Engineer NET">
+            <option value="Engineer NET | Junior">Engineer NET | Junior</option>
+            <option value="Engineer NET | Senior">Engineer NET | Senior</option>
+            <option value="Engineer NET | Specialist">Engineer NET | Specialist</option>
+          </optgroup>
+          <optgroup label="Engineer SEC">
+            <option value="Engineer SEC | Junior">Engineer SEC | Junior</option>
+            <option value="Engineer SEC | Senior">Engineer SEC | Senior</option>
+            <option value="Engineer SEC | Specialist">Engineer SEC | Specialist</option>
+          </optgroup>
+          <optgroup label="Pre-Sales">
+            <option value="Pre-Sales AV | Junior">Pre-Sales AV | Junior</option>
+            <option value="Pre-Sales AV | Senior">Pre-Sales AV | Senior</option>
+            <option value="Pre-Sales NET | Junior">Pre-Sales NET | Junior</option>
+            <option value="Pre-Sales NET | Senior">Pre-Sales NET | Senior</option>
+            <option value="Pre-Sales SEC | Junior">Pre-Sales SEC | Junior</option>
+            <option value="Pre-Sales SEC | Senior">Pre-Sales SEC | Senior</option>
+          </optgroup>
+          <optgroup label="Altri ruoli">
+            <option value="DOC | Junior">DOC | Junior</option>
+            <option value="DOC | Senior">DOC | Senior</option>
+            <option value="Project Manager | Junior">Project Manager | Junior</option>
+            <option value="Project Manager | Senior">Project Manager | Senior</option>
+            <option value="Field Technician | Junior">Field Technician | Junior</option>
+            <option value="Field Technician | Senior">Field Technician | Senior</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="fld">
+        <label class="flabel">Tipo account *</label>
+        <select class="fsel" id="mm-tipo">
+          <option value="false">Tecnico (vede solo i suoi corsi)</option>
+          <option value="true">Admin (vede e gestisce tutto)</option>
+        </select>
+      </div>
+      <div class="fld">
+        <label class="flabel">Riassegna corsi del ruolo?</label>
+        <select class="fsel" id="mm-riassegna">
+          <option value="no">No, lascia i corsi attuali</option>
+          <option value="si">Sì, assegna i corsi del nuovo ruolo (aggiunge ai presenti)</option>
+        </select>
+        <div class="fhint">Utile se hai cambiato il ruolo</div>
+      </div>
+      <div class="msg error" id="mm-err"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-secondary" onclick="closeOverlay('modal-modifica')">Annulla</button>
+      <button class="btn-primary" id="btn-salva-modifica" onclick="salvaModifica()">Salva modifiche</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/courses.js"></script>
 <script>
@@ -598,7 +672,7 @@ async function load() {
 function renderTeam() {
   const oggi = new Date();
   document.getElementById('team-body').innerHTML = !TECNICI.length
-    ? '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--gray)">Nessun tecnico</td></tr>'
+    ? '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--gray)">Nessun tecnico</td></tr>'
     : TECNICI.map(t => {
         const certs = CERTS.filter(c => c.tech_id === t.id);
         const att   = certs.filter(c => c.stato==='attiva' && (!c.data_scadenza || new Date(c.data_scadenza) >= oggi));
@@ -609,15 +683,23 @@ function renderTeam() {
           return `<span class="pill ${exp?'pill-exp':g!==null&&g<=60?'pill-warn':'pill-ok'}" style="border-color:${bc(c.brand)}44">${c.brand}</span>`;
         }).join('');
         const pct = Math.min(100, att.length * 10);
-        return `<tr>
+        const disattivato = t.attivo === false;
+        return `<tr style="${disattivato ? 'opacity:0.45' : ''}">
           <td><div class="tec-info"><div class="av">${t.nome[0].toUpperCase()}</div>
-            <div><div class="tec-nome">${t.nome} ${t.cognome}</div><div class="tec-email">${t.email}</div></div></div></td>
-          <td><span class="rb ${t.is_admin?'rb-admin':'rb-tec'}">${t.is_admin?'Admin':'Tecnico'}</span></td>
+            <div><div class="tec-nome">${t.nome} ${t.cognome}${disattivato ? ' <span style="font-size:.6rem;color:var(--danger);text-transform:uppercase;letter-spacing:.05em">· disattivato</span>' : ''}</div><div class="tec-email">${t.email}</div></div></div></td>
+          <td><span class="rb ${t.is_admin?'rb-admin':'rb-tec'}">${t.is_admin?'Admin':'Tecnico'}</span>${t.ruolo ? `<div style="font-size:.6rem;color:var(--gray);margin-top:3px">${t.ruolo}</div>` : ''}</td>
           <td><div class="pills">${pills||'<span style="font-size:.7rem;color:rgba(255,255,255,.2)">Nessuna</span>'}</div>
               <div style="font-size:.62rem;color:var(--gray);margin-top:4px">${att.length} attive · ${certs.length} totali</div></td>
           <td><span style="color:var(--green)">${done}</span><span style="color:var(--gray)">/${ca.length}</span></td>
           <td><div style="min-width:80px"><div class="prog-bg"><div class="prog-fill" style="width:${pct}%"></div></div>
               <div class="prog-label">${att.length} cert.</div></div></td>
+          <td><div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn-sm" onclick='openModalModifica(${JSON.stringify(JSON.stringify(t))})'>Modifica</button>
+            ${disattivato
+              ? `<button class="btn-sm" style="border-color:var(--green-border);color:var(--green)" onclick="toggleAttivo('${t.id}',true)">Riattiva</button>`
+              : `<button class="btn-danger-sm" onclick="toggleAttivo('${t.id}',false)">Disattiva</button>`
+            }
+          </div></td>
         </tr>`;
       }).join('');
 }
@@ -680,21 +762,36 @@ function renderScadenze() {
 function renderMatrix() {
   const brands = [...new Set(CERTS.map(c => c.brand))].sort();
   const wrap = document.getElementById('matrix-body');
-  if (!brands.length || !TECNICI.length) {
+  if (!brands.length) {
     wrap.innerHTML = '<div class="empty"><div class="empty-icon">◌</div><div class="empty-title">Nessuna certificazione ancora</div></div>';
     return;
   }
-  let h = `<div class="mx-header"><div class="mh-lbl mh-brand">Brand</div>${TECNICI.map(t => `<div class="mh-lbl" title="${t.nome} ${t.cognome}">${t.nome[0].toUpperCase()}</div>`).join('')}</div>`;
+  let h = '<div style="display:flex;flex-direction:column;gap:1px;background:var(--border)">';
   brands.forEach(b => {
-    h += `<div class="mx-row"><div class="mx-brand-cell"><div class="mdot" style="background:${bc(b)}"></div><div class="mname">${b}</div></div>`;
-    TECNICI.forEach(t => {
-      const c = CERTS.find(x => x.tech_id === t.id && x.brand === b);
-      if (!c) { h += `<div class="mx-cell"><span class="mb mb-none">—</span></div>`; return; }
-      const g = gg(c.data_scadenza); const cls = g !== null && g <= 60 ? 'mb-warn' : 'mb-ok';
-      h += `<div class="mx-cell" title="${c.corso}"><span class="mb ${cls}">${g !== null && g <= 60 ? g+'gg' : '✓'}</span></div>`;
-    });
-    h += '</div>';
+    // Tecnici che hanno la certificazione di questo brand
+    const certB = CERTS.filter(c => c.brand === b);
+    const chips = certB.map(c => {
+      const t = TECNICI.find(x => x.id === c.tech_id);
+      if (!t) return '';
+      const g = gg(c.data_scadenza);
+      const oggi = new Date();
+      const isExp = c.data_scadenza && new Date(c.data_scadenza) < oggi;
+      let cls, label;
+      if (isExp) { cls = 'pill-exp'; label = 'scaduta'; }
+      else if (g !== null && g <= 60) { cls = 'pill-warn'; label = g + 'gg'; }
+      else { cls = 'pill-ok'; label = 'attiva'; }
+      return `<span class="pill ${cls}" title="${c.corso}${c.data_scadenza ? ' · scad. ' + fmt(c.data_scadenza) : ''}">${t.nome} ${t.cognome} · ${label}</span>`;
+    }).join('');
+    h += `<div style="background:var(--card);padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:1.25rem;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:8px;min-width:160px">
+        <div class="mdot" style="background:${bc(b)}"></div>
+        <div class="mname">${b}</div>
+        <span style="font-size:.6rem;color:var(--gray)">${certB.length}</span>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;flex:1">${chips || '<span style="font-size:.7rem;color:rgba(255,255,255,.2)">Nessuno</span>'}</div>
+    </div>`;
   });
+  h += '</div>';
   wrap.innerHTML = h;
 }
 
@@ -872,6 +969,81 @@ async function creaUtente() {
     err.textContent = 'Errore: ' + e.message; err.classList.add('show');
   } finally {
     btn.disabled = false; btn.textContent = 'Crea utente';
+  }
+}
+
+/* ── MODAL MODIFICA UTENTE ── */
+function openModalModifica(tJson) {
+  const t = JSON.parse(tJson);
+  document.getElementById('mm-id').value = t.id;
+  document.getElementById('mm-nome').value = t.nome || '';
+  document.getElementById('mm-cognome').value = t.cognome || '';
+  document.getElementById('mm-email').value = t.email || '';
+  document.getElementById('mm-ruolo').value = t.ruolo || '';
+  document.getElementById('mm-tipo').value = t.is_admin ? 'true' : 'false';
+  document.getElementById('mm-riassegna').value = 'no';
+  document.getElementById('mm-err').classList.remove('show');
+  document.getElementById('modal-modifica').classList.add('open');
+}
+
+async function salvaModifica() {
+  const id      = document.getElementById('mm-id').value;
+  const nome    = document.getElementById('mm-nome').value.trim();
+  const cognome = document.getElementById('mm-cognome').value.trim();
+  const ruolo   = document.getElementById('mm-ruolo').value;
+  const is_admin= document.getElementById('mm-tipo').value === 'true';
+  const riassegna = document.getElementById('mm-riassegna').value === 'si';
+  const err     = document.getElementById('mm-err');
+  const btn     = document.getElementById('btn-salva-modifica');
+  err.classList.remove('show');
+
+  if (!nome || !cognome) {
+    err.textContent = 'Nome e cognome sono obbligatori.'; err.classList.add('show'); return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Salvataggio...';
+  try {
+    const { error } = await sb.from('tecnici')
+      .update({ nome, cognome, ruolo: ruolo || null, is_admin })
+      .eq('id', id);
+    if (error) throw error;
+
+    let msgCorsi = '';
+    if (riassegna && !is_admin && ruolo) {
+      const corsi = getCorsiPerRuolo(ruolo);
+      // evita duplicati: prendi i corsi già assegnati
+      const esistenti = CORSI_ASS.filter(c => c.tech_id === id).map(c => c.corso);
+      const nuovi = corsi.filter(c => !esistenti.includes(c.nome));
+      if (nuovi.length) {
+        const { data: { session } } = await sb.auth.getSession();
+        const anno = new Date().getFullYear();
+        const rows = nuovi.map(c => ({ tech_id: id, brand: c.brand || '—', corso: c.nome, anno, stato: 'da_fare', assegnato_da: session.user.id }));
+        const { error: aErr } = await sb.from('corsi_assegnati').insert(rows);
+        if (!aErr) msgCorsi = ' (+' + nuovi.length + ' corsi)';
+      }
+    }
+
+    closeOverlay('modal-modifica');
+    toast('Utente aggiornato' + msgCorsi + '!');
+    await load();
+  } catch(e) {
+    err.textContent = 'Errore: ' + e.message; err.classList.add('show');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Salva modifiche';
+  }
+}
+
+/* ── ATTIVA/DISATTIVA UTENTE ── */
+async function toggleAttivo(id, nuovoStato) {
+  const azione = nuovoStato ? 'riattivare' : 'disattivare';
+  if (!confirm('Vuoi ' + azione + ' questo utente?' + (nuovoStato ? '' : '\nNon potrà più accedere, ma i suoi dati restano salvati.'))) return;
+  try {
+    const { error } = await sb.from('tecnici').update({ attivo: nuovoStato }).eq('id', id);
+    if (error) throw error;
+    toast(nuovoStato ? 'Utente riattivato!' : 'Utente disattivato.');
+    await load();
+  } catch(e) {
+    toast('Errore: ' + e.message);
   }
 }
 
