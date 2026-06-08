@@ -460,23 +460,24 @@ function renderCert() {
 }
 
 function renderPercorso() {
-  if (!ME || !COURSES) return;
+  if (!ME || typeof COURSES === 'undefined') return;
   const ruolo = ME.ruolo || '';
-  const corsiRuolo = COURSES.filter(c => {
-    if (!c.roles || !Array.isArray(c.roles)) return false;
-    return c.roles.some(r => String(r).toLowerCase().includes(ruolo.toLowerCase()) || ruolo.toLowerCase().includes(String(r).toLowerCase()));
-  });
+  // Usa la funzione del courses.js che mappa ruolo -> path -> corsi
+  const corsiRuolo = (typeof getCorsiPerRuolo === 'function') ? getCorsiPerRuolo(ruolo) : [];
   const grid = document.getElementById('percorso-grid');
   if (!corsiRuolo.length) {
-    grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">◌</div><div class="empty-title">Aggiorna il profilo con il tuo ruolo per vedere i corsi consigliati.</div></div>';
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">◌</div><div class="empty-title">Nessun corso consigliato per questo ruolo.</div><p style="font-size:.8rem;margin-top:.5rem;color:var(--gray)">L\'admin assegna i corsi in base al ruolo.</p></div>';
     return;
   }
-  grid.innerHTML = corsiRuolo.slice(0, 12).map(c => {
-    const col = bc(c.brand); const haCert = CERTS.some(cert => cert.brand === c.brand && cert.corso === (c.nome||c.name));
+  grid.innerHTML = corsiRuolo.map(c => {
+    const col = bc(c.brand); const haCert = CERTS.some(cert => cert.brand === c.brand && cert.corso === c.nome);
+    const url = portalUrl(c.brand);
+    const linkHtml = url ? `<a href="${url}" target="_blank" rel="noopener" style="display:inline-block;margin-top:6px;font-size:.62rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--green);text-decoration:none">Portale ↗</a>` : '';
     return `<div class="corso-card" style="border-left-color:${haCert?'var(--green)':'transparent'}">
       <div class="cc-brand" style="color:${col}">${c.brand}</div>
-      <div class="cc-nome">${c.nome||c.name}</div>
+      <div class="cc-nome">${c.nome}</div>
       <div class="cc-meta">${haCert ? '<span style="color:var(--green)">✓ Certificato</span>' : '<span style="color:rgba(255,255,255,.25)">◌ Non ancora conseguito</span>'}</div>
+      ${linkHtml}
     </div>`;
   }).join('');
 }
