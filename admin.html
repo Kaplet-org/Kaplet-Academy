@@ -480,7 +480,43 @@ label.flabel {
       </div>
       <div class="fld"><label class="flabel">Email aziendale *</label><input type="email" class="finput" id="mu-email" placeholder="mario.rossi@kaplet.it"></div>
       <div class="fld"><label class="flabel">Password temporanea *</label><input type="text" class="finput" id="mu-pass" placeholder="Minimo 8 caratteri"><div class="fhint">L'utente potrà cambiarla con "Password dimenticata"</div></div>
-      <div class="fld"><label class="flabel">Ruolo professionale</label><input type="text" class="finput" id="mu-ruolo" placeholder="Es. Engineer NET | Junior"></div>
+      <div class="fld"><label class="flabel">Ruolo professionale</label>
+        <select class="fsel" id="mu-ruolo">
+          <option value="">— Nessun ruolo (no auto-assegnazione) —</option>
+          <optgroup label="Engineer AV">
+            <option value="Engineer AV | Junior">Engineer AV | Junior</option>
+            <option value="Engineer AV | Senior">Engineer AV | Senior</option>
+            <option value="Engineer AV | Specialist">Engineer AV | Specialist</option>
+          </optgroup>
+          <optgroup label="Engineer NET">
+            <option value="Engineer NET | Junior">Engineer NET | Junior</option>
+            <option value="Engineer NET | Senior">Engineer NET | Senior</option>
+            <option value="Engineer NET | Specialist">Engineer NET | Specialist</option>
+          </optgroup>
+          <optgroup label="Engineer SEC">
+            <option value="Engineer SEC | Junior">Engineer SEC | Junior</option>
+            <option value="Engineer SEC | Senior">Engineer SEC | Senior</option>
+            <option value="Engineer SEC | Specialist">Engineer SEC | Specialist</option>
+          </optgroup>
+          <optgroup label="Pre-Sales">
+            <option value="Pre-Sales AV | Junior">Pre-Sales AV | Junior</option>
+            <option value="Pre-Sales AV | Senior">Pre-Sales AV | Senior</option>
+            <option value="Pre-Sales NET | Junior">Pre-Sales NET | Junior</option>
+            <option value="Pre-Sales NET | Senior">Pre-Sales NET | Senior</option>
+            <option value="Pre-Sales SEC | Junior">Pre-Sales SEC | Junior</option>
+            <option value="Pre-Sales SEC | Senior">Pre-Sales SEC | Senior</option>
+          </optgroup>
+          <optgroup label="Altri ruoli">
+            <option value="DOC | Junior">DOC | Junior</option>
+            <option value="DOC | Senior">DOC | Senior</option>
+            <option value="Project Manager | Junior">Project Manager | Junior</option>
+            <option value="Project Manager | Senior">Project Manager | Senior</option>
+            <option value="Field Technician | Junior">Field Technician | Junior</option>
+            <option value="Field Technician | Senior">Field Technician | Senior</option>
+          </optgroup>
+        </select>
+        <div class="fhint">Assegnando un ruolo, i corsi del relativo path vengono assegnati automaticamente</div>
+      </div>
       <div class="fld">
         <label class="flabel">Tipo account *</label>
         <select class="fsel" id="mu-tipo">
@@ -781,7 +817,7 @@ async function creaUtente() {
   const cognome = document.getElementById('mu-cognome').value.trim();
   const email   = document.getElementById('mu-email').value.trim();
   const password= document.getElementById('mu-pass').value;
-  const ruolo   = document.getElementById('mu-ruolo').value.trim();
+  const ruolo   = document.getElementById('mu-ruolo').value;
   const is_admin= document.getElementById('mu-tipo').value === 'true';
   const err     = document.getElementById('mu-err');
   const btn     = document.getElementById('btn-crea-utente');
@@ -809,8 +845,28 @@ async function creaUtente() {
     const result = await resp.json();
     if (!resp.ok) throw new Error(result.error || 'Errore sconosciuto');
 
+    // AUTO-ASSEGNAZIONE CORSI in base al ruolo (solo per tecnici, non admin)
+    let msgCorsi = '';
+    if (!is_admin && ruolo && result.id) {
+      const corsi = getCorsiPerRuolo(ruolo);
+      if (corsi.length) {
+        const anno = new Date().getFullYear();
+        const rows = corsi.map(c => ({
+          tech_id: result.id,
+          brand: c.brand || '—',
+          corso: c.nome,
+          anno: anno,
+          stato: 'da_fare',
+          assegnato_da: session.user.id
+        }));
+        const { error: assErr } = await sb.from('corsi_assegnati').insert(rows);
+        if (assErr) msgCorsi = ' (ma errore assegnazione corsi: ' + assErr.message + ')';
+        else msgCorsi = ' con ' + corsi.length + ' corsi assegnati';
+      }
+    }
+
     closeOverlay('modal-utente');
-    toast('Utente ' + nome + ' ' + cognome + ' creato!');
+    toast('Utente ' + nome + ' ' + cognome + ' creato' + msgCorsi + '!');
     await load();
   } catch(e) {
     err.textContent = 'Errore: ' + e.message; err.classList.add('show');
