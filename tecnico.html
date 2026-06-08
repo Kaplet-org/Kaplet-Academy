@@ -462,12 +462,12 @@ function renderCert() {
 
 function renderPercorso() {
   if (!ME || typeof COURSES === 'undefined') return;
-  const ruolo = ME.ruolo || '';
-  // Usa la funzione del courses.js che mappa ruolo -> path -> corsi
-  const corsiRuolo = (typeof getCorsiPerRuolo === 'function') ? getCorsiPerRuolo(ruolo) : [];
+  // ME.ruolo contiene i path separati da virgola (es. "core_net,adv_eng_net")
+  const ruoliKeys = (typeof parseRuoli === 'function') ? parseRuoli(ME.ruolo) : [];
+  const corsiRuolo = (typeof getCorsiPerRuoli === 'function') ? getCorsiPerRuoli(ruoliKeys) : [];
   const grid = document.getElementById('percorso-grid');
   if (!corsiRuolo.length) {
-    grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">◌</div><div class="empty-title">Nessun corso consigliato per questo ruolo.</div><p style="font-size:.8rem;margin-top:.5rem;color:var(--gray)">L\'admin assegna i corsi in base al ruolo.</p></div>';
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">◌</div><div class="empty-title">Nessun corso consigliato per il tuo ruolo.</div><p style="font-size:.8rem;margin-top:.5rem;color:var(--gray)">L\'admin assegna i corsi in base al ruolo.</p></div>';
     return;
   }
   grid.innerHTML = corsiRuolo.map(c => {
