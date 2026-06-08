@@ -1,6 +1,6 @@
 // ============================================================
 // KAPLET ACADEMY - Catalogo corsi (auto-generato da Excel)
-// 179 corsi con mappatura per path/ruolo
+// 179 corsi - ogni corso ha i path/ruoli a cui appartiene
 // ============================================================
 
 const COURSES = [
@@ -2056,47 +2056,110 @@ const COURSES = [
   }
 ];
 
-// ============================================================
-// MAPPATURA RUOLO -> PATH
-// Junior = solo Core Path | Senior = Core + Advanced Path
-// ============================================================
-const ROLE_PATHS = {
-  // Engineer AV
-  "engineer av|junior":   ["core_av"],
-  "engineer av|senior":   ["core_av","adv_eng_av"],
-  "engineer av|specialist":["core_av","adv_eng_av","spec_eng_av"],
-  // Engineer NET
-  "engineer net|junior":  ["core_net"],
-  "engineer net|senior":  ["core_net","adv_eng_net"],
-  "engineer net|specialist":["core_net","adv_eng_net","spec_eng_net"],
-  // Engineer SEC
-  "engineer sec|junior":  ["core_sec"],
-  "engineer sec|senior":  ["core_sec","adv_eng_sec"],
-  "engineer sec|specialist":["core_sec","adv_eng_sec","spec_eng_sec"],
-  // Pre-Sales
-  "pre-sales av|junior":  ["core_av"],
-  "pre-sales av|senior":  ["core_av","adv_presales_av"],
-  "pre-sales net|junior": ["core_net"],
-  "pre-sales net|senior": ["core_net","adv_presales_net"],
-  "pre-sales sec|junior": ["core_sec"],
-  "pre-sales sec|senior": ["core_sec","adv_presales_sec"],
-  // DOC
-  "doc|junior":           ["core_doc"],
-  "doc|senior":           ["core_doc","adv_doc"],
-  // Project Manager
-  "project manager|junior": ["adv_pm"],
-  "project manager|senior": ["adv_pm"],
-  // Field Technician
-  "field technician|junior": ["core_field"],
-  "field technician|senior": ["core_field","adv_field"]
-};
+// I 17 ruoli flaggabili (= colonne path del catalogo Excel)
+const RUOLI = [
+  {
+    "key": "core_av",
+    "label": "Core Path - AV",
+    "gruppo": "Core Path"
+  },
+  {
+    "key": "core_net",
+    "label": "Core Path - NET",
+    "gruppo": "Core Path"
+  },
+  {
+    "key": "core_sec",
+    "label": "Core Path - SEC",
+    "gruppo": "Core Path"
+  },
+  {
+    "key": "core_doc",
+    "label": "Core Path - DOC",
+    "gruppo": "Core Path"
+  },
+  {
+    "key": "core_field",
+    "label": "Core Path - Field Technician",
+    "gruppo": "Core Path"
+  },
+  {
+    "key": "adv_presales_av",
+    "label": "Advanced Path - Pre-Sales AV",
+    "gruppo": "Advanced Path"
+  },
+  {
+    "key": "adv_presales_net",
+    "label": "Advanced Path - Pre-Sales NET",
+    "gruppo": "Advanced Path"
+  },
+  {
+    "key": "adv_presales_sec",
+    "label": "Advanced Path - Pre-Sales SEC",
+    "gruppo": "Advanced Path"
+  },
+  {
+    "key": "adv_eng_av",
+    "label": "Advanced Path - Engineer AV",
+    "gruppo": "Advanced Path"
+  },
+  {
+    "key": "adv_eng_net",
+    "label": "Advanced Path - Engineer NET",
+    "gruppo": "Advanced Path"
+  },
+  {
+    "key": "adv_eng_sec",
+    "label": "Advanced Path - Engineer SEC",
+    "gruppo": "Advanced Path"
+  },
+  {
+    "key": "adv_doc",
+    "label": "Advanced Path - DOC",
+    "gruppo": "Advanced Path"
+  },
+  {
+    "key": "adv_pm",
+    "label": "Advanced Path - Project Manager",
+    "gruppo": "Advanced Path"
+  },
+  {
+    "key": "adv_field",
+    "label": "Advanced Path - Field Technician",
+    "gruppo": "Advanced Path"
+  },
+  {
+    "key": "spec_eng_av",
+    "label": "Specialist Path - Engineer AV",
+    "gruppo": "Specialist Path"
+  },
+  {
+    "key": "spec_eng_net",
+    "label": "Specialist Path - Engineer NET",
+    "gruppo": "Specialist Path"
+  },
+  {
+    "key": "spec_eng_sec",
+    "label": "Specialist Path - Engineer SEC",
+    "gruppo": "Specialist Path"
+  }
+];
 
-// Restituisce i corsi assegnati a un ruolo (stringa tipo "Engineer NET | Junior")
-function getCorsiPerRuolo(ruolo) {
-  if (!ruolo) return [];
-  // normalizza: "Engineer NET | Junior" -> "engineer net|junior"
-  const key = ruolo.toLowerCase().replace(/\s*\|\s*/g, '|').replace(/\s+/g,' ').trim();
-  const paths = ROLE_PATHS[key] || [];
-  if (!paths.length) return [];
-  return COURSES.filter(c => c.paths.some(p => paths.includes(p)));
+// Restituisce tutti i corsi appartenenti a una lista di path/ruoli selezionati
+// pathKeys: array di chiavi ruolo, es. ["core_net","adv_eng_net"]
+function getCorsiPerRuoli(pathKeys) {
+  if (!pathKeys || !pathKeys.length) return [];
+  return COURSES.filter(c => c.paths.some(p => pathKeys.includes(p)));
+}
+
+// Compat: accetta anche una stringa con path separati da virgola (come salvato in DB)
+function parseRuoli(ruoloStr) {
+  if (!ruoloStr) return [];
+  return ruoloStr.split(',').map(s => s.trim()).filter(Boolean);
+}
+
+// Etichetta leggibile da una chiave path
+function labelRuolo(key) {
+  const r = RUOLI.find(x => x.key === key);
+  return r ? r.label : key;
 }
