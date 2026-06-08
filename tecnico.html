@@ -136,11 +136,11 @@ label.flabel { display: block; font-size: 0.6rem; font-weight: 400; letter-spaci
 </style>
 </head>
 <body>
- 
+
 <div class="bg-lines">
   <div class="bg-line"></div><div class="bg-line"></div><div class="bg-line"></div>
 </div>
- 
+
 <nav>
   <a class="nav-logo" href="index.html"><span>·</span>KAPLET Academy</a>
   <div class="nav-center">
@@ -153,7 +153,7 @@ label.flabel { display: block; font-size: 0.6rem; font-weight: 400; letter-spaci
     <button class="btn-nav" onclick="doLogout()">Esci</button>
   </div>
 </nav>
- 
+
 <div class="hero">
   <div class="hero-inner">
     <div class="hero-label">La mia area personale</div>
@@ -168,7 +168,7 @@ label.flabel { display: block; font-size: 0.6rem; font-weight: 400; letter-spaci
     </div>
   </div>
 </div>
- 
+
 <div class="main">
   <div class="section active" id="tab-corsi">
     <div id="prog-card"></div>
@@ -185,7 +185,7 @@ label.flabel { display: block; font-size: 0.6rem; font-weight: 400; letter-spaci
       <div class="empty"><div class="empty-icon">◌</div><div class="empty-title">Caricamento...</div></div>
     </div>
   </div>
- 
+
   <div class="section" id="tab-cert">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
       <div class="section-title" style="margin:0">Le mie certificazioni</div>
@@ -198,7 +198,7 @@ label.flabel { display: block; font-size: 0.6rem; font-weight: 400; letter-spaci
       <div class="empty"><div class="empty-icon">◌</div><div class="empty-title">Caricamento...</div></div>
     </div>
   </div>
- 
+
   <div class="section" id="tab-percorso">
     <div class="section-title">Corsi consigliati per il tuo ruolo</div>
     <div class="corsi-grid" id="percorso-grid">
@@ -206,9 +206,9 @@ label.flabel { display: block; font-size: 0.6rem; font-weight: 400; letter-spaci
     </div>
   </div>
 </div>
- 
+
 <div class="toast" id="toast"><div class="toast-dot"></div><span id="toast-msg"></span></div>
- 
+
 <div class="overlay" id="modal-cert">
   <div class="modal">
     <div class="modal-head">
@@ -243,19 +243,19 @@ label.flabel { display: block; font-size: 0.6rem; font-weight: 400; letter-spaci
     </div>
   </div>
 </div>
- 
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/courses.js"></script>
 <script>
 const SUPA_URL = 'https://mcgerrvorboagkukzuzc.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jZ2VycnZvcmJvYWdrdWt6dXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NjEyNzIsImV4cCI6MjA5MzQzNzI3Mn0.eDHZ-QUQLM2tFU4KPDEiIqXZsdfk_Cxnz7Ywxt6T46o';
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
- 
+
 let ME = null, CERTS = [], CORSI_ASS = [], fileSelezionato = null, editId = null;
- 
+
 const BC = {"AVIXA":"#F59E0B","DANTE":"#EF4444","NDI":"#38BDF8","AXIS":"#4ADE80","FORTINET":"#F87171","CISCO":"#22D3EE","CRESTRON":"#4ADE80","BARCO CTRL":"#FB923C","BARCO VIDEO":"#FBBF24","NOVASTAR":"#C084FC","MILESTONE":"#F472B6","ALTA ACCESS":"#38BDF8","ALTA VIDEO":"#60A5FA","AVIGILON UNITY":"#818CF8","SHURE":"#A78BFA","Q-SYS":"#F87171","YAMAHA":"#FCD34D","POWERSOFT":"#34D399","TELEVIC":"#A78BFA","EXTRON":"#F87171","K-ARRAY":"#4ADE80","K-SCAPE":"#34D399","BRIGHTSIGN":"#60A5FA","ELMO":"#FCA5A1","KSENIA":"#C084FC","NOTIFIER":"#FB923C","TECNOFIRE":"#F87171","KNX & DALI":"#818CF8","MAXHUB":"#38BDF8"};
 const bc  = b => BC[b?.toUpperCase()] || '#36CD81';
- 
+
 // Mappa portali formativi ufficiali per brand
 const PORTAL = {
   "AVIXA":"https://www.avixa.org/training",
@@ -293,7 +293,7 @@ const gg  = d => d ? Math.ceil((new Date(d) - new Date()) / 86400000) : null;
 const fmt = d => d ? new Date(d).toLocaleDateString('it-IT', {day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
 const csClass = s => ({da_fare:'da_fare', in_corso:'in_corso', completato:'completato'}[s] || 'da_fare');
 const csLabel = s => ({da_fare:'Da fare', in_corso:'In corso', completato:'Completato'}[s] || s);
- 
+
 /* ── INIT ── */
 (async () => {
   try {
@@ -303,13 +303,13 @@ const csLabel = s => ({da_fare:'Da fare', in_corso:'In corso', completato:'Compl
       if (data && data.session) { session = data.session; break; }
       await new Promise(r => setTimeout(r, 100));
     }
- 
+
     if (!session) { window.location.replace('login.html'); return; }
- 
+
     const { data, error } = await sb.from('tecnici').select('*').eq('id', session.user.id).single();
     if (error || !data) { window.location.replace('login.html'); return; }
     if (data.is_admin) { window.location.replace('admin.html'); return; }
- 
+
     ME = data;
     const elNome = document.getElementById('nav-nome');
     const elHero = document.getElementById('hero-nome');
@@ -326,14 +326,14 @@ const csLabel = s => ({da_fare:'Da fare', in_corso:'In corso', completato:'Compl
     if (grid) grid.innerHTML = '<div class="empty"><div class="empty-icon">⚠</div><div class="empty-title">Errore di caricamento</div><p style="font-size:.8rem;margin-top:.5rem;color:var(--gray)">' + e.message + '</p></div>';
   }
 })();
- 
+
 async function doLogout() {
   try { await sb.auth.signOut(); } catch(e) {}
   localStorage.clear();
   sessionStorage.clear();
   window.location.replace('login.html');
 }
- 
+
 async function caricaDati() {
   const [r1, r2] = await Promise.all([
     sb.from('certificazioni').select('*').eq('tech_id', ME.id).order('data_conseguimento', {ascending:false}),
@@ -345,7 +345,7 @@ async function caricaDati() {
   const sel = document.getElementById('cf-brand');
   sel.innerHTML = '<option value="">Tutti i brand</option>' + brands.map(b => `<option value="${b}">${b}</option>`).join('');
 }
- 
+
 function aggiornaStats() {
   const oggi = new Date();
   const att  = CERTS.filter(c => c.stato==='attiva' && (!c.data_scadenza || new Date(c.data_scadenza) >= oggi));
@@ -376,7 +376,7 @@ function aggiornaStats() {
       </div>
     </div>`;
 }
- 
+
 function renderCorsi() {
   const fs = document.getElementById('cf-stato').value;
   const fb = document.getElementById('cf-brand').value;
@@ -409,13 +409,13 @@ function renderCorsi() {
     </div>`;
   }).join('');
 }
- 
+
 async function aggiornaStato(id, stato) {
   const {error} = await sb.from('corsi_assegnati').update({stato}).eq('id', id);
   if (!error) { await caricaDati(); toast('Stato aggiornato!'); }
   else toast('Errore: ' + error.message);
 }
- 
+
 function renderCert() {
   const oggi = new Date();
   const grid = document.getElementById('cert-grid');
@@ -458,11 +458,14 @@ function renderCert() {
     </div>`;
   }).join('');
 }
- 
+
 function renderPercorso() {
   if (!ME || !COURSES) return;
   const ruolo = ME.ruolo || '';
-  const corsiRuolo = COURSES.filter(c => c.roles && c.roles.some(r => ruolo.toLowerCase().includes(r.toLowerCase())));
+  const corsiRuolo = COURSES.filter(c => {
+    if (!c.roles || !Array.isArray(c.roles)) return false;
+    return c.roles.some(r => String(r).toLowerCase().includes(ruolo.toLowerCase()) || ruolo.toLowerCase().includes(String(r).toLowerCase()));
+  });
   const grid = document.getElementById('percorso-grid');
   if (!corsiRuolo.length) {
     grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">◌</div><div class="empty-title">Aggiorna il profilo con il tuo ruolo per vedere i corsi consigliati.</div></div>';
@@ -477,26 +480,26 @@ function renderPercorso() {
     </div>`;
   }).join('');
 }
- 
+
 function showTab(id, btn) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-' + id).classList.add('active');
   btn.classList.add('active');
 }
- 
+
 function popolaBrand() {
   const sel = document.getElementById('m-brand');
   const brands = [...new Set(COURSES.map(c => c.brand))].sort();
   brands.forEach(b => { const o = document.createElement('option'); o.value=b; o.textContent=b; sel.appendChild(o); });
 }
- 
+
 function fillCorsi() {
   const b = document.getElementById('m-brand').value;
   document.getElementById('m-corso').innerHTML = !b ? '<option value="">Prima seleziona un brand…</option>'
     : COURSES.filter(c => c.brand === b).map(c => `<option value="${c.nome||c.name}">${c.nome||c.name}</option>`).join('');
 }
- 
+
 function openModalCert() {
   editId = null;
   document.getElementById('modal-cert-title').textContent = 'Nuova certificazione';
@@ -509,7 +512,7 @@ function openModalCert() {
   document.getElementById('m-err').classList.remove('show');
   document.getElementById('modal-cert').classList.add('open');
 }
- 
+
 function editCert(id) {
   const c = CERTS.find(x => x.id === id); if (!c) return;
   editId = id;
@@ -521,14 +524,14 @@ function editCert(id) {
   document.getElementById('m-note').value = c.note || '';
   document.getElementById('modal-cert').classList.add('open');
 }
- 
+
 function handleFile(input) {
   if (input.files && input.files[0]) {
     fileSelezionato = input.files[0];
     const d = document.getElementById('file-name-display'); d.textContent = fileSelezionato.name; d.style.display = 'block';
   }
 }
- 
+
 async function salvaCert() {
   const brand=document.getElementById('m-brand').value, corso=document.getElementById('m-corso').value;
   const cons=document.getElementById('m-cons').value, scad=document.getElementById('m-scad').value;
@@ -555,15 +558,15 @@ async function salvaCert() {
   } catch(e) { err.textContent='Errore: ' + e.message; err.classList.add('show'); }
   finally { btn.disabled=false; txt.style.display='block'; spin.style.display='none'; }
 }
- 
+
 async function deleteCert(id, nome) {
   if (!confirm(`Eliminare la certificazione "${nome}"?`)) return;
   const {error} = await sb.from('certificazioni').delete().eq('id', id);
   if (!error) { toast('Eliminata.'); await caricaDati(); } else toast('Errore.');
 }
- 
+
 function closeOverlay(id) { document.getElementById(id).classList.remove('open'); }
- 
+
 function toast(msg) {
   const el=document.getElementById('toast'); document.getElementById('toast-msg').textContent=msg;
   el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 3000);
@@ -571,4 +574,3 @@ function toast(msg) {
 </script>
 </body>
 </html>
- 
