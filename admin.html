@@ -156,6 +156,17 @@ tr:hover td { background: var(--card2); }
 .rb-admin  { color: var(--green); border-color: var(--green-border); background: var(--green-dim); }
 .rb-tec    { color: var(--gray); border-color: var(--border); }
 
+/* RUOLI CHECKBOX BOX */
+.ruoli-box { display:flex; flex-direction:column; gap:1px; background:var(--border); max-height:260px; overflow-y:auto; }
+.ruoli-grp-label { font-size:.58rem; letter-spacing:.1em; text-transform:uppercase; color:var(--green); padding:8px 12px 4px; background:var(--card2); }
+.ruolo-item { background:var(--card); padding:8px 12px; display:flex; align-items:center; gap:10px; cursor:pointer; transition:background .12s; }
+.ruolo-item:hover { background:var(--card2); }
+.ruolo-item.sel { background:rgba(54,205,129,0.06); }
+.ruolo-cb { width:15px; height:15px; border:1px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--black); }
+.ruolo-item.sel .ruolo-cb { background:var(--green); border-color:var(--green); }
+.ruolo-txt { font-size:.78rem; font-weight:300; color:var(--white); flex:1; }
+.ruolo-cnt { font-size:.6rem; color:var(--gray); }
+
 /* PILLS BRAND */
 .pills { display: flex; flex-wrap: wrap; gap: 4px; }
 .pill { font-size: 0.56rem; font-weight: 400; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 7px; border: 1px solid; }
@@ -480,42 +491,9 @@ label.flabel {
       </div>
       <div class="fld"><label class="flabel">Email aziendale *</label><input type="email" class="finput" id="mu-email" placeholder="mario.rossi@kaplet.it"></div>
       <div class="fld"><label class="flabel">Password temporanea *</label><input type="text" class="finput" id="mu-pass" placeholder="Minimo 8 caratteri"><div class="fhint">L'utente potrà cambiarla con "Password dimenticata"</div></div>
-      <div class="fld"><label class="flabel">Ruolo professionale</label>
-        <select class="fsel" id="mu-ruolo">
-          <option value="">— Nessun ruolo (no auto-assegnazione) —</option>
-          <optgroup label="Engineer AV">
-            <option value="Engineer AV | Junior">Engineer AV | Junior</option>
-            <option value="Engineer AV | Senior">Engineer AV | Senior</option>
-            <option value="Engineer AV | Specialist">Engineer AV | Specialist</option>
-          </optgroup>
-          <optgroup label="Engineer NET">
-            <option value="Engineer NET | Junior">Engineer NET | Junior</option>
-            <option value="Engineer NET | Senior">Engineer NET | Senior</option>
-            <option value="Engineer NET | Specialist">Engineer NET | Specialist</option>
-          </optgroup>
-          <optgroup label="Engineer SEC">
-            <option value="Engineer SEC | Junior">Engineer SEC | Junior</option>
-            <option value="Engineer SEC | Senior">Engineer SEC | Senior</option>
-            <option value="Engineer SEC | Specialist">Engineer SEC | Specialist</option>
-          </optgroup>
-          <optgroup label="Pre-Sales">
-            <option value="Pre-Sales AV | Junior">Pre-Sales AV | Junior</option>
-            <option value="Pre-Sales AV | Senior">Pre-Sales AV | Senior</option>
-            <option value="Pre-Sales NET | Junior">Pre-Sales NET | Junior</option>
-            <option value="Pre-Sales NET | Senior">Pre-Sales NET | Senior</option>
-            <option value="Pre-Sales SEC | Junior">Pre-Sales SEC | Junior</option>
-            <option value="Pre-Sales SEC | Senior">Pre-Sales SEC | Senior</option>
-          </optgroup>
-          <optgroup label="Altri ruoli">
-            <option value="DOC | Junior">DOC | Junior</option>
-            <option value="DOC | Senior">DOC | Senior</option>
-            <option value="Project Manager | Junior">Project Manager | Junior</option>
-            <option value="Project Manager | Senior">Project Manager | Senior</option>
-            <option value="Field Technician | Junior">Field Technician | Junior</option>
-            <option value="Field Technician | Senior">Field Technician | Senior</option>
-          </optgroup>
-        </select>
-        <div class="fhint">Assegnando un ruolo, i corsi del relativo path vengono assegnati automaticamente</div>
+      <div class="fld"><label class="flabel">Ruoli (path formativi)</label>
+        <div class="fhint" style="margin-bottom:8px">Seleziona uno o più ruoli — i corsi si assegnano automaticamente</div>
+        <div id="mu-ruoli" class="ruoli-box"></div>
       </div>
       <div class="fld">
         <label class="flabel">Tipo account *</label>
@@ -547,41 +525,9 @@ label.flabel {
         <div class="fld"><label class="flabel">Cognome *</label><input type="text" class="finput" id="mm-cognome"></div>
       </div>
       <div class="fld"><label class="flabel">Email</label><input type="email" class="finput" id="mm-email" disabled style="opacity:0.5"><div class="fhint">L'email non è modificabile</div></div>
-      <div class="fld"><label class="flabel">Ruolo professionale</label>
-        <select class="fsel" id="mm-ruolo">
-          <option value="">— Nessun ruolo —</option>
-          <optgroup label="Engineer AV">
-            <option value="Engineer AV | Junior">Engineer AV | Junior</option>
-            <option value="Engineer AV | Senior">Engineer AV | Senior</option>
-            <option value="Engineer AV | Specialist">Engineer AV | Specialist</option>
-          </optgroup>
-          <optgroup label="Engineer NET">
-            <option value="Engineer NET | Junior">Engineer NET | Junior</option>
-            <option value="Engineer NET | Senior">Engineer NET | Senior</option>
-            <option value="Engineer NET | Specialist">Engineer NET | Specialist</option>
-          </optgroup>
-          <optgroup label="Engineer SEC">
-            <option value="Engineer SEC | Junior">Engineer SEC | Junior</option>
-            <option value="Engineer SEC | Senior">Engineer SEC | Senior</option>
-            <option value="Engineer SEC | Specialist">Engineer SEC | Specialist</option>
-          </optgroup>
-          <optgroup label="Pre-Sales">
-            <option value="Pre-Sales AV | Junior">Pre-Sales AV | Junior</option>
-            <option value="Pre-Sales AV | Senior">Pre-Sales AV | Senior</option>
-            <option value="Pre-Sales NET | Junior">Pre-Sales NET | Junior</option>
-            <option value="Pre-Sales NET | Senior">Pre-Sales NET | Senior</option>
-            <option value="Pre-Sales SEC | Junior">Pre-Sales SEC | Junior</option>
-            <option value="Pre-Sales SEC | Senior">Pre-Sales SEC | Senior</option>
-          </optgroup>
-          <optgroup label="Altri ruoli">
-            <option value="DOC | Junior">DOC | Junior</option>
-            <option value="DOC | Senior">DOC | Senior</option>
-            <option value="Project Manager | Junior">Project Manager | Junior</option>
-            <option value="Project Manager | Senior">Project Manager | Senior</option>
-            <option value="Field Technician | Junior">Field Technician | Junior</option>
-            <option value="Field Technician | Senior">Field Technician | Senior</option>
-          </optgroup>
-        </select>
+      <div class="fld"><label class="flabel">Ruoli (path formativi)</label>
+        <div class="fhint" style="margin-bottom:8px">Seleziona uno o più ruoli</div>
+        <div id="mm-ruoli" class="ruoli-box"></div>
       </div>
       <div class="fld">
         <label class="flabel">Tipo account *</label>
@@ -591,12 +537,12 @@ label.flabel {
         </select>
       </div>
       <div class="fld">
-        <label class="flabel">Riassegna corsi del ruolo?</label>
+        <label class="flabel">Assegna corsi dei ruoli selezionati?</label>
         <select class="fsel" id="mm-riassegna">
           <option value="no">No, lascia i corsi attuali</option>
-          <option value="si">Sì, assegna i corsi del nuovo ruolo (aggiunge ai presenti)</option>
+          <option value="si">Sì, aggiungi i corsi dei ruoli flaggati (senza duplicati)</option>
         </select>
-        <div class="fhint">Utile se hai cambiato il ruolo</div>
+        <div class="fhint">Utile se hai aggiunto o cambiato i ruoli</div>
       </div>
       <div class="msg error" id="mm-err"></div>
     </div>
@@ -898,13 +844,42 @@ async function rimuoviCorso(id) {
 
 /* ── HELPERS ── */
 /* ── MODAL AGGIUNGI UTENTE ── */
+// Costruisce la lista checkbox dei ruoli dentro un contenitore
+function buildRuoliBox(containerId, selezionati) {
+  selezionati = selezionati || [];
+  // conta corsi per ruolo
+  const cont = document.getElementById(containerId);
+  let lastGrp = '';
+  let html = '';
+  RUOLI.forEach(r => {
+    if (r.gruppo !== lastGrp) { html += `<div class="ruoli-grp-label">${r.gruppo}</div>`; lastGrp = r.gruppo; }
+    const n = COURSES.filter(c => c.paths.includes(r.key)).length;
+    const sel = selezionati.includes(r.key);
+    html += `<div class="ruolo-item ${sel?'sel':''}" data-key="${r.key}" onclick="toggleRuolo(this)">
+      <div class="ruolo-cb">${sel?'✓':''}</div>
+      <div class="ruolo-txt">${r.label}</div>
+      <div class="ruolo-cnt">${n} corsi</div>
+    </div>`;
+  });
+  cont.innerHTML = html;
+}
+
+function toggleRuolo(el) {
+  const sel = el.classList.toggle('sel');
+  el.querySelector('.ruolo-cb').textContent = sel ? '✓' : '';
+}
+
+function getRuoliSelezionati(containerId) {
+  return [...document.querySelectorAll('#' + containerId + ' .ruolo-item.sel')].map(el => el.dataset.key);
+}
+
 function openModalUtente() {
   document.getElementById('mu-nome').value = '';
   document.getElementById('mu-cognome').value = '';
   document.getElementById('mu-email').value = '';
   document.getElementById('mu-pass').value = '';
-  document.getElementById('mu-ruolo').value = '';
   document.getElementById('mu-tipo').value = 'false';
+  buildRuoliBox('mu-ruoli', []);
   document.getElementById('mu-err').classList.remove('show');
   document.getElementById('modal-utente').classList.add('open');
 }
@@ -914,7 +889,8 @@ async function creaUtente() {
   const cognome = document.getElementById('mu-cognome').value.trim();
   const email   = document.getElementById('mu-email').value.trim();
   const password= document.getElementById('mu-pass').value;
-  const ruolo   = document.getElementById('mu-ruolo').value;
+  const ruoliSel= getRuoliSelezionati('mu-ruoli');
+  const ruolo   = ruoliSel.join(',');  // salva i path separati da virgola
   const is_admin= document.getElementById('mu-tipo').value === 'true';
   const err     = document.getElementById('mu-err');
   const btn     = document.getElementById('btn-crea-utente');
@@ -942,19 +918,15 @@ async function creaUtente() {
     const result = await resp.json();
     if (!resp.ok) throw new Error(result.error || 'Errore sconosciuto');
 
-    // AUTO-ASSEGNAZIONE CORSI in base al ruolo (solo per tecnici, non admin)
+    // AUTO-ASSEGNAZIONE CORSI in base ai ruoli flaggati (solo tecnici)
     let msgCorsi = '';
-    if (!is_admin && ruolo && result.id) {
-      const corsi = getCorsiPerRuolo(ruolo);
+    if (!is_admin && ruoliSel.length && result.id) {
+      const corsi = getCorsiPerRuoli(ruoliSel);
       if (corsi.length) {
         const anno = new Date().getFullYear();
         const rows = corsi.map(c => ({
-          tech_id: result.id,
-          brand: c.brand || '—',
-          corso: c.nome,
-          anno: anno,
-          stato: 'da_fare',
-          assegnato_da: session.user.id
+          tech_id: result.id, brand: c.brand || '—', corso: c.nome,
+          anno: anno, stato: 'da_fare', assegnato_da: session.user.id
         }));
         const { error: assErr } = await sb.from('corsi_assegnati').insert(rows);
         if (assErr) msgCorsi = ' (ma errore assegnazione corsi: ' + assErr.message + ')';
@@ -979,9 +951,9 @@ function openModalModifica(tJson) {
   document.getElementById('mm-nome').value = t.nome || '';
   document.getElementById('mm-cognome').value = t.cognome || '';
   document.getElementById('mm-email').value = t.email || '';
-  document.getElementById('mm-ruolo').value = t.ruolo || '';
   document.getElementById('mm-tipo').value = t.is_admin ? 'true' : 'false';
   document.getElementById('mm-riassegna').value = 'no';
+  buildRuoliBox('mm-ruoli', parseRuoli(t.ruolo));
   document.getElementById('mm-err').classList.remove('show');
   document.getElementById('modal-modifica').classList.add('open');
 }
@@ -990,7 +962,8 @@ async function salvaModifica() {
   const id      = document.getElementById('mm-id').value;
   const nome    = document.getElementById('mm-nome').value.trim();
   const cognome = document.getElementById('mm-cognome').value.trim();
-  const ruolo   = document.getElementById('mm-ruolo').value;
+  const ruoliSel= getRuoliSelezionati('mm-ruoli');
+  const ruolo   = ruoliSel.join(',');
   const is_admin= document.getElementById('mm-tipo').value === 'true';
   const riassegna = document.getElementById('mm-riassegna').value === 'si';
   const err     = document.getElementById('mm-err');
@@ -1009,9 +982,8 @@ async function salvaModifica() {
     if (error) throw error;
 
     let msgCorsi = '';
-    if (riassegna && !is_admin && ruolo) {
-      const corsi = getCorsiPerRuolo(ruolo);
-      // evita duplicati: prendi i corsi già assegnati
+    if (riassegna && !is_admin && ruoliSel.length) {
+      const corsi = getCorsiPerRuoli(ruoliSel);
       const esistenti = CORSI_ASS.filter(c => c.tech_id === id).map(c => c.corso);
       const nuovi = corsi.filter(c => !esistenti.includes(c.nome));
       if (nuovi.length) {
