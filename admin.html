@@ -23,7 +23,7 @@
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: var(--font); background: var(--black); color: var(--white); min-height: 100vh; -webkit-font-smoothing: antialiased; }
- 
+
 /* NAV — identico allo stile login */
 nav {
   position: sticky; top: 0; z-index: 100;
@@ -56,7 +56,7 @@ nav {
   cursor: pointer; transition: all 0.2s; border-radius: 0;
 }
 .btn-nav:hover { border-color: rgba(255,255,255,0.3); color: var(--white); }
- 
+
 /* HERO */
 .hero {
   padding: 3rem 2.5rem 2rem;
@@ -71,7 +71,7 @@ nav {
 .hero-label::before { content: ''; display: block; width: 20px; height: 1px; background: var(--green); }
 .hero h1 { font-size: 2rem; font-weight: 200; letter-spacing: -0.02em; margin-bottom: 0.4rem; }
 .hero-sub { font-size: 0.82rem; font-weight: 300; color: var(--gray); }
- 
+
 /* STATS — identici alla struttura login */
 .stats-row { display: flex; gap: 0; margin-top: 2rem; border-top: 1px solid var(--border); }
 .stat { flex: 1; padding: 1.5rem 1.5rem 1rem 0; border-right: 1px solid var(--border); margin-right: 1.5rem; }
@@ -81,14 +81,14 @@ nav {
 .stat-num.warn  { color: var(--warn); }
 .stat-num.danger{ color: var(--danger); }
 .stat-label { font-size: 0.6rem; font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; color: var(--green); }
- 
+
 /* MAIN */
 .main { max-width: 1400px; margin: 0 auto; padding: 2rem 2.5rem 5rem; }
 .section { display: none; }
 .section.active { display: block; }
 .section-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
 .section-title { font-size: 1.1rem; font-weight: 200; color: var(--white); }
- 
+
 /* BOTTONI — stessi del login */
 .btn-primary {
   height: 38px; padding: 0 20px;
@@ -122,7 +122,7 @@ nav {
   cursor: pointer; transition: all 0.2s; border-radius: 0;
 }
 .btn-sm:hover { border-color: var(--green); color: var(--green); }
- 
+
 /* TABLE */
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; }
@@ -137,7 +137,7 @@ td {
   background: var(--card); vertical-align: middle; font-size: 0.82rem; font-weight: 300;
 }
 tr:hover td { background: var(--card2); }
- 
+
 /* AVATAR */
 .av {
   width: 30px; height: 30px; border-radius: 50%;
@@ -147,7 +147,7 @@ tr:hover td { background: var(--card2); }
 .tec-info { display: flex; align-items: center; gap: 0.75rem; }
 .tec-nome { font-weight: 400; color: var(--white); font-size: 0.85rem; }
 .tec-email { font-size: 0.7rem; color: var(--gray); margin-top: 1px; }
- 
+
 /* BADGE RUOLO */
 .rb {
   display: inline-block; font-size: 0.56rem; font-weight: 400;
@@ -155,19 +155,19 @@ tr:hover td { background: var(--card2); }
 }
 .rb-admin  { color: var(--green); border-color: var(--green-border); background: var(--green-dim); }
 .rb-tec    { color: var(--gray); border-color: var(--border); }
- 
+
 /* PILLS BRAND */
 .pills { display: flex; flex-wrap: wrap; gap: 4px; }
 .pill { font-size: 0.56rem; font-weight: 400; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 7px; border: 1px solid; }
 .pill-ok   { color: var(--green); border-color: var(--green-border); background: var(--green-dim); }
 .pill-warn { color: var(--warn); border-color: rgba(245,158,11,0.25); background: rgba(245,158,11,0.05); }
 .pill-exp  { color: rgba(255,255,255,0.25); border-color: var(--border); }
- 
+
 /* PROGRESS */
 .prog-bg { height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; margin-bottom: 3px; }
 .prog-fill { height: 3px; background: var(--green); border-radius: 2px; }
 .prog-label { font-size: 0.62rem; color: var(--gray); }
- 
+
 /* CORSI ASSEGNATI GRID */
 .ca-filters { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
 .ca-select {
@@ -178,7 +178,7 @@ tr:hover td { background: var(--card2); }
 }
 .ca-select:focus { border-color: var(--green); }
 .ca-select option { background: #1a1c1a; }
- 
+
 .ca-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1px; background: var(--border); }
 .ca-card {
   background: var(--card); padding: 1.25rem;
@@ -204,7 +204,7 @@ tr:hover td { background: var(--card2); }
 }
 .ca-tec-nome { font-size: 0.72rem; color: var(--gray); }
 .ca-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
- 
+
 /* SCADENZE */
 .scad-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); }
 .scad-item { background: var(--card); padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
@@ -216,7 +216,7 @@ tr:hover td { background: var(--card2); }
 .scad-nome  { font-size: 0.88rem; font-weight: 300; color: var(--white); }
 .scad-corso { font-size: 0.72rem; color: var(--gray); margin-top: 2px; }
 .scad-data  { font-size: 0.75rem; color: var(--white); flex-shrink: 0; }
- 
+
 /* MATRIX */
 .mx-wrap { overflow-x: auto; }
 .mx-header { display: flex; gap: 1px; background: var(--border); margin-bottom: 1px; }
@@ -231,12 +231,12 @@ tr:hover td { background: var(--card2); }
 .mb-ok   { color: var(--green); border-color: var(--green-border); background: var(--green-dim); }
 .mb-warn { color: var(--warn); border-color: rgba(245,158,11,0.25); background: rgba(245,158,11,0.05); }
 .mb-none { color: rgba(255,255,255,0.2); border-color: var(--border); }
- 
+
 /* EMPTY */
 .empty { text-align: center; padding: 4rem 2rem; color: var(--gray); grid-column: 1/-1; }
 .empty-icon { font-size: 1.5rem; opacity: 0.3; margin-bottom: 0.75rem; }
 .empty-title { font-size: 0.95rem; font-weight: 200; color: var(--white); }
- 
+
 /* MODAL — stessa struttura card del login */
 .overlay { display: none; position: fixed; inset: 0; background: rgba(12,14,13,0.85); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
 .overlay.open { display: flex; }
@@ -254,7 +254,7 @@ tr:hover td { background: var(--card2); }
 .modal-close:hover { color: var(--white); }
 .modal-body { padding: 1.5rem; }
 .modal-foot { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; gap: 0.75rem; justify-content: flex-end; }
- 
+
 /* FORM FIELDS — identici al login */
 .fld { margin-bottom: 1.1rem; }
 label.flabel {
@@ -280,7 +280,7 @@ label.flabel {
 .msg { display: none; margin-top: 0.75rem; padding: 0.75rem 1rem; font-size: 0.78rem; font-weight: 300; line-height: 1.5; }
 .msg.error { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); color: #f87171; }
 .msg.show { display: block; }
- 
+
 /* TECNICI CHECKLIST NEL MODAL */
 .tec-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); max-height: 220px; overflow-y: auto; margin-top: 0.5rem; }
 .tec-list-item { background: var(--card); padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: background 0.12s; }
@@ -290,17 +290,17 @@ label.flabel {
 .tec-list-item.sel .tli-check { background: var(--green); border-color: var(--green); }
 .tli-nome { font-size: 0.82rem; font-weight: 300; color: var(--white); }
 .tli-ruolo { font-size: 0.65rem; color: var(--gray); }
- 
+
 /* TOAST */
 .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--card); border: 1px solid var(--border); padding: 0.85rem 1.25rem; font-size: 0.78rem; font-weight: 300; color: var(--white); z-index: 300; display: none; align-items: center; gap: 0.75rem; max-width: 320px; }
 .toast.show { display: flex; }
 .toast-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
- 
+
 @media(max-width:768px) { nav { padding: 0 1.25rem; } .hero, .main { padding-left: 1.25rem; padding-right: 1.25rem; } .stats-row { flex-wrap: wrap; } }
 </style>
 </head>
 <body>
- 
+
 <nav>
   <a class="nav-logo" href="index.html"><span>·</span>KAPLET Academy</a>
   <div class="nav-center">
@@ -314,7 +314,7 @@ label.flabel {
     <button class="btn-nav" onclick="doLogout()">Esci</button>
   </div>
 </nav>
- 
+
 <div class="hero">
   <div class="hero-inner">
     <div class="hero-label">Pannello amministratore</div>
@@ -329,14 +329,15 @@ label.flabel {
     </div>
   </div>
 </div>
- 
+
 <div class="main">
- 
+
   <!-- TEAM -->
   <div class="section active" id="section-team">
     <div class="section-head">
       <div class="section-title">Tutti i tecnici</div>
       <div style="display:flex;gap:0.75rem">
+        <button class="btn-secondary" onclick="openModalUtente()">+ Aggiungi utente</button>
         <button class="btn-secondary" onclick="openModalCert()">+ Certificazione</button>
         <button class="btn-primary" onclick="openModalAssegna()">+ Assegna corsi</button>
       </div>
@@ -348,7 +349,7 @@ label.flabel {
       </table>
     </div>
   </div>
- 
+
   <!-- CORSI ASSEGNATI -->
   <div class="section" id="section-corsi">
     <div class="section-head">
@@ -367,24 +368,24 @@ label.flabel {
     </div>
     <div class="ca-grid" id="ca-grid"><div class="empty"><div class="empty-icon">◌</div><div class="empty-title">Caricamento...</div></div></div>
   </div>
- 
+
   <!-- SCADENZE -->
   <div class="section" id="section-scadenze">
     <div class="section-head"><div class="section-title">Certificazioni in scadenza (60gg)</div></div>
     <div class="scad-list" id="scad-list"></div>
   </div>
- 
+
   <!-- MATRIX -->
   <div class="section" id="section-matrix">
     <div class="section-head"><div class="section-title">Mappa certificazioni per brand</div></div>
     <p style="font-size:0.75rem;color:var(--gray);margin-bottom:1.5rem;font-weight:300">Verde = attiva · Giallo = in scadenza 60gg · Grigio = assente</p>
     <div class="mx-wrap" id="matrix-body"></div>
   </div>
- 
+
 </div>
- 
+
 <div class="toast" id="toast"><div class="toast-dot"></div><span id="toast-msg"></span></div>
- 
+
 <!-- MODAL AGGIUNGI CERTIFICAZIONE -->
 <div class="overlay" id="modal-cert">
   <div class="modal">
@@ -409,7 +410,7 @@ label.flabel {
     </div>
   </div>
 </div>
- 
+
 <!-- MODAL ASSEGNA CORSI -->
 <div class="overlay" id="modal-assegna">
   <div class="modal">
@@ -438,7 +439,7 @@ label.flabel {
     </div>
   </div>
 </div>
- 
+
 <!-- MODAL MODIFICA STATO -->
 <div class="overlay" id="modal-stato">
   <div class="modal" style="max-width:400px">
@@ -464,24 +465,55 @@ label.flabel {
     </div>
   </div>
 </div>
- 
+
+<!-- MODAL AGGIUNGI UTENTE -->
+<div class="overlay" id="modal-utente">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Aggiungi nuovo utente</div>
+      <button class="modal-close" onclick="closeOverlay('modal-utente')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="fgrid">
+        <div class="fld"><label class="flabel">Nome *</label><input type="text" class="finput" id="mu-nome" placeholder="Mario"></div>
+        <div class="fld"><label class="flabel">Cognome *</label><input type="text" class="finput" id="mu-cognome" placeholder="Rossi"></div>
+      </div>
+      <div class="fld"><label class="flabel">Email aziendale *</label><input type="email" class="finput" id="mu-email" placeholder="mario.rossi@kaplet.it"></div>
+      <div class="fld"><label class="flabel">Password temporanea *</label><input type="text" class="finput" id="mu-pass" placeholder="Minimo 8 caratteri"><div class="fhint">L'utente potrà cambiarla con "Password dimenticata"</div></div>
+      <div class="fld"><label class="flabel">Ruolo professionale</label><input type="text" class="finput" id="mu-ruolo" placeholder="Es. Engineer NET | Junior"></div>
+      <div class="fld">
+        <label class="flabel">Tipo account *</label>
+        <select class="fsel" id="mu-tipo">
+          <option value="false">Tecnico (vede solo i suoi corsi)</option>
+          <option value="true">Admin (vede e gestisce tutto)</option>
+        </select>
+      </div>
+      <div class="msg error" id="mu-err"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-secondary" onclick="closeOverlay('modal-utente')">Annulla</button>
+      <button class="btn-primary" id="btn-crea-utente" onclick="creaUtente()">Crea utente</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/courses.js"></script>
 <script>
 const SUPA_URL = 'https://mcgerrvorboagkukzuzc.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jZ2VycnZvcmJvYWdrdWt6dXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NjEyNzIsImV4cCI6MjA5MzQzNzI3Mn0.eDHZ-QUQLM2tFU4KPDEiIqXZsdfk_Cxnz7Ywxt6T46o';
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
- 
+
 let TECNICI = [], CERTS = [], CORSI_ASS = [];
 let selTec = [];
- 
+
 const BC = {"AVIXA":"#F59E0B","DANTE":"#EF4444","NDI":"#38BDF8","AXIS":"#4ADE80","FORTINET":"#F87171","CISCO":"#22D3EE","CRESTRON":"#4ADE80","BARCO CTRL":"#FB923C","BARCO VIDEO":"#FBBF24","NOVASTAR":"#C084FC","MILESTONE":"#F472B6","ALTA ACCESS":"#38BDF8","ALTA VIDEO":"#60A5FA","AVIGILON UNITY":"#818CF8","SHURE":"#A78BFA","Q-SYS":"#F87171","YAMAHA":"#FCD34D","POWERSOFT":"#34D399","TELEVIC":"#A78BFA","EXTRON":"#F87171","K-ARRAY":"#4ADE80","K-SCAPE":"#34D399","BRIGHTSIGN":"#60A5FA","ELMO":"#FCA5A1","KSENIA":"#C084FC","NOTIFIER":"#FB923C","TECNOFIRE":"#F87171","KNX & DALI":"#818CF8","MAXHUB":"#38BDF8"};
 const bc  = b => BC[b?.toUpperCase()] || '#36CD81';
 const gg  = d => d ? Math.ceil((new Date(d) - new Date()) / 86400000) : null;
 const fmt = d => d ? new Date(d).toLocaleDateString('it-IT', {day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
 const csClass = s => ({da_fare:'cs-da-fare', in_corso:'cs-in-corso', completato:'cs-completato'}[s] || 'cs-da-fare');
 const csLabel = s => ({da_fare:'Da fare', in_corso:'In corso', completato:'Completato'}[s] || s);
- 
+
 /* ── INIT ── */
 (async () => {
   const { data: { session } } = await sb.auth.getSession();
@@ -491,14 +523,12 @@ const csLabel = s => ({da_fare:'Da fare', in_corso:'In corso', completato:'Compl
   document.getElementById('nav-nome').textContent = me.nome + ' ' + me.cognome;
   await load();
 })();
- 
+
 async function doLogout() {
-  try { await sb.auth.signOut(); } catch(e) {}
-  localStorage.clear();
-  sessionStorage.clear();
-  window.location.replace('login.html');
+  await sb.auth.signOut();
+  window.location.href = 'login.html';
 }
- 
+
 /* ── LOAD ── */
 async function load() {
   const [r1, r2, r3] = await Promise.all([
@@ -507,7 +537,7 @@ async function load() {
     sb.from('corsi_assegnati').select('*').order('assegnato_il', {ascending:false})
   ]);
   TECNICI = r1.data || []; CERTS = r2.data || []; CORSI_ASS = r3.data || [];
- 
+
   const oggi = new Date();
   const att  = CERTS.filter(c => c.stato==='attiva' && (!c.data_scadenza || new Date(c.data_scadenza) >= oggi));
   const sca  = CERTS.filter(c => c.data_scadenza && new Date(c.data_scadenza) < oggi);
@@ -517,17 +547,17 @@ async function load() {
   document.getElementById('s-ca').textContent  = CORSI_ASS.length;
   document.getElementById('s-s60').textContent = s60.length;
   document.getElementById('s-sca').textContent = sca.length;
- 
+
   // filtri
   const ft = document.getElementById('f-tec');
   ft.innerHTML = '<option value="">Tutti i tecnici</option>' + TECNICI.map(t => `<option value="${t.id}">${t.nome} ${t.cognome}</option>`).join('');
   const brands = [...new Set(CORSI_ASS.map(c => c.brand))].sort();
   const fb = document.getElementById('f-brand');
   fb.innerHTML = '<option value="">Tutti i brand</option>' + brands.map(b => `<option value="${b}">${b}</option>`).join('');
- 
+
   renderTeam(); renderCorsi(); renderScadenze(); renderMatrix();
 }
- 
+
 /* ── TEAM ── */
 function renderTeam() {
   const oggi = new Date();
@@ -555,7 +585,7 @@ function renderTeam() {
         </tr>`;
       }).join('');
 }
- 
+
 /* ── CORSI ASSEGNATI ── */
 function renderCorsi() {
   const ft = document.getElementById('f-tec').value;
@@ -592,7 +622,7 @@ function renderCorsi() {
     </div>`;
   }).join('');
 }
- 
+
 /* ── SCADENZE ── */
 function renderScadenze() {
   const lista = CERTS.filter(c => c.data_scadenza && gg(c.data_scadenza) <= 60)
@@ -609,7 +639,7 @@ function renderScadenze() {
         </div>`;
       }).join('');
 }
- 
+
 /* ── MATRIX ── */
 function renderMatrix() {
   const brands = [...new Set(CERTS.map(c => c.brand))].sort();
@@ -631,7 +661,7 @@ function renderMatrix() {
   });
   wrap.innerHTML = h;
 }
- 
+
 /* ── NAV ── */
 function showSection(id, btn) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -639,7 +669,7 @@ function showSection(id, btn) {
   document.getElementById('section-' + id).classList.add('active');
   btn.classList.add('active');
 }
- 
+
 /* ── MODAL CERT ── */
 function openModalCert() {
   document.getElementById('mc-tec').innerHTML = '<option value="">Seleziona...</option>' + TECNICI.map(t => `<option value="${t.id}">${t.nome} ${t.cognome}</option>`).join('');
@@ -668,7 +698,7 @@ async function salvaCert() {
     closeOverlay('modal-cert'); toast('Certificazione aggiunta!'); await load();
   } catch(e) { err.textContent='Errore: '+e.message; err.classList.add('show'); }
 }
- 
+
 /* ── MODAL ASSEGNA ── */
 function openModalAssegna() {
   const brands = [...new Set(COURSES.map(c => c.brand))].sort();
@@ -711,7 +741,7 @@ async function salvaAssegna() {
   } catch(e) { err.textContent='Errore: '+e.message; err.classList.add('show'); }
   finally { btn.disabled=false; btn.textContent='Assegna'; }
 }
- 
+
 /* ── MODAL STATO ── */
 function openModalStato(id, stato, scad, note) {
   document.getElementById('ms-id').value=id; document.getElementById('ms-stato').value=stato;
@@ -732,7 +762,63 @@ async function rimuoviCorso(id) {
   const {error} = await sb.from('corsi_assegnati').delete().eq('id',id);
   if (!error) { toast('Corso rimosso.'); await load(); }
 }
- 
+
+/* ── HELPERS ── */
+/* ── MODAL AGGIUNGI UTENTE ── */
+function openModalUtente() {
+  document.getElementById('mu-nome').value = '';
+  document.getElementById('mu-cognome').value = '';
+  document.getElementById('mu-email').value = '';
+  document.getElementById('mu-pass').value = '';
+  document.getElementById('mu-ruolo').value = '';
+  document.getElementById('mu-tipo').value = 'false';
+  document.getElementById('mu-err').classList.remove('show');
+  document.getElementById('modal-utente').classList.add('open');
+}
+
+async function creaUtente() {
+  const nome    = document.getElementById('mu-nome').value.trim();
+  const cognome = document.getElementById('mu-cognome').value.trim();
+  const email   = document.getElementById('mu-email').value.trim();
+  const password= document.getElementById('mu-pass').value;
+  const ruolo   = document.getElementById('mu-ruolo').value.trim();
+  const is_admin= document.getElementById('mu-tipo').value === 'true';
+  const err     = document.getElementById('mu-err');
+  const btn     = document.getElementById('btn-crea-utente');
+  err.classList.remove('show');
+
+  if (!nome || !cognome || !email || !password) {
+    err.textContent = 'Compila tutti i campi obbligatori (*).'; err.classList.add('show'); return;
+  }
+  if (password.length < 8) {
+    err.textContent = 'La password deve essere di almeno 8 caratteri.'; err.classList.add('show'); return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Creazione...';
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const resp = await fetch(SUPA_URL + '/functions/v1/crea-utente', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + session.access_token,
+        'apikey': SUPA_KEY
+      },
+      body: JSON.stringify({ nome, cognome, email, password, ruolo, is_admin })
+    });
+    const result = await resp.json();
+    if (!resp.ok) throw new Error(result.error || 'Errore sconosciuto');
+
+    closeOverlay('modal-utente');
+    toast('Utente ' + nome + ' ' + cognome + ' creato!');
+    await load();
+  } catch(e) {
+    err.textContent = 'Errore: ' + e.message; err.classList.add('show');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Crea utente';
+  }
+}
+
 /* ── HELPERS ── */
 function closeOverlay(id) { document.getElementById(id).classList.remove('open'); selTec = []; }
 function toast(msg) {
