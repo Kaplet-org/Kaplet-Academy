@@ -6,21 +6,6 @@
 <title>Kaplet Academy | Piano Formativo Interno</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,200;0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,200&display=swap" rel="stylesheet">
 <style>
-/*
-  KAPLET DESIGN SYSTEM — da screenshot reale kaplet.it:
-  BG principale:   #0C0E0D  (quasi nero)
-  BG bianco:       #FFFFFF  (sezioni alternate)
-  Verde:           #36CD81  (accent primario)
-  Navbar:          #0C0E0D con CTA verde pieno
-  H1 hero:         DM Sans 200, bianco, ~60px
-  H2 sezioni:      DM Sans 200, verde, ~48px
-  Body text:       DM Sans 300, bianco su scuro / grigio su bianco
-  CTA principale:  bg #36CD81 pieno, testo nero, uppercase
-  Footer bg:       bianco
-  Footer links:    verde per heading, grigio scuro per voci
-  Sezione pre-footer: bianca, testo centrato
-*/
-
 :root {
   --black: #0C0E0D;
   --black2: #111311;
@@ -51,7 +36,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ===================== NAVBAR — identica kaplet.it ===================== */
 .navbar {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -107,7 +91,6 @@ body {
 
 .nav-right { display: flex; align-items: center; gap: 1.5rem; }
 
-/* CTA esatto: bg verde pieno, testo nero, uppercase — come sul sito */
 .btn-nav-cta {
   background: var(--green);
   color: var(--black);
@@ -127,7 +110,6 @@ body {
 
 .btn-nav-cta:hover { background: transparent; color: var(--green); }
 
-/* Tab switcher nella navbar */
 .nav-tabs {
   display: flex;
   gap: 0;
@@ -152,9 +134,8 @@ body {
 .nav-tab-btn:hover { color: var(--white); }
 .nav-tab-btn.active { color: var(--green); border-bottom-color: var(--green); }
 
-/* ===================== HERO — identico kaplet.it ===================== */
 .hero {
-  padding-top: 70px; /* navbar height */
+  padding-top: 70px;
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -165,7 +146,6 @@ body {
   background: var(--black);
 }
 
-/* Background con immagine scura tipo architettura — simulato con gradiente + pattern */
 .hero-bg {
   position: absolute;
   inset: 0;
@@ -175,7 +155,6 @@ body {
     repeating-linear-gradient(0deg, transparent 0, transparent 59px, rgba(54,205,129,0.04) 59px, rgba(54,205,129,0.04) 60px);
 }
 
-/* Linee diagonali verdi come sul sito */
 .hero-lines {
   position: absolute;
   inset: 0;
@@ -214,7 +193,6 @@ body {
   opacity: 0.85;
 }
 
-/* H1 identico al sito: DM Sans weight 200, ~60px, centrato */
 .hero h1 {
   font-family: var(--font);
   font-size: clamp(2rem, 5vw, 3.75rem);
@@ -225,7 +203,6 @@ body {
   margin-bottom: 2.5rem;
 }
 
-/* CTA verde pieno come sul sito */
 .btn-hero {
   display: inline-block;
   background: var(--green);
@@ -245,7 +222,6 @@ body {
 
 .btn-hero:hover { background: transparent; color: var(--green); }
 
-/* Stats sotto hero */
 .hero-stats {
   display: flex;
   justify-content: center;
@@ -281,7 +257,6 @@ body {
   color: var(--green);
 }
 
-/* ===================== SEZIONE CORSI (sfondo nero) ===================== */
 .section-dark {
   background: var(--black);
   padding: 5rem 60px;
@@ -289,7 +264,6 @@ body {
 
 .section-dark-inner { max-width: 1300px; margin: 0 auto; }
 
-/* H2 verde come sul sito */
 .section-h2 {
   font-family: var(--font);
   font-size: clamp(1.8rem, 4vw, 3rem);
@@ -307,7 +281,6 @@ body {
   margin-bottom: 2.5rem;
 }
 
-/* Toolbar filtri */
 .toolbar {
   display: flex;
   gap: 0.75rem;
@@ -394,7 +367,6 @@ select option { background: #1a1a1a; }
 
 .btn-reset:hover { border-color: var(--green); color: var(--green); }
 
-/* Tab nav */
 .tab-nav {
   display: flex;
   gap: 0;
@@ -435,7 +407,6 @@ select option { background: #1a1a1a; }
 
 .results-info strong { color: var(--white); }
 
-/* ===================== COURSE GRID ===================== */
 .courses-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
@@ -580,7 +551,6 @@ select option { background: #1a1a1a; }
 .p-free { color: var(--green); border-color: rgba(54,205,129,0.25); }
 .p-paid { color: #f5c842; border-color: rgba(245,200,66,0.25); }
 
-/* ===================== BRAND VIEW ===================== */
 .brand-list { display: flex; flex-direction: column; gap: 1px; background: var(--border-dark); }
 
 .brand-block { background: var(--black); animation: fadeUp 0.25s ease both; }
@@ -660,7 +630,6 @@ select option { background: #1a1a1a; }
 .br-c { font-size: 0.62rem; color: var(--text-gray); margin-top: 2px; letter-spacing: 0.04em; }
 .br-d { font-size: 0.7rem; color: var(--text-gray); }
 
-/* ===================== PORTALS VIEW ===================== */
 .portals-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -722,7 +691,6 @@ select option { background: #1a1a1a; }
 .portal-go:hover { background: var(--green); color: var(--black); }
 .portal-na { font-size: 0.65rem; color: var(--text-gray); opacity: 0.5; }
 
-/* ===================== ACADEMY ADMIN — sezione bianca ===================== */
 .section-white {
   background: var(--white);
   padding: 5rem 60px;
@@ -730,7 +698,6 @@ select option { background: #1a1a1a; }
 
 .section-white-inner { max-width: 1300px; margin: 0 auto; }
 
-/* H2 su sfondo bianco: verde come il sito */
 .section-h2-dark {
   font-family: var(--font);
   font-size: clamp(1.8rem, 4vw, 3rem);
@@ -748,7 +715,6 @@ select option { background: #1a1a1a; }
   margin-bottom: 2.5rem;
 }
 
-/* Admin bar */
 .admin-bar {
   display: flex;
   align-items: center;
@@ -788,7 +754,6 @@ select option { background: #1a1a1a; }
 
 .btn-add:hover { background: transparent; color: var(--green); }
 
-/* Tecnici table */
 .tech-table-wrap {
   overflow-x: auto;
   border: 1px solid var(--border-light);
@@ -836,7 +801,6 @@ tr:hover td { background: #f9fff9; }
   letter-spacing: 0.04em;
 }
 
-/* Cert badges nella tabella */
 .cert-list { display: flex; flex-wrap: wrap; gap: 4px; }
 
 .cert-badge {
@@ -857,13 +821,11 @@ tr:hover td { background: #f9fff9; }
 .cert-pending { color: #f5c842; border-color: rgba(245,200,66,0.3); background: rgba(245,200,66,0.05); }
 .cert-none { color: #ccc; border-color: #eee; background: #fafafa; }
 
-/* Progress bar per ogni tecnico */
 .prog-bar-wrap { min-width: 120px; }
 .prog-bar-bg { height: 4px; background: #eee; border-radius: 2px; margin-bottom: 3px; }
 .prog-bar-fill { height: 4px; background: var(--green); border-radius: 2px; transition: width 0.4s; }
 .prog-pct { font-size: 0.65rem; color: var(--text-medium); }
 
-/* Action buttons nella tabella */
 .btn-table {
   font-size: 0.6rem;
   font-weight: 400;
@@ -880,7 +842,6 @@ tr:hover td { background: #f9fff9; }
 
 .btn-table:hover { border-color: var(--green); color: var(--green); background: rgba(54,205,129,0.04); }
 
-/* ===================== MODAL AGGIUNTA CERTIFICAZIONE ===================== */
 .modal-overlay {
   display: none;
   position: fixed;
@@ -1030,8 +991,6 @@ tr:hover td { background: #f9fff9; }
 
 .btn-save:hover { background: transparent; color: var(--green); }
 
-/* ===================== FOOTER — identico kaplet.it ===================== */
-/* Sezione pre-footer bianca */
 .pre-footer {
   background: var(--white);
   padding: 5rem 60px;
@@ -1057,7 +1016,6 @@ tr:hover td { background: #f9fff9; }
   line-height: 1.7;
 }
 
-/* CTA bianco con bordo verde outline — come nel sito la versione su sfondo bianco */
 .btn-outline-dark {
   display: inline-block;
   background: transparent;
@@ -1075,7 +1033,6 @@ tr:hover td { background: #f9fff9; }
 
 .btn-outline-dark:hover { background: var(--green); border-color: var(--green); color: var(--black); }
 
-/* Footer vero — bianco come kaplet.it */
 footer {
   background: var(--white);
   border-top: 1px solid var(--border-light);
@@ -1112,7 +1069,6 @@ footer {
   line-height: 1.8;
 }
 
-/* Footer nav col: heading verde, links grigio — come kaplet.it */
 .footer-col-title {
   font-size: 0.7rem;
   font-weight: 500;
@@ -1152,7 +1108,6 @@ footer {
 .footer-bottom a { color: var(--text-medium); text-decoration: none; transition: color 0.2s; }
 .footer-bottom a:hover { color: var(--green); }
 
-/* ===================== EMPTY / UTILS ===================== */
 .empty-state {
   text-align: center;
   padding: 5rem 2rem;
@@ -1187,12 +1142,12 @@ footer {
 <!-- NAVBAR -->
 <nav class="navbar">
   <a class="nav-logo" href="https://kaplet.it" target="_blank" rel="noopener">
-    <span class="nav-logo-dash">·</span>KAPLET
+    <img src="logo-kaplet-university.png" alt="Kaplet University" style="height:38px;width:auto">
   </a>
 
   <ul class="nav-tabs" id="main-tabs">
     <li><button class="nav-tab-btn active" data-page="courses" onclick="switchPage('courses')">Corsi</button></li>
-    <li><button class="nav-tab-btn" data-page="academy" onclick="switchPage('academy')">Academy Admin</button></li>
+    <li><button class="nav-tab-btn" data-page="academy" onclick="switchPage('academy')">Login</button></li>
   </ul>
 
   <div class="nav-right">
@@ -1214,7 +1169,7 @@ footer {
       <div class="hero-line"></div>
     </div>
     <div class="hero-inner">
-      <div class="hero-wordmark">·KAPLET</div>
+      <div class="hero-wordmark"><img src="logo-kaplet-university.png" alt="Kaplet University" style="height:90px;width:auto;opacity:0.95"></div>
       <h1>Piano Formativo<br>& Certificazioni 2026</h1>
       <button class="btn-hero" onclick="document.getElementById('corsi-section').scrollIntoView({behavior:'smooth'})">
         Esplora i corsi
@@ -1318,7 +1273,7 @@ footer {
   <!-- Hero sezione admin — sfondo nero -->
   <section class="section-dark" style="padding-top: 130px; min-height: 320px;">
     <div class="section-dark-inner">
-      <h2 class="section-h2">·KAPLET Academy</h2>
+      <h2 class="section-h2" style="display:flex;align-items:center;flex-wrap:wrap"><img src="logo-kaplet-university.png" alt="Kaplet University" style="height:60px;width:auto"></h2>
       <p class="section-sub">Gestisci le certificazioni del team — visualizza, aggiungi e monitora i percorsi formativi di ogni tecnico.</p>
     </div>
   </section>
@@ -1406,7 +1361,7 @@ footer {
 <footer>
   <div class="footer-grid">
     <div class="footer-brand-col">
-      <div class="footer-logo"><span class="footer-logo-dash">·</span>KAPLET</div>
+      <div class="footer-logo"><img src="logo-kaplet-university-dark.png" alt="Kaplet University" style="height:42px;width:auto"></div>
       <div class="footer-address">
         Cesena:<br>
         Via Cerchia di S. Giorgio, 145<br>
@@ -1511,9 +1466,6 @@ footer {
 </div>
 
 <script>
-// ============================================================
-// DATI BASE
-// ============================================================
 const ROLES=["Onboarding | AV","Onboarding | NET","Onboarding | SEC","Pre-Sales | AV","Pre-Sales | NET","Pre-Sales | SEC","DOC | Agente","Engineer AV | Junior","Engineer AV | Senior","Engineer AV | Video Specialist","Engineer AV | Audio Specialist","Engineer AV | Collaboration Specialist","Engineer NET | Junior","Engineer NET | Senior","Engineer NET | Network Specialist","Engineer NET | Wireless Specialist","Engineer NET | Firewall Specialist","Engineer SEC | Junior","Engineer SEC | Senior","Project Manager","Field Technician"];
 
 const PORTALS={
@@ -1649,9 +1601,6 @@ const RAW=[
 {brand:"YAMAHA",cat:"",name:"DM7 Series: Digital Mixing Console",desc:"GUI, setup, networking Dante DM7.",delivery:"E-Learning",dur:"03:00",price:0,roles:[3,8]},
 ];
 
-// ============================================================
-// TECNICI — dati demo (in produzione si salvano nel localStorage)
-// ============================================================
 let TECNICI = JSON.parse(localStorage.getItem('kaplet_tecnici') || 'null') || [
   {id:1,name:"Marco Rossi",role:"Engineer AV | Senior",avatar:"MR"},
   {id:2,name:"Luca Bianchi",role:"Engineer NET | Firewall Specialist",avatar:"LB"},
@@ -1688,27 +1637,17 @@ function savePersist(){
 
 let nextCertId = Math.max(...CERTS.map(c=>c.id), 0) + 1;
 
-// ============================================================
-// PAGE SWITCH
-// ============================================================
 function switchPage(page) {
   if (page === 'academy') {
-    // Controlla se c'è una sessione attiva
     const sb = supabase.createClient(
       'https://mcgerrvorboagkukzuzc.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jZ2VycnZvcmJvYWdrdWt6dXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NjEyNzIsImV4cCI6MjA5MzQzNzI3Mn0.eDHZ-QUQLM2tFU4KPDEiIqXZsdfk_Cxnz7Ywxt6T46o'
     );
     sb.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        window.location.href = 'login.html';
-        return;
-      }
+      if (!session) { window.location.href = 'login.html'; return; }
       sb.from('tecnici').select('is_admin').eq('id', session.user.id).single().then(({ data }) => {
-        if (data && data.is_admin) {
-          window.location.href = 'admin.html';
-        } else {
-          window.location.href = 'tecnico.html';
-        }
+        if (data && data.is_admin) { window.location.href = 'admin.html'; }
+        else { window.location.href = 'tecnico.html'; }
       });
     });
     return;
@@ -1719,9 +1658,6 @@ function switchPage(page) {
   });
 }
 
-// ============================================================
-// CORSI — init
-// ============================================================
 let curView='grid', filteredCourses=[...RAW];
 
 function initCourses(){
@@ -1867,14 +1803,10 @@ function renderPortalsView(){
 
 function toggleBrand(i){document.getElementById('bb-'+i).classList.toggle('collapsed');}
 
-// ============================================================
-// ACADEMY ADMIN
-// ============================================================
 function renderAdmin(){
   const searchVal = (document.getElementById('admin-search')?.value||'').toLowerCase();
   const brandFilter = document.getElementById('admin-brand-filter')?.value||'';
 
-  // Popola brand filter admin se non ancora fatto
   const adminBrandSel = document.getElementById('admin-brand-filter');
   if(adminBrandSel && adminBrandSel.options.length === 1){
     [...new Set(RAW.map(c=>c.brand))].sort().forEach(b=>{
@@ -1883,19 +1815,16 @@ function renderAdmin(){
     });
   }
 
-  // Popola select tecnici nel modal
   const techSel = document.getElementById('modal-tech');
   if(techSel && techSel.options.length === 1){
     TECNICI.forEach(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=t.name;techSel.appendChild(o);});
   }
 
-  // Brand select nel modal
   const brandSel = document.getElementById('modal-brand');
   if(brandSel && brandSel.options.length === 1){
     [...new Set(RAW.map(c=>c.brand))].sort().forEach(b=>{const o=document.createElement('option');o.value=b;o.textContent=b;brandSel.appendChild(o);});
   }
 
-  // Stats
   const totalCerts = CERTS.filter(c=>c.status==='active').length;
   const brandsWithCerts = new Set(CERTS.map(c=>c.brand)).size;
   const pending = CERTS.filter(c=>c.status==='pending').length;
@@ -1904,7 +1833,6 @@ function renderAdmin(){
   document.getElementById('admin-stat-brands').textContent = brandsWithCerts;
   document.getElementById('admin-stat-pending').textContent = pending;
 
-  // Filtra tecnici
   let filteredTecnici = TECNICI.filter(t=>{
     if(searchVal && !t.name.toLowerCase().includes(searchVal)) return false;
     if(brandFilter){
@@ -1914,14 +1842,12 @@ function renderAdmin(){
     return true;
   });
 
-  // Render tabella
   const tbody = document.getElementById('tech-tbody');
   tbody.innerHTML = filteredTecnici.map(t=>{
     const certs = CERTS.filter(c=>c.techId===t.id);
     const active = certs.filter(c=>c.status==='active');
     const pend = certs.filter(c=>c.status==='pending');
 
-    // Calcola % percorso — basato su ruolo
     const totalForRole = RAW.filter(c=>c.roles.some(r=>ROLES[r]===t.role)).length;
     const completed = active.length;
     const pct = totalForRole > 0 ? Math.min(100, Math.round(completed/Math.max(totalForRole*0.3,1)*100)) : 0;
@@ -1963,7 +1889,6 @@ function renderAdmin(){
     tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:2rem;color:#999;font-size:.82rem">Nessun tecnico trovato</td></tr>`;
   }
 
-  // Render brand matrix
   renderBrandMatrix();
 }
 
@@ -2010,16 +1935,12 @@ function renderBrandMatrix(){
   container.innerHTML = html;
 }
 
-// ============================================================
-// MODAL
-// ============================================================
 function openModal(techId=null){
   document.getElementById('modal').classList.add('open');
   if(techId){
     const sel = document.getElementById('modal-tech');
     sel.value = techId;
   }
-  // Set today's date
   document.getElementById('modal-date').value = new Date().toISOString().split('T')[0];
 }
 
@@ -2055,7 +1976,6 @@ function saveCert(){
   closeModal();
   renderAdmin();
 
-  // Reset modal fields
   document.getElementById('modal-tech').value = '';
   document.getElementById('modal-brand').value = '';
   document.getElementById('modal-course').innerHTML = '<option value="">Prima seleziona un brand…</option>';
@@ -2069,9 +1989,6 @@ function removeCert(certId){
   renderAdmin();
 }
 
-// ============================================================
-// INIT
-// ============================================================
 initCourses();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
