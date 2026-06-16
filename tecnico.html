@@ -244,8 +244,43 @@ label.flabel { display: block; font-size: 0.6rem; font-weight: 400; letter-spaci
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/courses.js"></script>
+<!-- MODAL COMPLETA CORSO + ALLEGA ATTESTATO -->
+<div class="overlay" id="modal-completa">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Corso completato 🎓</div>
+      <button class="modal-close" onclick="closeOverlay('modal-completa')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cmp-corso-id">
+      <p style="font-size:.8rem;color:var(--gray);margin-bottom:1.25rem;line-height:1.5">Complimenti! Vuoi allegare l'attestato di questo corso? Verrà creata una certificazione collegata.</p>
+      <div style="background:var(--card2);padding:0.85rem 1rem;margin-bottom:1.25rem;border-left:2px solid var(--green)">
+        <div style="font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--green)" id="cmp-brand">—</div>
+        <div style="font-size:.85rem;color:var(--white);margin-top:3px" id="cmp-nome">—</div>
+      </div>
+      <div class="fgrid">
+        <div class="fld"><label class="flabel">Data conseguimento *</label><input type="date" class="finput" id="cmp-cons"></div>
+        <div class="fld"><label class="flabel">Data scadenza <span style="color:var(--gray)">(se applicabile)</span></label><input type="date" class="finput" id="cmp-scad"><div class="fhint">Lascia vuoto se non scade</div></div>
+      </div>
+      <div class="fld">
+        <label class="flabel">Attestato / Documento</label>
+        <div class="file-zone" onclick="document.getElementById('cmp-file-input').click()">
+          <div class="file-zone-label">Clicca per caricare · <strong>PDF, JPG, PNG</strong> max 10MB</div>
+          <div class="file-name" id="cmp-file-name" style="display:none"></div>
+        </div>
+        <input type="file" id="cmp-file-input" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleFileCompleta(this)">
+      </div>
+      <div class="msg error" id="cmp-err"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-secondary" onclick="completaSenzaDoc()">Completa senza documento</button>
+      <button class="btn-primary" id="btn-cmp" onclick="completaConDoc()">
+        <span id="btn-cmp-txt">Completa e allega</span>
+        <div class="spinner" id="btn-cmp-spin"></div>
+      </button>
+    </div>
+  </div>
+</div>
 <script>
 const SUPA_URL = 'https://mcgerrvorboagkukzuzc.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jZ2VycnZvcmJvYWdrdWt6dXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NjEyNzIsImV4cCI6MjA5MzQzNzI3Mn0.eDHZ-QUQLM2tFU4KPDEiIqXZsdfk_Cxnz7Ywxt6T46o';
@@ -396,25 +431,113 @@ function renderCorsi() {
     const scadHtml = c.scadenza ? `<div style="font-size:.65rem;color:${g<0?'var(--danger)':g<=30?'var(--warn)':'var(--gray)'}">Scadenza: ${fmt(c.scadenza)}</div>` : '';
     const url = portalUrl(c.brand);
     const linkHtml = url ? `<a href="${url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;font-size:.62rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--green);text-decoration:none;margin-bottom:0.75rem">Vai al portale formativo ↗</a>` : '';
+    // se il corso è completato, controllo se esiste già una certificazione collegata
+    const haCert = CERTS.some(cert => cert.brand === c.brand && cert.corso === c.corso);
+    const allegaBtn = (c.stato === 'completato' && !haCert)
+      ? `<button class="btn-stato" style="border-color:var(--green);color:var(--green)" onclick="allegaAttestato('${c.id}')">+ Allega attestato</button>`
+      : '';
     return `<div class="corso-card ${csClass(c.stato)}">
       <div class="cc-brand" style="color:${col}">${c.brand}</div>
       <div class="cc-nome">${c.corso}</div>
       <div class="cc-meta">Anno ${c.anno}${c.note ? ' · ' + c.note : ''}</div>
       ${scadHtml}
+      ${haCert && c.stato==='completato' ? '<div style="font-size:.62rem;color:var(--green);margin-top:4px">✓ Attestato allegato</div>' : ''}
       ${linkHtml}
       <div class="cc-stato-btns">
         ${['da_fare','in_corso','completato'].map(s => `
           <button class="btn-stato ${c.stato===s?'active':''}" onclick="aggiornaStato('${c.id}','${s}')">${csLabel(s)}</button>
         `).join('')}
+        ${allegaBtn}
       </div>
     </div>`;
   }).join('');
 }
 
+let fileCompleta = null;
+
 async function aggiornaStato(id, stato) {
+  // Se sto completando il corso, apro il popup per allegare l'attestato
+  if (stato === 'completato') {
+    const c = CORSI_ASS.find(x => x.id === id);
+    if (c) { apriModalCompleta(c); return; }
+  }
   const {error} = await sb.from('corsi_assegnati').update({stato}).eq('id', id);
   if (!error) { await caricaDati(); toast('Stato aggiornato!'); }
   else toast('Errore: ' + error.message);
+}
+
+function apriModalCompleta(c) {
+  document.getElementById('cmp-corso-id').value = c.id;
+  document.getElementById('cmp-brand').textContent = c.brand;
+  document.getElementById('cmp-nome').textContent = c.corso;
+  document.getElementById('cmp-cons').value = new Date().toISOString().split('T')[0];
+  document.getElementById('cmp-scad').value = '';
+  document.getElementById('cmp-file-name').style.display = 'none';
+  fileCompleta = null;
+  document.getElementById('cmp-err').classList.remove('show');
+  document.getElementById('modal-completa').classList.add('open');
+}
+
+// Apre il popup per allegare attestato a un corso già completato (cerca per id)
+function allegaAttestato(id) {
+  const c = CORSI_ASS.find(x => x.id === id);
+  if (c) apriModalCompleta(c);
+}
+
+function handleFileCompleta(input) {
+  if (input.files && input.files[0]) {
+    fileCompleta = input.files[0];
+    const d = document.getElementById('cmp-file-name');
+    d.textContent = fileCompleta.name; d.style.display = 'block';
+  }
+}
+
+// Completa il corso senza allegare nulla
+async function completaSenzaDoc() {
+  const id = document.getElementById('cmp-corso-id').value;
+  const {error} = await sb.from('corsi_assegnati').update({stato:'completato'}).eq('id', id);
+  closeOverlay('modal-completa');
+  if (!error) { await caricaDati(); toast('Corso completato!'); }
+  else toast('Errore: ' + error.message);
+}
+
+// Completa il corso E crea una certificazione collegata con il documento
+async function completaConDoc() {
+  const id = document.getElementById('cmp-corso-id').value;
+  const c = CORSI_ASS.find(x => x.id === id);
+  if (!c) { closeOverlay('modal-completa'); return; }
+  const cons = document.getElementById('cmp-cons').value;
+  const scad = document.getElementById('cmp-scad').value;
+  const err = document.getElementById('cmp-err');
+  if (!cons) { err.textContent = 'Inserisci almeno la data di conseguimento.'; err.classList.add('show'); return; }
+
+  const btn = document.getElementById('btn-cmp'), txt = document.getElementById('btn-cmp-txt'), spin = document.getElementById('btn-cmp-spin');
+  btn.disabled = true; txt.style.display = 'none'; spin.style.display = 'block'; err.classList.remove('show');
+  try {
+    // 1) upload documento se presente
+    let docUrl = null;
+    if (fileCompleta) {
+      const ext = fileCompleta.name.split('.').pop();
+      const path = `${ME.id}/${Date.now()}.${ext}`;
+      const {error:ue} = await sb.storage.from('certificati').upload(path, fileCompleta);
+      if (!ue) { const {data:sd} = await sb.storage.from('certificati').createSignedUrl(path, 60*60*24*365); docUrl = sd?.signedUrl; }
+    }
+    // 2) marca il corso completato
+    await sb.from('corsi_assegnati').update({stato:'completato'}).eq('id', id);
+    // 3) crea la certificazione collegata
+    await sb.from('certificazioni').insert({
+      tech_id: ME.id, brand: c.brand, corso: c.corso,
+      data_conseguimento: cons, data_scadenza: scad || null,
+      documento_url: docUrl, note: 'Da corso completato', stato: 'attiva'
+    });
+    closeOverlay('modal-completa');
+    await caricaDati();
+    toast('Corso completato e certificazione creata!');
+  } catch(e) {
+    err.textContent = 'Errore: ' + e.message; err.classList.add('show');
+  } finally {
+    btn.disabled = false; txt.style.display = 'block'; spin.style.display = 'none';
+  }
 }
 
 function renderCert() {
