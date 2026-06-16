@@ -290,7 +290,7 @@ const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 let ME = null, CERTS = [], CORSI_ASS = [], fileSelezionato = null, editId = null;
 
-const BC = {"AVIXA":"#F59E0B","DANTE":"#EF4444","NDI":"#38BDF8","AXIS":"#4ADE80","FORTINET":"#F87171","CISCO":"#22D3EE","CRESTRON":"#4ADE80","BARCO CTRL":"#FB923C","BARCO VIDEO":"#FBBF24","NOVASTAR":"#C084FC","MILESTONE":"#F472B6","ALTA ACCESS":"#38BDF8","ALTA VIDEO":"#60A5FA","AVIGILON UNITY":"#818CF8","SHURE":"#A78BFA","Q-SYS":"#F87171","YAMAHA":"#FCD34D","POWERSOFT":"#34D399","TELEVIC":"#A78BFA","EXTRON":"#F87171","K-ARRAY":"#4ADE80","K-SCAPE":"#34D399","BRIGHTSIGN":"#60A5FA","ELMO":"#FCA5A1","KSENIA":"#C084FC","NOTIFIER":"#FB923C","TECNOFIRE":"#F87171","KNX & DALI":"#818CF8","MAXHUB":"#38BDF8"};
+const BC = {"AVIXA":"#F59E0B","DANTE":"#EF4444","NDI":"#38BDF8","AXIS":"#4ADE80","FORTINET":"#F87171","CISCO":"#22D3EE","CRESTRON":"#4ADE80","BARCO CTRL":"#FB923C","BARCO VIDEO":"#FBBF24","NOVASTAR":"#C084FC","MILESTONE":"#F472B6","ALTA ACCESS":"#38BDF8","ALTA VIDEO":"#60A5FA","AVIGILON UNITY":"#818CF8","AVIGILON":"#818CF8","BARCO":"#FB923C","SHURE":"#A78BFA","Q-SYS":"#F87171","YAMAHA":"#FCD34D","POWERSOFT":"#34D399","TELEVIC":"#A78BFA","EXTRON":"#F87171","K-ARRAY":"#4ADE80","K-SCAPE":"#34D399","BRIGHTSIGN":"#60A5FA","ELMO":"#FCA5A1","KSENIA":"#C084FC","NOTIFIER":"#FB923C","TECNOFIRE":"#F87171","KNX & DALI":"#818CF8","MAXHUB":"#38BDF8"};
 const bc  = b => BC[b?.toUpperCase()] || '#36CD81';
 
 // Mappa portali formativi ufficiali per brand
@@ -309,10 +309,12 @@ const PORTAL = {
   "EXTRON":"https://www.extron.com/training",
   "BARCO CTRL":"https://www.barco.com/en/support",
   "BARCO VIDEO":"https://www.barco.com/en/support",
+  "BARCO":"https://www.barco.com/en/support",
   "NOVASTAR":"https://www.novastar.tech",
   "ALTA ACCESS":"https://www.avigilon.com/training",
   "ALTA VIDEO":"https://www.avigilon.com/training",
   "AVIGILON UNITY":"https://www.avigilon.com/training",
+  "AVIGILON":"https://www.avigilon.com/training",
   "POWERSOFT":"https://www.powersoft.com/en/support/",
   "TELEVIC":"https://www.televic.com",
   "K-ARRAY":"https://www.k-array.com",
