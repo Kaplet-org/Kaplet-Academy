@@ -319,6 +319,8 @@ label.flabel {
     <button class="nav-tab" onclick="showSection('corsi',this)">Corsi assegnati</button>
     <button class="nav-tab" onclick="showSection('scadenze',this)">Scadenze</button>
     <button class="nav-tab" onclick="showSection('matrix',this)">Mappa cert.</button>
+    <button class="nav-tab" onclick="showSection('competenze',this)">Competenze</button>
+    <button class="nav-tab" onclick="showSection('settings',this)">Impostazioni</button>
   </div>
   <div class="nav-right">
     <span class="nav-user" id="nav-nome"></span>
@@ -391,6 +393,56 @@ label.flabel {
     <div class="section-head"><div class="section-title">Mappa certificazioni per brand</div></div>
     <p style="font-size:0.75rem;color:var(--gray);margin-bottom:1.5rem;font-weight:300">Per ogni brand, i tecnici certificati. Verde = attiva · Giallo = in scadenza 60gg · Grigio = scaduta · 📄 = clicca per aprire il documento</p>
     <div class="mx-wrap" id="matrix-body"></div>
+  </div>
+
+  <!-- COMPETENZE -->
+  <div class="section" id="section-competenze">
+    <div class="section-head"><div class="section-title">Cruscotto competenze tecniche</div></div>
+    <p style="font-size:0.75rem;color:var(--gray);margin-bottom:1.5rem;font-weight:300">Competenze calcolate automaticamente dalle certificazioni attive del team. Scala 1-5 stelle. Le certificazioni scadute non contano.</p>
+
+    <!-- KPI -->
+    <div id="comp-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--border);margin-bottom:2rem"></div>
+
+    <!-- Vertical -->
+    <div style="font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:1rem">Competenze per vertical</div>
+    <div id="comp-vertical" style="display:flex;flex-direction:column;gap:1px;background:var(--border);margin-bottom:2.5rem"></div>
+
+    <!-- Vendor -->
+    <div style="font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:1rem">Competenze per vendor</div>
+    <div id="comp-vendor" style="display:flex;flex-direction:column;gap:1px;background:var(--border)"></div>
+  </div>
+
+  <!-- IMPOSTAZIONI -->
+  <div class="section" id="section-settings">
+    <div class="section-head"><div class="section-title">Impostazioni</div></div>
+
+    <div style="max-width:560px">
+      <div style="font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:1rem">Notifiche scadenza certificazioni</div>
+      <p style="font-size:0.78rem;color:var(--gray);margin-bottom:1.5rem;font-weight:300;line-height:1.5">Imposta l'email del referente che riceverà gli avvisi di scadenza. Il tecnico interessato viene sempre incluso. <span style="color:var(--warn)">L'invio automatico delle email verrà attivato in una fase successiva.</span></p>
+
+      <div class="fld">
+        <label class="flabel">Email referente notifiche</label>
+        <input type="email" class="finput" id="set-referente" placeholder="referente@kaplet.it">
+        <div class="fhint">Riceverà un avviso per ogni certificazione in scadenza</div>
+      </div>
+      <div class="fld">
+        <label class="flabel">Giorni di preavviso</label>
+        <select class="fsel" id="set-preavviso">
+          <option value="30">30 giorni prima</option>
+          <option value="60" selected>60 giorni prima</option>
+          <option value="90">90 giorni prima</option>
+        </select>
+        <div class="fhint">Quando far partire l'avviso prima della scadenza</div>
+      </div>
+      <div class="fld">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="set-includi-tecnico" checked style="width:16px;height:16px">
+          <span style="font-size:.82rem;color:var(--white)">Includi sempre il tecnico interessato nell'avviso</span>
+        </label>
+      </div>
+      <button class="btn-primary" onclick="salvaSettings()" style="margin-top:1rem">Salva impostazioni</button>
+      <div class="msg" id="set-msg" style="margin-top:1rem"></div>
+    </div>
   </div>
 
 </div>
@@ -629,7 +681,7 @@ async function load() {
   const fb = document.getElementById('f-brand');
   fb.innerHTML = '<option value="">Tutti i brand</option>' + brands.map(b => `<option value="${b}">${b}</option>`).join('');
 
-  renderTeam(); renderCorsi(); renderScadenze(); renderMatrix();
+  renderTeam(); renderCorsi(); renderScadenze(); renderMatrix(); renderCompetenze(); caricaSettings();
 }
 
 /* ── TEAM ── */
@@ -777,6 +829,153 @@ function renderMatrix() {
   });
   h += '</div>';
   wrap.innerHTML = h;
+}
+
+/* ── CRUSCOTTO COMPETENZE ── */
+// Mappa ogni brand/vendor al suo vertical
+const VERTICAL_MAP = {
+  // Network
+  "CISCO":"Network", "FORTINET":"Network",
+  // Security fisica (TVCC, accessi, intrusion/incendio)
+  "AXIS":"Security fisica", "AVIGILON":"Security fisica", "AVIGILON UNITY":"Security fisica",
+  "ALTA VIDEO":"Security fisica", "ALTA ACCESS":"Security fisica", "MILESTONE":"Security fisica",
+  "ELMO":"Security fisica", "KSENIA":"Security fisica", "NOTIFIER":"Security fisica", "TECNOFIRE":"Security fisica",
+  // Audio
+  "SHURE":"Audio", "DANTE":"Audio", "Q-SYS":"Audio", "YAMAHA":"Audio", "POWERSOFT":"Audio",
+  "K-ARRAY":"Audio", "K-SCAPE":"Audio", "TELEVIC":"Audio",
+  // Video
+  "BARCO":"Video", "BARCO CTRL":"Video", "BARCO VIDEO":"Video", "NOVASTAR":"Video", "CRESTRON":"Video",
+  "EXTRON":"Video", "BRIGHTSIGN":"Video", "AVIXA":"Video", "NDI":"Video", "MAXHUB":"Video", "KNX & DALI":"Video"
+};
+const VERTICALS = ["Network","Security fisica","Audio","Video"];
+
+// Peso di una certificazione in base al livello del corso (dai path)
+function pesoCert(cert) {
+  // trovo il corso nel catalogo per leggere i suoi path
+  const corso = COURSES.find(c => c.nome === cert.corso);
+  if (!corso || !corso.paths || !corso.paths.length) return 2; // default base
+  // se ha un path specialist -> 5, advanced -> 3.5, core -> 2
+  if (corso.paths.some(p => p.startsWith('spec_'))) return 5;
+  if (corso.paths.some(p => p.startsWith('adv_'))) return 3.5;
+  return 2;
+}
+
+// Calcola competenza (1-5) per un gruppo di certificazioni attive
+function calcolaLivello(certs) {
+  if (!certs.length) return 0;
+  // media dei pesi, ma con un bonus se più tecnici diversi sono certificati
+  const pesoMedio = certs.reduce((s,c) => s + pesoCert(c), 0) / certs.length;
+  const tecniciDiversi = new Set(certs.map(c => c.tech_id)).size;
+  // bonus copertura: +0.3 per ogni tecnico oltre il primo, max +1.5
+  const bonus = Math.min(1.5, (tecniciDiversi - 1) * 0.3);
+  return Math.min(5, pesoMedio + bonus);
+}
+
+// Solo certificazioni attive (non scadute)
+function certsAttive() {
+  const oggi = new Date();
+  return CERTS.filter(c => !c.data_scadenza || new Date(c.data_scadenza) >= oggi);
+}
+
+// Stelle HTML (piene/vuote) da un valore 0-5
+function stelleHtml(val) {
+  const full = Math.round(val);
+  let s = '';
+  for (let i = 1; i <= 5; i++) {
+    s += `<span style="color:${i <= full ? 'var(--green)' : 'rgba(255,255,255,0.15)'};font-size:1.1rem">★</span>`;
+  }
+  return s;
+}
+
+function renderCompetenze() {
+  const attive = certsAttive();
+
+  // ── KPI ──
+  const tuttiVertical = VERTICALS.map(v => {
+    const certs = attive.filter(c => VERTICAL_MAP[c.brand] === v);
+    return { v, liv: calcolaLivello(certs), n: certs.length };
+  });
+  const livMedio = tuttiVertical.filter(x=>x.n>0).length
+    ? (tuttiVertical.reduce((s,x) => s + x.liv, 0) / VERTICALS.length) : 0;
+  const critici = tuttiVertical.filter(x => x.liv < 2).length;
+  const certScadute = CERTS.length - attive.length;
+
+  const kpi = document.getElementById('comp-kpi');
+  kpi.innerHTML = `
+    <div style="background:var(--card);padding:1.5rem;text-align:center">
+      <div style="font-size:2rem;font-weight:300;color:var(--green)">${livMedio.toFixed(1)}</div>
+      <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-top:4px">Livello medio</div>
+    </div>
+    <div style="background:var(--card);padding:1.5rem;text-align:center">
+      <div style="font-size:2rem;font-weight:300;color:var(--white)">${attive.length}</div>
+      <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-top:4px">Certificazioni attive</div>
+    </div>
+    <div style="background:var(--card);padding:1.5rem;text-align:center">
+      <div style="font-size:2rem;font-weight:300;color:${critici>0?'var(--warn)':'var(--green)'}">${critici}</div>
+      <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-top:4px">Vertical critici (&lt;2)</div>
+    </div>
+    <div style="background:var(--card);padding:1.5rem;text-align:center">
+      <div style="font-size:2rem;font-weight:300;color:${certScadute>0?'var(--danger)':'var(--green)'}">${certScadute}</div>
+      <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-top:4px">Cert. scadute (da rifare)</div>
+    </div>`;
+
+  // ── VERTICAL ──
+  const cv = document.getElementById('comp-vertical');
+  cv.innerHTML = tuttiVertical.map(x => {
+    const tecnici = new Set(attive.filter(c => VERTICAL_MAP[c.brand] === x.v).map(c => c.tech_id)).size;
+    return `<div style="background:var(--card);padding:1.1rem 1.4rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap">
+      <div style="min-width:150px;font-size:.85rem;color:var(--white);font-weight:500">${x.v}</div>
+      <div style="flex:1;min-width:120px">${stelleHtml(x.liv)}</div>
+      <div style="font-size:.85rem;color:var(--green);font-weight:500;min-width:40px">${x.liv.toFixed(1)}</div>
+      <div style="font-size:.65rem;color:var(--gray)">${tecnici} tecnic${tecnici===1?'o':'i'} · ${x.n} cert.</div>
+    </div>`;
+  }).join('');
+
+  // ── VENDOR ──
+  const brands = [...new Set(attive.map(c => c.brand))].sort();
+  const cvn = document.getElementById('comp-vendor');
+  if (!brands.length) {
+    cvn.innerHTML = '<div style="background:var(--card);padding:1.5rem;text-align:center;color:var(--gray);font-size:.8rem">Nessuna certificazione attiva</div>';
+    return;
+  }
+  cvn.innerHTML = brands.map(b => {
+    const certs = attive.filter(c => c.brand === b);
+    const liv = calcolaLivello(certs);
+    const tecnici = new Set(certs.map(c => c.tech_id)).size;
+    const vert = VERTICAL_MAP[b] || '—';
+    return `<div style="background:var(--card);padding:0.9rem 1.4rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:8px;min-width:150px">
+        <div class="mdot" style="background:${bc(b)}"></div>
+        <span style="font-size:.8rem;color:var(--white)">${b}</span>
+      </div>
+      <div style="flex:1;min-width:120px">${stelleHtml(liv)}</div>
+      <div style="font-size:.8rem;color:var(--green);min-width:40px">${liv.toFixed(1)}</div>
+      <div style="font-size:.6rem;color:var(--gray);min-width:90px">${vert}</div>
+      <div style="font-size:.65rem;color:var(--gray)">${tecnici} tecnic${tecnici===1?'o':'i'} · ${certs.length} cert.</div>
+    </div>`;
+  }).join('');
+}
+
+/* ── IMPOSTAZIONI ── */
+function caricaSettings() {
+  // carico da localStorage (config locale admin)
+  const s = JSON.parse(localStorage.getItem('kaplet_settings') || '{}');
+  if (s.referente) document.getElementById('set-referente').value = s.referente;
+  if (s.preavviso) document.getElementById('set-preavviso').value = s.preavviso;
+  if (s.includiTecnico !== undefined) document.getElementById('set-includi-tecnico').checked = s.includiTecnico;
+}
+
+function salvaSettings() {
+  const s = {
+    referente: document.getElementById('set-referente').value.trim(),
+    preavviso: document.getElementById('set-preavviso').value,
+    includiTecnico: document.getElementById('set-includi-tecnico').checked
+  };
+  localStorage.setItem('kaplet_settings', JSON.stringify(s));
+  const msg = document.getElementById('set-msg');
+  msg.textContent = 'Impostazioni salvate. (L\u2019invio automatico delle email verrà attivato in una fase successiva.)';
+  msg.className = 'msg success show';
+  setTimeout(() => msg.classList.remove('show'), 4000);
 }
 
 /* ── NAV ── */
