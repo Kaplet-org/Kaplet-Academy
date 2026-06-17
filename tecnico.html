@@ -544,7 +544,9 @@ async function completaConDoc() {
       const ext = fileCompleta.name.split('.').pop();
       const path = `${ME.id}/${Date.now()}.${ext}`;
       const {error:ue} = await sb.storage.from('certificati').upload(path, fileCompleta);
-      if (!ue) { const {data:sd} = await sb.storage.from('certificati').createSignedUrl(path, 60*60*24*365); docUrl = sd?.signedUrl; }
+      if (ue) { throw new Error('Upload documento fallito: ' + ue.message); }
+      const {data:pd} = sb.storage.from('certificati').getPublicUrl(path);
+      docUrl = pd?.publicUrl;
     }
     // 2) marca il corso completato
     await sb.from('corsi_assegnati').update({stato:'completato'}).eq('id', id);
@@ -712,7 +714,11 @@ async function salvaCert() {
       const ext = fileSelezionato.name.split('.').pop();
       const path = `${ME.id}/${Date.now()}.${ext}`;
       const {error:ue} = await sb.storage.from('certificati').upload(path, fileSelezionato);
-      if (!ue) { const {data:sd} = await sb.storage.from('certificati').createSignedUrl(path, 60*60*24*365); docUrl = sd?.signedUrl; }
+      if (ue) { throw new Error('Upload documento fallito: ' + ue.message); }
+      // bucket pubblico: uso getPublicUrl
+      const {data:pd} = sb.storage.from('certificati').getPublicUrl(path);
+      docUrl = pd?.publicUrl;
+      if (!docUrl) { throw new Error('Link documento non generato.'); }
     }
     if (editId) {
       await sb.from('certificazioni').update({brand,corso,data_conseguimento:cons,data_scadenza:scad||null,note:note||null,...(docUrl&&{documento_url:docUrl})}).eq('id', editId);
