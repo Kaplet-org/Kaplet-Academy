@@ -1170,7 +1170,7 @@ footer {
     </div>
     <div class="hero-inner">
       <div class="hero-wordmark"><img src="logo-kaplet-university.png" alt="Kaplet University" style="height:90px;width:auto;opacity:0.95"></div>
-      <h1>Piano Formativo<br>& Certificazioni 2026</h1>
+      <h1>Piano Formativo<br>& Certificazioni <span id="hero-anno">2026</span></h1>
       <button class="btn-hero" onclick="document.getElementById('corsi-section').scrollIntoView({behavior:'smooth'})">
         Esplora i corsi
       </button>
@@ -1397,7 +1397,7 @@ footer {
     </div>
   </div>
   <div class="footer-bottom">
-    <span>Copyright © 2026 Kaplet</span>
+    <span>Copyright © <span id="footer-anno">2026</span> Kaplet</span>
     <div style="display:flex;gap:1.5rem">
       <a href="https://kaplet.it/terms-conditions/" target="_blank">Terms & Conditions</a>
       <a href="https://kaplet.it/privacy-policy" target="_blank">Privacy Policy</a>
@@ -1575,6 +1575,10 @@ let curView='grid', filteredCourses=[...RAW];
 function initCourses(){
   document.getElementById('stat-total').textContent = RAW.length;
   document.getElementById('stat-brands').textContent = new Set(RAW.map(c=>c.brand)).size;
+  // anno automatico
+  const annoCorr = new Date().getFullYear();
+  const ha = document.getElementById('hero-anno'); if (ha) ha.textContent = annoCorr;
+  const fa = document.getElementById('footer-anno'); if (fa) fa.textContent = annoCorr;
 
   const rs=document.getElementById('role-filter');
   ROLES.forEach((r,i)=>{const o=document.createElement('option');o.value=i;o.textContent=r;rs.appendChild(o);});
