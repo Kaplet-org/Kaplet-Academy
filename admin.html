@@ -553,6 +553,24 @@ label.flabel {
   </div>
 </div>
 
+<!-- MODAL ANTEPRIMA DOCUMENTO -->
+<div class="overlay" id="modal-preview">
+  <div class="modal" style="max-width:900px;width:92%">
+    <div class="modal-head">
+      <div class="modal-title" id="prev-title">Anteprima documento</div>
+      <button class="modal-close" onclick="closeOverlay('modal-preview')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:0;background:#0a0a0a">
+      <div id="prev-content" style="width:100%;height:70vh;display:flex;align-items:center;justify-content:center;overflow:auto"></div>
+    </div>
+    <div class="modal-foot">
+      <a id="prev-download" href="#" download class="btn-secondary" style="text-decoration:none">⬇ Scarica</a>
+      <a id="prev-newtab" href="#" target="_blank" rel="noopener" class="btn-secondary" style="text-decoration:none">↗ Apri in nuova scheda</a>
+      <button class="btn-primary" onclick="closeOverlay('modal-preview')">Chiudi</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/courses.js"></script>
 <script>
@@ -705,6 +723,22 @@ function renderScadenze() {
 }
 
 /* ── MATRIX ── */
+// Apre l'anteprima di un documento (PDF o immagine) in un popup, con scarica
+function apriAnteprima(url, titolo) {
+  const cont = document.getElementById('prev-content');
+  document.getElementById('prev-title').textContent = titolo || 'Anteprima documento';
+  document.getElementById('prev-download').href = url;
+  document.getElementById('prev-newtab').href = url;
+  const clean = url.split('?')[0].toLowerCase();
+  const isImg = /\.(jpg|jpeg|png|gif|webp)$/.test(clean);
+  if (isImg) {
+    cont.innerHTML = `<img src="${url}" style="max-width:100%;max-height:100%;object-fit:contain" alt="Documento">`;
+  } else {
+    cont.innerHTML = `<iframe src="${url}" style="width:100%;height:100%;border:0;background:#fff"></iframe>`;
+  }
+  document.getElementById('modal-preview').classList.add('open');
+}
+
 function renderMatrix() {
   const brands = [...new Set(CERTS.map(c => c.brand))].sort();
   const wrap = document.getElementById('matrix-body');
@@ -729,7 +763,7 @@ function renderMatrix() {
       const hasDoc = !!c.documento_url;
       const titleTxt = `${c.corso}${c.data_scadenza ? ' · scad. ' + fmt(c.data_scadenza) : ''}${hasDoc ? ' · clicca per vedere il documento' : ''}`;
       const docIcon = hasDoc ? ' 📄' : '';
-      const clickAttr = hasDoc ? ` onclick="window.open('${c.documento_url}','_blank')" style="cursor:pointer"` : '';
+      const clickAttr = hasDoc ? ` onclick="apriAnteprima('${c.documento_url}','${(c.corso||'').replace(/'/g,"\\'")}')" style="cursor:pointer"` : '';
       return `<span class="pill ${cls}"${clickAttr} title="${titleTxt}">${t.nome} ${t.cognome} · ${label}${docIcon}</span>`;
     }).join('');
     h += `<div style="background:var(--card);padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:1.25rem;flex-wrap:wrap">
