@@ -156,6 +156,11 @@ tr:hover td { background: var(--card2); }
 .rb-admin  { color: var(--green); border-color: var(--green-border); background: var(--green-dim); }
 .rb-tec    { color: var(--gray); border-color: var(--border); }
 
+/* COMP TAB */
+.comp-tab { padding:6px 14px; background:transparent; border:none; border-bottom:2px solid transparent; color:var(--gray); font-family:inherit; font-size:.7rem; letter-spacing:.05em; text-transform:uppercase; cursor:pointer; transition:all .15s; }
+.comp-tab:hover { color:var(--white); }
+.comp-tab.active { color:var(--green); border-bottom-color:var(--green); }
+
 /* RUOLI CHECKBOX BOX */
 .ruoli-box { display:flex; flex-direction:column; gap:1px; background:var(--border); max-height:260px; overflow-y:auto; }
 .ruoli-grp-label { font-size:.58rem; letter-spacing:.1em; text-transform:uppercase; color:var(--green); padding:8px 12px 4px; background:var(--card2); }
@@ -398,18 +403,44 @@ label.flabel {
   <!-- COMPETENZE -->
   <div class="section" id="section-competenze">
     <div class="section-head"><div class="section-title">Cruscotto competenze tecniche</div></div>
-    <p style="font-size:0.75rem;color:var(--gray);margin-bottom:1.5rem;font-weight:300">Competenze calcolate automaticamente dalle certificazioni attive del team. Scala 1-5 stelle. Le certificazioni scadute non contano.</p>
+    <p style="font-size:0.75rem;color:var(--gray);margin-bottom:1.5rem;font-weight:300">Livello attuale calcolato dalle certificazioni attive. Le certificazioni scadute non contano. Imposta i target per vedere i gap formativi.</p>
 
     <!-- KPI -->
     <div id="comp-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--border);margin-bottom:2rem"></div>
 
-    <!-- Vertical -->
-    <div style="font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:1rem">Competenze per vertical</div>
+    <!-- Maturità per vertical -->
+    <div style="font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:1rem">Maturità per vertical</div>
     <div id="comp-vertical" style="display:flex;flex-direction:column;gap:1px;background:var(--border);margin-bottom:2.5rem"></div>
 
-    <!-- Vendor -->
-    <div style="font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:1rem">Competenze per vendor</div>
-    <div id="comp-vendor" style="display:flex;flex-direction:column;gap:1px;background:var(--border)"></div>
+    <!-- Vendor con tab -->
+    <div style="display:flex;align-items:center;gap:1.5rem;margin-bottom:1rem;flex-wrap:wrap">
+      <div style="font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--green)">Competenza per vendor</div>
+      <div style="display:flex;gap:0">
+        <button class="comp-tab active" onclick="switchCompTab('livello',this)">Livello</button>
+        <button class="comp-tab" onclick="switchCompTab('cert',this)">Certificazioni</button>
+      </div>
+    </div>
+    <div id="comp-vendor" style="display:flex;flex-direction:column;gap:1px;background:var(--border);margin-bottom:2.5rem"></div>
+
+    <!-- Heatmap -->
+    <div style="font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:1rem">Heatmap vertical × vendor</div>
+    <div id="comp-heatmap" style="overflow-x:auto;margin-bottom:0.75rem"></div>
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:2.5rem;font-size:.62rem;color:var(--gray)">
+      <span>Scala:</span>
+      <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:14px;height:14px;background:#E24B4A;display:inline-block;border-radius:2px"></span>0-1</span>
+      <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:14px;height:14px;background:#EF9F27;display:inline-block;border-radius:2px"></span>2-3</span>
+      <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:14px;height:14px;background:var(--green);display:inline-block;border-radius:2px"></span>4-5</span>
+    </div>
+
+    <!-- Priorità formative -->
+    <div style="font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:1rem">Priorità formative (gap maggiori)</div>
+    <div id="comp-priorita" style="margin-bottom:2.5rem"></div>
+
+    <!-- Grafico -->
+    <div style="font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:1rem">Distribuzione livelli per vertical</div>
+    <div style="background:var(--card);padding:1.5rem;border:1px solid var(--border)">
+      <canvas id="comp-chart" style="max-height:320px"></canvas>
+    </div>
   </div>
 
   <!-- IMPOSTAZIONI -->
@@ -623,6 +654,7 @@ label.flabel {
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/courses.js"></script>
 <script>
@@ -887,74 +919,219 @@ function stelleHtml(val) {
   return s;
 }
 
+// Target per vertical (modificabile, salvato in localStorage)
+function getTargets() {
+  const t = JSON.parse(localStorage.getItem('kaplet_targets') || '{}');
+  const def = {};
+  VERTICALS.forEach(v => def[v] = t[v] !== undefined ? t[v] : 4);
+  return def;
+}
+function setTarget(vertical, val) {
+  const t = JSON.parse(localStorage.getItem('kaplet_targets') || '{}');
+  t[vertical] = parseFloat(val);
+  localStorage.setItem('kaplet_targets', JSON.stringify(t));
+  renderCompetenze();
+}
+
+let compChart = null;
+let compTabAttiva = 'livello';
+
+function switchCompTab(tab, btn) {
+  compTabAttiva = tab;
+  document.querySelectorAll('.comp-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderVendorComp();
+}
+
+function colorLiv(v) {
+  if (v < 2) return '#E24B4A';
+  if (v < 4) return '#EF9F27';
+  return '#36CD81';
+}
+
 function renderCompetenze() {
   const attive = certsAttive();
+  const targets = getTargets();
+
+  // dati per vertical
+  const datiVert = VERTICALS.map(v => {
+    const certs = attive.filter(c => VERTICAL_MAP[c.brand] === v);
+    const liv = calcolaLivello(certs);
+    const tecnici = new Set(certs.map(c => c.tech_id)).size;
+    const gap = Math.max(0, targets[v] - liv);
+    return { v, liv, target: targets[v], gap, n: certs.length, tecnici };
+  });
 
   // ── KPI ──
-  const tuttiVertical = VERTICALS.map(v => {
-    const certs = attive.filter(c => VERTICAL_MAP[c.brand] === v);
-    return { v, liv: calcolaLivello(certs), n: certs.length };
-  });
-  const livMedio = tuttiVertical.filter(x=>x.n>0).length
-    ? (tuttiVertical.reduce((s,x) => s + x.liv, 0) / VERTICALS.length) : 0;
-  const critici = tuttiVertical.filter(x => x.liv < 2).length;
+  const conDati = datiVert.filter(x => x.n > 0);
+  const livMedio = conDati.length ? conDati.reduce((s,x)=>s+x.liv,0)/conDati.length : 0;
+  const gapMedio = datiVert.reduce((s,x)=>s+x.gap,0)/VERTICALS.length;
+  const critici = datiVert.filter(x => x.liv < 2).length;
   const certScadute = CERTS.length - attive.length;
-
-  const kpi = document.getElementById('comp-kpi');
-  kpi.innerHTML = `
+  document.getElementById('comp-kpi').innerHTML = `
     <div style="background:var(--card);padding:1.5rem;text-align:center">
       <div style="font-size:2rem;font-weight:300;color:var(--green)">${livMedio.toFixed(1)}</div>
       <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-top:4px">Livello medio</div>
     </div>
     <div style="background:var(--card);padding:1.5rem;text-align:center">
-      <div style="font-size:2rem;font-weight:300;color:var(--white)">${attive.length}</div>
-      <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-top:4px">Certificazioni attive</div>
+      <div style="font-size:2rem;font-weight:300;color:${gapMedio>1.5?'var(--warn)':'var(--green)'}">${gapMedio.toFixed(1)}</div>
+      <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-top:4px">Gap medio</div>
     </div>
     <div style="background:var(--card);padding:1.5rem;text-align:center">
-      <div style="font-size:2rem;font-weight:300;color:${critici>0?'var(--warn)':'var(--green)'}">${critici}</div>
-      <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-top:4px">Vertical critici (&lt;2)</div>
+      <div style="font-size:2rem;font-weight:300;color:${critici>0?'var(--danger)':'var(--green)'}">${critici}</div>
+      <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-top:4px">Vertical critici</div>
     </div>
     <div style="background:var(--card);padding:1.5rem;text-align:center">
       <div style="font-size:2rem;font-weight:300;color:${certScadute>0?'var(--danger)':'var(--green)'}">${certScadute}</div>
-      <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-top:4px">Cert. scadute (da rifare)</div>
+      <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-top:4px">Cert. scadute</div>
     </div>`;
 
-  // ── VERTICAL ──
-  const cv = document.getElementById('comp-vertical');
-  cv.innerHTML = tuttiVertical.map(x => {
-    const tecnici = new Set(attive.filter(c => VERTICAL_MAP[c.brand] === x.v).map(c => c.tech_id)).size;
-    return `<div style="background:var(--card);padding:1.1rem 1.4rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap">
-      <div style="min-width:150px;font-size:.85rem;color:var(--white);font-weight:500">${x.v}</div>
-      <div style="flex:1;min-width:120px">${stelleHtml(x.liv)}</div>
-      <div style="font-size:.85rem;color:var(--green);font-weight:500;min-width:40px">${x.liv.toFixed(1)}</div>
-      <div style="font-size:.65rem;color:var(--gray)">${tecnici} tecnic${tecnici===1?'o':'i'} · ${x.n} cert.</div>
+  // ── MATURITÀ PER VERTICAL (barre + stelle + target editabile + gap) ──
+  document.getElementById('comp-vertical').innerHTML = datiVert.map(x => {
+    const pct = (x.liv/5)*100;
+    const tpct = (x.target/5)*100;
+    const gapCls = x.gap <= 0.5 ? 'var(--green)' : x.gap <= 1.5 ? 'var(--warn)' : 'var(--danger)';
+    const gapLbl = x.gap <= 0.5 ? 'OK' : `gap ${x.gap.toFixed(1)}`;
+    return `<div style="background:var(--card);padding:1.1rem 1.4rem">
+      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:8px">
+        <div style="min-width:130px;font-size:.85rem;color:var(--white);font-weight:500">${x.v}</div>
+        <div style="flex:1">${stelleHtml(x.liv)}</div>
+        <div style="font-size:.8rem;color:${colorLiv(x.liv)};min-width:60px">${x.liv.toFixed(1)} <span style="color:var(--gray)">/ ${x.target}</span></div>
+        <span style="font-size:.6rem;padding:2px 8px;border:1px solid ${gapCls};color:${gapCls};border-radius:3px">${gapLbl}</span>
+        <div style="font-size:.62rem;color:var(--gray)">target:
+          <select onchange="setTarget('${x.v}',this.value)" style="background:var(--card2);border:1px solid var(--border);color:var(--white);font-size:.62rem;padding:2px 4px;border-radius:3px">
+            ${[1,2,3,4,5].map(n=>`<option value="${n}" ${n===x.target?'selected':''}>${n}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div style="position:relative;height:6px;background:var(--card2);border-radius:3px">
+        <div style="position:absolute;left:0;top:0;height:6px;width:${pct}%;background:${colorLiv(x.liv)};border-radius:3px"></div>
+        <div style="position:absolute;left:${tpct}%;top:-2px;height:10px;width:2px;background:var(--white)" title="Target ${x.target}"></div>
+      </div>
+      <div style="font-size:.6rem;color:var(--gray);margin-top:5px">${x.tecnici} tecnic${x.tecnici===1?'o':'i'} · ${x.n} certificazioni attive</div>
     </div>`;
   }).join('');
 
-  // ── VENDOR ──
+  renderVendorComp();
+  renderHeatmap(attive);
+  renderPriorita(datiVert);
+  renderCompChart(datiVert);
+}
+
+function renderVendorComp() {
+  const attive = certsAttive();
   const brands = [...new Set(attive.map(c => c.brand))].sort();
-  const cvn = document.getElementById('comp-vendor');
+  const cont = document.getElementById('comp-vendor');
   if (!brands.length) {
-    cvn.innerHTML = '<div style="background:var(--card);padding:1.5rem;text-align:center;color:var(--gray);font-size:.8rem">Nessuna certificazione attiva</div>';
+    cont.innerHTML = '<div style="background:var(--card);padding:1.5rem;text-align:center;color:var(--gray);font-size:.8rem">Nessuna certificazione attiva</div>';
     return;
   }
-  cvn.innerHTML = brands.map(b => {
-    const certs = attive.filter(c => c.brand === b);
-    const liv = calcolaLivello(certs);
-    const tecnici = new Set(certs.map(c => c.tech_id)).size;
-    const vert = VERTICAL_MAP[b] || '—';
-    return `<div style="background:var(--card);padding:0.9rem 1.4rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap">
-      <div style="display:flex;align-items:center;gap:8px;min-width:150px">
-        <div class="mdot" style="background:${bc(b)}"></div>
-        <span style="font-size:.8rem;color:var(--white)">${b}</span>
-      </div>
-      <div style="flex:1;min-width:120px">${stelleHtml(liv)}</div>
-      <div style="font-size:.8rem;color:var(--green);min-width:40px">${liv.toFixed(1)}</div>
-      <div style="font-size:.6rem;color:var(--gray);min-width:90px">${vert}</div>
-      <div style="font-size:.65rem;color:var(--gray)">${tecnici} tecnic${tecnici===1?'o':'i'} · ${certs.length} cert.</div>
-    </div>`;
-  }).join('');
+  if (compTabAttiva === 'livello') {
+    cont.innerHTML = brands.map(b => {
+      const certs = attive.filter(c => c.brand === b);
+      const liv = calcolaLivello(certs);
+      const tecnici = new Set(certs.map(c => c.tech_id)).size;
+      return `<div style="background:var(--card);padding:0.9rem 1.4rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:8px;min-width:150px">
+          <div class="mdot" style="background:${bc(b)}"></div><span style="font-size:.8rem;color:var(--white)">${b}</span>
+        </div>
+        <div style="flex:1;min-width:120px">${stelleHtml(liv)}</div>
+        <div style="font-size:.8rem;color:${colorLiv(liv)};min-width:40px">${liv.toFixed(1)}</div>
+        <div style="font-size:.6rem;color:var(--gray);min-width:90px">${VERTICAL_MAP[b]||'—'}</div>
+        <div style="font-size:.62rem;color:var(--gray)">${tecnici} tecnic${tecnici===1?'o':'i'}</div>
+      </div>`;
+    }).join('');
+  } else {
+    // tab certificazioni: barre col numero di cert
+    const max = Math.max(...brands.map(b => attive.filter(c=>c.brand===b).length));
+    cont.innerHTML = brands.map(b => {
+      const n = attive.filter(c => c.brand === b).length;
+      const pct = (n/max)*100;
+      return `<div style="background:var(--card);padding:0.9rem 1.4rem;display:flex;align-items:center;gap:1.5rem">
+        <div style="display:flex;align-items:center;gap:8px;min-width:150px">
+          <div class="mdot" style="background:${bc(b)}"></div><span style="font-size:.8rem;color:var(--white)">${b}</span>
+        </div>
+        <div style="flex:1;height:8px;background:var(--card2);border-radius:4px;position:relative">
+          <div style="position:absolute;left:0;top:0;height:8px;width:${pct}%;background:${bc(b)};border-radius:4px"></div>
+        </div>
+        <div style="font-size:.8rem;color:var(--white);min-width:30px">${n}</div>
+      </div>`;
+    }).join('');
+  }
 }
+
+function renderHeatmap(attive) {
+  const brands = [...new Set(attive.map(c => c.brand))].sort();
+  const cont = document.getElementById('comp-heatmap');
+  if (!brands.length) { cont.innerHTML = '<div style="color:var(--gray);font-size:.8rem">Nessun dato</div>'; return; }
+  // tabella vertical (righe) × vendor (colonne)
+  let h = '<table style="border-collapse:collapse;font-size:.62rem"><thead><tr><th style="padding:6px 8px;text-align:left;color:var(--gray)"></th>';
+  brands.forEach(b => { h += `<th style="padding:6px 4px;color:var(--gray);writing-mode:vertical-rl;transform:rotate(180deg);max-height:80px;white-space:nowrap">${b}</th>`; });
+  h += '</tr></thead><tbody>';
+  VERTICALS.forEach(v => {
+    h += `<tr><td style="padding:6px 8px;color:var(--white);white-space:nowrap">${v}</td>`;
+    brands.forEach(b => {
+      if (VERTICAL_MAP[b] !== v) { h += '<td style="padding:0;background:var(--card)"></td>'; return; }
+      const certs = attive.filter(c => c.brand === b);
+      const liv = certs.length ? calcolaLivello(certs) : 0;
+      let col = 'var(--card)';
+      if (certs.length) col = liv < 2 ? '#E24B4A' : liv < 4 ? '#EF9F27' : '#36CD81';
+      const txt = certs.length ? liv.toFixed(1) : '';
+      const txtCol = liv >= 4 ? '#0C0E0D' : '#fff';
+      h += `<td style="padding:8px 6px;background:${col};color:${txtCol};text-align:center;border:1px solid var(--black)" title="${v} · ${b}: ${txt}">${txt}</td>`;
+    });
+    h += '</tr>';
+  });
+  h += '</tbody></table>';
+  cont.innerHTML = h;
+}
+
+function renderPriorita(datiVert) {
+  // ordino per gap decrescente
+  const ord = [...datiVert].filter(x => x.gap > 0).sort((a,b) => b.gap - a.gap);
+  const cont = document.getElementById('comp-priorita');
+  if (!ord.length) { cont.innerHTML = '<div style="background:var(--card);padding:1.2rem;text-align:center;color:var(--green);font-size:.8rem">Nessun gap: tutti i vertical sono al target! 🎯</div>'; return; }
+  let h = '<div style="background:var(--card);border:1px solid var(--border)"><table style="width:100%;border-collapse:collapse;font-size:.78rem">';
+  h += '<thead><tr style="border-bottom:1px solid var(--border)"><th style="padding:.7rem 1rem;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray)">Vertical</th><th style="padding:.7rem 1rem;text-align:center;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray)">Attuale</th><th style="padding:.7rem 1rem;text-align:center;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray)">Target</th><th style="padding:.7rem 1rem;text-align:center;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray)">Gap</th></tr></thead><tbody>';
+  ord.forEach(x => {
+    const gapCls = x.gap <= 1.5 ? 'var(--warn)' : 'var(--danger)';
+    h += `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:.7rem 1rem;color:var(--white)">${x.v}</td>
+      <td style="padding:.7rem 1rem;text-align:center;color:${colorLiv(x.liv)}">${x.liv.toFixed(1)}</td>
+      <td style="padding:.7rem 1rem;text-align:center;color:var(--gray)">${x.target}</td>
+      <td style="padding:.7rem 1rem;text-align:center"><span style="padding:2px 10px;border:1px solid ${gapCls};color:${gapCls};border-radius:3px;font-size:.7rem">+${x.gap.toFixed(1)}</span></td>
+    </tr>`;
+  });
+  h += '</tbody></table></div>';
+  cont.innerHTML = h;
+}
+
+function renderCompChart(datiVert) {
+  if (typeof Chart === 'undefined') return;
+  const ctx = document.getElementById('comp-chart');
+  if (!ctx) return;
+  if (compChart) compChart.destroy();
+  compChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: datiVert.map(x => x.v),
+      datasets: [
+        { label: 'Livello attuale', data: datiVert.map(x => +x.liv.toFixed(1)), backgroundColor: '#36CD81' },
+        { label: 'Target', data: datiVert.map(x => x.target), backgroundColor: 'rgba(255,255,255,0.15)' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        y: { beginAtZero: true, max: 5, ticks: { color: '#929396' }, grid: { color: 'rgba(255,255,255,0.07)' } },
+        x: { ticks: { color: '#fff' }, grid: { display: false } }
+      },
+      plugins: { legend: { labels: { color: '#929396', font: { size: 11 } } } }
+    }
+  });
+}
+
+
 
 /* ── IMPOSTAZIONI ── */
 function caricaSettings() {
@@ -984,6 +1161,8 @@ function showSection(id, btn) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('section-' + id).classList.add('active');
   btn.classList.add('active');
+  // il grafico va ridisegnato quando la tab diventa visibile (canvas a 0px se nascosto)
+  if (id === 'competenze') { setTimeout(() => renderCompetenze(), 50); }
 }
 
 /* ── MODAL CERT ── */
