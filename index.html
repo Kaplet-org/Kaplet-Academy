@@ -1457,8 +1457,27 @@ footer {
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/courses.js"></script>
 <script>
+// ── GUARD LOGIN: la pagina è accessibile solo da utenti autenticati ──
+const SUPA_URL_IDX = 'https://mcgerrvorboagkukzuzc.supabase.co';
+const SUPA_KEY_IDX = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jZ2VycnZvcmJvYWdrdWt6dXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NjEyNzIsImV4cCI6MjA5MzQzNzI3Mn0.eDHZ-QUQLM2tFU4KPDEiIqXZsdfk_Cxnz7Ywxt6T46o';
+let sbIdx = null;
+try { sbIdx = supabase.createClient(SUPA_URL_IDX, SUPA_KEY_IDX); } catch(e) {}
+// nascondo subito il contenuto finché non verifico la sessione
+document.documentElement.style.visibility = 'hidden';
+(async function checkAuth(){
+  try {
+    const { data: { session } } = await sbIdx.auth.getSession();
+    if (!session) { window.location.replace('login.html'); return; }
+    // utente loggato: mostro la pagina
+    document.documentElement.style.visibility = 'visible';
+  } catch(e) {
+    window.location.replace('login.html');
+  }
+})();
+
 // I 171 corsi vengono dal file unico courses.js (stesso di admin/tecnico).
 // Costruisco ROLES e RAW nel formato che questa pagina usa, a partire da COURSES/RUOLI.
 const ROLES = RUOLI.map(r => r.label);
@@ -1905,6 +1924,5 @@ function removeCert(certId){
 
 initCourses();
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </body>
 </html>
