@@ -308,6 +308,12 @@ const SUPA_URL = 'https://mcgerrvorboagkukzuzc.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jZ2VycnZvcmJvYWdrdWt6dXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NjEyNzIsImV4cCI6MjA5MzQzNzI3Mn0.eDHZ-QUQLM2tFU4KPDEiIqXZsdfk_Cxnz7Ywxt6T46o';
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
+// Protezione XSS: rende sicuro qualsiasi testo prima di inserirlo in innerHTML
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 let ME = null, CERTS = [], CORSI_ASS = [], fileSelezionato = null, editId = null;
 
 const BC = {"AVIXA":"#F59E0B","DANTE":"#EF4444","NDI":"#38BDF8","AXIS":"#4ADE80","FORTINET":"#F87171","CISCO":"#22D3EE","CRESTRON":"#4ADE80","BARCO CTRL":"#FB923C","BARCO VIDEO":"#FBBF24","NOVASTAR":"#C084FC","MILESTONE":"#F472B6","ALTA ACCESS":"#38BDF8","ALTA VIDEO":"#60A5FA","AVIGILON UNITY":"#818CF8","AVIGILON":"#818CF8","BARCO":"#FB923C","SHURE":"#A78BFA","Q-SYS":"#F87171","YAMAHA":"#FCD34D","POWERSOFT":"#34D399","TELEVIC":"#A78BFA","EXTRON":"#F87171","K-ARRAY":"#4ADE80","K-SCAPE":"#34D399","BRIGHTSIGN":"#60A5FA","ELMO":"#FCA5A1","KSENIA":"#C084FC","NOTIFIER":"#FB923C","TECNOFIRE":"#F87171","KNX & DALI":"#818CF8","MAXHUB":"#38BDF8"};
@@ -461,8 +467,8 @@ function renderCorsi() {
       ? `<button class="btn-stato" style="border-color:var(--green);color:var(--green)" onclick="allegaAttestato('${c.id}')">+ Allega attestato</button>`
       : '';
     return `<div class="corso-card ${csClass(c.stato)}">
-      <div class="cc-brand" style="color:${col}">${c.brand}</div>
-      <div class="cc-nome">${c.corso}</div>
+      <div class="cc-brand" style="color:${col}">${esc(c.brand)}</div>
+      <div class="cc-nome">${esc(c.corso)}</div>
       <div class="cc-meta">Anno ${c.anno}${c.note ? ' · ' + c.note : ''}</div>
       ${scadHtml}
       ${haCert && c.stato==='completato' ? '<div style="font-size:.62rem;color:var(--green);margin-top:4px">✓ Attestato allegato</div>' : ''}
@@ -612,11 +618,11 @@ function renderCert() {
     }
     return `<div class="cert-card">
       <div class="cert-top">
-        <span class="cert-brand-tag" style="color:${col};border-color:${col}44;background:${col}12">${c.brand}</span>
+        <span class="cert-brand-tag" style="color:${col};border-color:${col}44;background:${col}12">${esc(c.brand)}</span>
         <span class="cert-stato-badge ${sbadge}">${slabel}</span>
       </div>
-      <div class="cert-nome">${c.corso}</div>
-      <div class="cert-meta">Conseguita: ${fmt(c.data_conseguimento)}${c.note?` · ${c.note}`:''}</div>
+      <div class="cert-nome">${esc(c.corso)}</div>
+      <div class="cert-meta">Conseguita: ${fmt(c.data_conseguimento)}${c.note?` · ${esc(c.note)}`:''}</div>
       ${scadHtml}
       <div class="cert-actions">
         ${c.documento_url ? `<button class="btn-sm" onclick="apriAnteprima('${c.documento_url}','${c.corso.replace(/'/g,"\\'")}')" title="Anteprima documento">👁 Anteprima</button>` : ''}
@@ -642,7 +648,7 @@ function renderPercorso() {
     const url = portalUrl(c.brand);
     const linkHtml = url ? `<a href="${url}" target="_blank" rel="noopener" style="display:inline-block;margin-top:6px;font-size:.62rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--green);text-decoration:none">Portale ↗</a>` : '';
     return `<div class="corso-card" style="border-left-color:${haCert?'var(--green)':'transparent'}">
-      <div class="cc-brand" style="color:${col}">${c.brand}</div>
+      <div class="cc-brand" style="color:${col}">${esc(c.brand)}</div>
       <div class="cc-nome">${c.nome}</div>
       <div class="cc-meta">${haCert ? '<span style="color:var(--green)">✓ Certificato</span>' : '<span style="color:rgba(255,255,255,.25)">◌ Non ancora conseguito</span>'}</div>
       ${linkHtml}
