@@ -1067,7 +1067,7 @@ function apriDettaglioVertical(vertical) {
   </div>`;
   document.getElementById('comp-detail').innerHTML = `
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:1.2rem">
-      <button class="btn-secondary" onclick="renderCompetenze()" style="width:auto;padding:8px 12px"><i class="ti ti-arrow-left" style="font-size:16px"></i></button>
+      <button onclick="renderCompetenze()" style="display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--green);color:var(--green);padding:8px 14px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:.75rem;letter-spacing:.03em" onmouseover="this.style.background='rgba(54,205,129,0.12)'" onmouseout="this.style.background='transparent'"><i class="ti ti-arrow-left" style="font-size:15px"></i> Indietro</button>
       <i class="ti ${VERT_ICON[vertical]}" style="font-size:26px;color:var(--gray)"></i>
       <div style="flex:1">
         <div style="font-size:1.1rem;font-weight:500">${vertical}</div>
