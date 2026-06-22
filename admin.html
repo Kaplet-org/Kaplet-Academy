@@ -639,6 +639,12 @@ const SUPA_URL = 'https://mcgerrvorboagkukzuzc.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jZ2VycnZvcmJvYWdrdWt6dXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NjEyNzIsImV4cCI6MjA5MzQzNzI3Mn0.eDHZ-QUQLM2tFU4KPDEiIqXZsdfk_Cxnz7Ywxt6T46o';
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
+// Protezione XSS: rende sicuro qualsiasi testo prima di inserirlo in innerHTML
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 let TECNICI = [], CERTS = [], CORSI_ASS = [];
 let selTec = [];
 
@@ -685,7 +691,7 @@ async function load() {
 
   // filtri
   const ft = document.getElementById('f-tec');
-  ft.innerHTML = '<option value="">Tutti i tecnici</option>' + TECNICI.map(t => `<option value="${t.id}">${t.nome} ${t.cognome}</option>`).join('');
+  ft.innerHTML = '<option value="">Tutti i tecnici</option>' + TECNICI.map(t => `<option value="${t.id}">${esc(t.nome)} ${esc(t.cognome)}</option>`).join('');
   const brands = [...new Set(CORSI_ASS.map(c => c.brand))].sort();
   const fb = document.getElementById('f-brand');
   fb.innerHTML = '<option value="">Tutti i brand</option>' + brands.map(b => `<option value="${b}">${b}</option>`).join('');
@@ -705,13 +711,13 @@ function renderTeam() {
         const done  = ca.filter(c => c.stato === 'completato').length;
         const pills = certs.map(c => {
           const g = gg(c.data_scadenza); const exp = c.data_scadenza && new Date(c.data_scadenza) < oggi;
-          return `<span class="pill ${exp?'pill-exp':g!==null&&g<=60?'pill-warn':'pill-ok'}" style="border-color:${bc(c.brand)}44">${c.brand}</span>`;
+          return `<span class="pill ${exp?'pill-exp':g!==null&&g<=60?'pill-warn':'pill-ok'}" style="border-color:${bc(c.brand)}44">${esc(c.brand)}</span>`;
         }).join('');
         const pct = Math.min(100, att.length * 10);
         const disattivato = t.attivo === false;
         return `<tr style="${disattivato ? 'opacity:0.45' : ''}">
           <td><div class="tec-info"><div class="av">${t.nome[0].toUpperCase()}</div>
-            <div><div class="tec-nome">${t.nome} ${t.cognome}${disattivato ? ' <span style="font-size:.6rem;color:var(--danger);text-transform:uppercase;letter-spacing:.05em">· disattivato</span>' : ''}</div><div class="tec-email">${t.email}</div></div></div></td>
+            <div><div class="tec-nome">${esc(t.nome)} ${esc(t.cognome)}${disattivato ? ' <span style="font-size:.6rem;color:var(--danger);text-transform:uppercase;letter-spacing:.05em">· disattivato</span>' : ''}</div><div class="tec-email">${esc(t.email)}</div></div></div></td>
           <td><span class="rb ${t.is_admin?'rb-admin':'rb-tec'}">${t.is_admin?'Admin':'Tecnico'}</span>${t.ruolo ? `<div style="font-size:.6rem;color:var(--gray);margin-top:3px">${t.ruolo}</div>` : ''}</td>
           <td><div class="pills">${pills||'<span style="font-size:.7rem;color:rgba(255,255,255,.2)">Nessuna</span>'}</div>
               <div style="font-size:.62rem;color:var(--gray);margin-top:4px">${att.length} attive · ${certs.length} totali</div></td>
@@ -752,11 +758,11 @@ function renderCorsi() {
     const scadHtml = c.scadenza ? `<div style="font-size:.65rem;color:${g<0?'var(--danger)':g<=30?'var(--warn)':'var(--gray)'}">Scadenza: ${fmt(c.scadenza)}</div>` : '';
     return `<div class="ca-card">
       <div class="ca-card-top">
-        <span class="ca-brand" style="color:${col}">${c.brand}</span>
+        <span class="ca-brand" style="color:${col}">${esc(c.brand)}</span>
         <span class="ca-stato ${csClass(c.stato)}">${csLabel(c.stato)}</span>
       </div>
-      <div class="ca-nome">${c.corso}</div>
-      <div class="ca-meta"><div>Anno ${c.anno}</div>${scadHtml}${c.note?`<div style="opacity:.5">${c.note}</div>`:''}</div>
+      <div class="ca-nome">${esc(c.corso)}</div>
+      <div class="ca-meta"><div>Anno ${c.anno}</div>${scadHtml}${c.note?`<div style="opacity:.5">${esc(c.note)}</div>`:''}</div>
       ${tec ? `<div class="ca-tec-row"><div class="av-sm">${tec.nome[0].toUpperCase()}</div><div class="ca-tec-nome">${tec.nome} ${tec.cognome}</div></div>` : ''}
       <div class="ca-actions">
         <button class="btn-sm" onclick="openModalStato('${c.id}','${c.stato}','${c.scadenza||''}','${(c.note||'').replace(/'/g,"\\'")}')">Modifica stato</button>
@@ -777,7 +783,7 @@ function renderScadenze() {
         const cls = g < 0 ? 'u-danger' : g <= 7 ? 'u-danger' : g <= 30 ? 'u-warn' : 'u-ok';
         return `<div class="scad-item">
           <span class="scad-urg ${cls}">${g < 0 ? 'SCADUTA' : g+'gg'}</span>
-          <div class="scad-info"><div class="scad-nome">${t ? t.nome+' '+t.cognome : '—'}</div><div class="scad-corso">${c.brand} — ${c.corso}</div></div>
+          <div class="scad-info"><div class="scad-nome">${t ? t.nome+' '+t.cognome : '—'}</div><div class="scad-corso">${esc(c.brand)} — ${esc(c.corso)}</div></div>
           <div class="scad-data">${fmt(c.data_scadenza)}</div>
         </div>`;
       }).join('');
@@ -822,10 +828,10 @@ function renderMatrix() {
       else if (g !== null && g <= 60) { cls = 'pill-warn'; label = g + 'gg'; }
       else { cls = 'pill-ok'; label = 'attiva'; }
       const hasDoc = !!c.documento_url;
-      const titleTxt = `${c.corso}${c.data_scadenza ? ' · scad. ' + fmt(c.data_scadenza) : ''}${hasDoc ? ' · clicca per vedere il documento' : ''}`;
+      const titleTxt = `${esc(c.corso)}${c.data_scadenza ? ' · scad. ' + fmt(c.data_scadenza) : ''}${hasDoc ? ' · clicca per vedere il documento' : ''}`;
       const docIcon = hasDoc ? ' 📄' : '';
       const clickAttr = hasDoc ? ` onclick="apriAnteprima('${c.documento_url}','${(c.corso||'').replace(/'/g,"\\'")}')" style="cursor:pointer"` : '';
-      return `<span class="pill ${cls}"${clickAttr} title="${titleTxt}">${t.nome} ${t.cognome} · ${label}${docIcon}</span>`;
+      return `<span class="pill ${cls}"${clickAttr} title="${titleTxt}">${esc(t.nome)} ${esc(t.cognome)} · ${label}${docIcon}</span>`;
     }).join('');
     h += `<div style="background:var(--card);padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:1.25rem;flex-wrap:wrap">
       <div style="display:flex;align-items:center;gap:8px;min-width:160px">
@@ -1054,7 +1060,7 @@ function apriDettaglioVertical(vertical) {
     const brandsT = [...new Set(certsV.filter(c => c.tech_id === tid).map(c => c.brand))];
     return `<div style="display:flex;align-items:center;gap:12px;padding:6px 0">
       <div style="width:34px;height:34px;border-radius:50%;background:rgba(54,205,129,0.15);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:500;color:var(--green);flex-shrink:0">${ini.toUpperCase()}</div>
-      <span style="font-size:.82rem;min-width:140px">${t.nome} ${t.cognome}</span>
+      <span style="font-size:.82rem;min-width:140px">${esc(t.nome)} ${esc(t.cognome)}</span>
       <div style="display:flex;gap:5px;flex-wrap:wrap">${brandsT.map(b=>`<span style="font-size:.58rem;padding:2px 9px;background:var(--card2);border-radius:20px;color:var(--gray)">${b}</span>`).join('')}</div>
     </div>`;
   }).join('') || '<div style="color:var(--gray);font-size:.8rem">Nessun tecnico certificato</div>';
@@ -1130,7 +1136,7 @@ function showSection(id, btn) {
 
 /* ── MODAL CERT ── */
 function openModalCert() {
-  document.getElementById('mc-tec').innerHTML = '<option value="">Seleziona...</option>' + TECNICI.map(t => `<option value="${t.id}">${t.nome} ${t.cognome}</option>`).join('');
+  document.getElementById('mc-tec').innerHTML = '<option value="">Seleziona...</option>' + TECNICI.map(t => `<option value="${t.id}">${esc(t.nome)} ${esc(t.cognome)}</option>`).join('');
   const brands = [...new Set(COURSES.map(c => c.brand))].sort();
   document.getElementById('mc-brand').innerHTML = '<option value="">Seleziona brand...</option>' + brands.map(b => `<option value="${b}">${b}</option>`).join('');
   document.getElementById('mc-corso').innerHTML = '<option value="">Prima seleziona brand...</option>';
@@ -1168,7 +1174,7 @@ function openModalAssegna() {
   document.getElementById('ma-tec-list').innerHTML = TECNICI.map(t => `
     <div class="tec-list-item" id="tli-${t.id}" onclick="toggleTec('${t.id}')">
       <div class="tli-check" id="tli-cb-${t.id}"></div>
-      <div><div class="tli-nome">${t.nome} ${t.cognome}</div><div class="tli-ruolo">${t.ruolo||''}</div></div>
+      <div><div class="tli-nome">${esc(t.nome)} ${esc(t.cognome)}</div><div class="tli-ruolo">${t.ruolo||''}</div></div>
     </div>`).join('');
   document.getElementById('ma-err').classList.remove('show');
   document.getElementById('modal-assegna').classList.add('open');
