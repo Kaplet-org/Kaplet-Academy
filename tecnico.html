@@ -525,10 +525,22 @@ function handleFileCompleta(input) {
 // Completa il corso senza allegare nulla
 async function completaSenzaDoc() {
   const id = document.getElementById('cmp-corso-id').value;
-  const {error} = await sb.from('corsi_assegnati').update({stato:'completato'}).eq('id', id);
+  const c = CORSI_ASS.find(x => x.id === id);
+  const cons = document.getElementById('cmp-cons').value || new Date().toISOString().split('T')[0];
+  const scad = document.getElementById('cmp-scad').value;
+  // marco il corso completato
+  await sb.from('corsi_assegnati').update({stato:'completato'}).eq('id', id);
+  // creo un record "solo corso" (senza documento): conta nelle competenze ma con peso ridotto
+  if (c) {
+    await sb.from('certificazioni').insert({
+      tech_id: ME.id, brand: c.brand, corso: c.corso,
+      data_conseguimento: cons, data_scadenza: scad || null,
+      documento_url: null, note: 'Corso seguito (senza certificazione)',
+      solo_corso: true, stato: 'attiva'
+    });
+  }
   closeOverlay('modal-completa');
-  if (!error) { await caricaDati(); toast('Corso completato!'); }
-  else toast('Errore: ' + error.message);
+  await caricaDati(); toast('Corso completato!');
 }
 
 // Completa il corso E crea una certificazione collegata con il documento
