@@ -394,7 +394,7 @@ label.flabel {
   <!-- MATRIX -->
   <div class="section" id="section-matrix">
     <div class="section-head"><div class="section-title">Mappa certificazioni per brand</div></div>
-    <p style="font-size:0.75rem;color:var(--gray);margin-bottom:1.5rem;font-weight:300">Per ogni brand, i tecnici certificati. Verde = attiva · Giallo = in scadenza 60gg · Grigio = scaduta · 📄 = clicca per aprire il documento</p>
+    <p style="font-size:0.75rem;color:var(--gray);margin-bottom:1.5rem;font-weight:300">Per ogni brand, i tecnici certificati. Verde = attiva · Giallo = in scadenza 60gg · Grigio = scaduta · 👁 = clicca per l'anteprima del documento</p>
     <div class="mx-wrap" id="matrix-body"></div>
   </div>
 
@@ -473,6 +473,21 @@ label.flabel {
         <div class="fld"><label class="flabel">Data scadenza</label><input type="date" class="finput" id="mc-scad"></div>
       </div>
       <div class="fld"><label class="flabel">Note</label><input type="text" class="finput" id="mc-note" placeholder="Es. numero certificato..."></div>
+      <div class="fld">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="mc-solo-corso" style="width:16px;height:16px" onchange="toggleSoloCorso()">
+          <span style="font-size:.82rem;color:var(--white)">Solo corso seguito (nessuna certificazione rilasciata)</span>
+        </label>
+        <div class="fhint">Spunta se il tecnico ha fatto il corso ma non rilascia un attestato/esame</div>
+      </div>
+      <div class="fld" id="mc-file-wrap">
+        <label class="flabel">Documento / Attestato</label>
+        <div class="file-zone" onclick="document.getElementById('mc-file-input').click()" style="border:1px dashed var(--border);padding:1rem;text-align:center;cursor:pointer;border-radius:8px">
+          <div style="font-size:.75rem;color:var(--gray)">Clicca per caricare · <strong>PDF, JPG, PNG</strong> max 10MB</div>
+          <div id="mc-file-name" style="font-size:.72rem;color:var(--green);margin-top:6px;display:none"></div>
+        </div>
+        <input type="file" id="mc-file-input" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleFileCertAdmin(this)">
+      </div>
       <div class="msg error" id="mc-err"></div>
     </div>
     <div class="modal-foot">
@@ -829,7 +844,7 @@ function renderMatrix() {
       else { cls = 'pill-ok'; label = 'attiva'; }
       const hasDoc = !!c.documento_url;
       const titleTxt = `${esc(c.corso)}${c.data_scadenza ? ' · scad. ' + fmt(c.data_scadenza) : ''}${hasDoc ? ' · clicca per vedere il documento' : ''}`;
-      const docIcon = hasDoc ? ' 📄' : '';
+      const docIcon = hasDoc ? ' 👁' : '';
       const clickAttr = hasDoc ? ` onclick="apriAnteprima('${c.documento_url}','${(c.corso||'').replace(/'/g,"\\'")}')" style="cursor:pointer"` : '';
       return `<span class="pill ${cls}"${clickAttr} title="${titleTxt}">${esc(t.nome)} ${esc(t.cognome)} · ${label}${docIcon}</span>`;
     }).join('');
@@ -866,24 +881,36 @@ const VERTICALS = ["Network","Security fisica","Audio","Video"];
 
 // Peso di una certificazione in base al livello del corso (dai path)
 function pesoCert(cert) {
-  // trovo il corso nel catalogo per leggere i suoi path
+  // peso in base al tipo di corso (dai path del catalogo)
   const corso = COURSES.find(c => c.nome === cert.corso);
-  if (!corso || !corso.paths || !corso.paths.length) return 2; // default base
-  // se ha un path specialist -> 5, advanced -> 3.5, core -> 2
-  if (corso.paths.some(p => p.startsWith('spec_'))) return 5;
-  if (corso.paths.some(p => p.startsWith('adv_'))) return 3.5;
-  return 2;
+  let base;
+  if (!corso || !corso.paths || !corso.paths.length) base = 1;
+  else if (corso.paths.some(p => p.startsWith('spec_'))) base = 4;     // specialist
+  else if (corso.paths.some(p => p.startsWith('adv_'))) base = 2.5;    // advanced
+  else base = 1;                                                       // core/base
+  // bonus +1 se è una certificazione vera con esame (non solo corso seguito)
+  // cert.solo_corso === true significa "corso seguito senza certificazione"
+  if (cert.solo_corso === true) {
+    base = base * 0.5; // un corso solo seguito vale la metà
+  } else {
+    base = base + 1;   // certificazione con esame: +1
+  }
+  return base;
 }
 
-// Calcola competenza (1-5) per un gruppo di certificazioni attive
+// Calcola competenza (1-5) per un gruppo di certificazioni attive — versione severa
 function calcolaLivello(certs) {
   if (!certs.length) return 0;
-  // media dei pesi, ma con un bonus se più tecnici diversi sono certificati
-  const pesoMedio = certs.reduce((s,c) => s + pesoCert(c), 0) / certs.length;
   const tecniciDiversi = new Set(certs.map(c => c.tech_id)).size;
-  // bonus copertura: +0.3 per ogni tecnico oltre il primo, max +1.5
-  const bonus = Math.min(1.5, (tecniciDiversi - 1) * 0.3);
-  return Math.min(5, pesoMedio + bonus);
+  // sommo i pesi (non media): più certifiche e più alte = più competenza
+  const sommaPesi = certs.reduce((s,c) => s + pesoCert(c), 0);
+  // normalizzo: il valore cresce ma con rendimenti decrescenti (radice)
+  // 1 corso base solo seguito (~0.5) -> ~0.7; 1 cert base con esame (2) -> ~1.4;
+  // serve accumulare certifiche avanzate E più tecnici per arrivare a 4-5
+  let liv = Math.sqrt(sommaPesi) * 1.0;
+  // leggero bonus copertura: più tecnici diversi alzano un po'
+  liv += Math.min(1, (tecniciDiversi - 1) * 0.25);
+  return Math.min(5, Math.max(0, liv));
 }
 
 // Solo certificazioni attive (non scadute)
@@ -1071,6 +1098,26 @@ function apriDettaglioVertical(vertical) {
     <i class="ti ti-circle-check" style="font-size:18px;color:var(--green)"></i>
     <span style="font-size:.78rem;color:var(--gray)">Area in linea con il target. Competenza solida.</span>
   </div>`;
+
+  // ── COPERTURA PERSONALE: 5 stelline piene = 5 tecnici ──
+  const nTec = tecniciSet.size;
+  const stelleP = Math.min(5, nTec);
+  let stellePersonale = '';
+  for (let i = 1; i <= 5; i++) {
+    stellePersonale += `<i class="ti ti-star" style="font-size:22px;color:${i <= stelleP ? 'var(--green)' : 'rgba(255,255,255,0.15)'}"></i>`;
+  }
+  const coperturaHtml = `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.3rem;margin-bottom:1.4rem">
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="flex:1;min-width:120px">
+        <div style="font-size:.85rem;font-weight:500;margin-bottom:2px">Copertura personale</div>
+        <div style="font-size:.62rem;color:var(--gray)">Quanti tecnici sappiamo operare in quest'area (1 stella = 1 tecnico)</div>
+      </div>
+      <div>${stellePersonale}</div>
+      <div style="font-size:.85rem;color:var(--green);font-weight:500">${nTec}<span style="font-size:.62rem;color:var(--gray)"> tecnic${nTec===1?'o':'i'}</span></div>
+    </div>
+    ${nTec < 2 ? `<div style="font-size:.62rem;color:var(--warn);margin-top:8px"><i class="ti ti-alert-triangle" style="font-size:12px"></i> Pochi tecnici: rischio se l\u2019unica persona è assente</div>` : ''}
+  </div>`;
+
   document.getElementById('comp-detail').innerHTML = `
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:1.2rem">
       <button onclick="renderCompetenze()" style="display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--green);color:var(--green);padding:8px 14px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:.75rem;letter-spacing:.03em" onmouseover="this.style.background='rgba(54,205,129,0.12)'" onmouseout="this.style.background='transparent'"><i class="ti ti-arrow-left" style="font-size:15px"></i> Indietro</button>
@@ -1092,6 +1139,7 @@ function apriDettaglioVertical(vertical) {
     </div>
     <div style="font-size:.65rem;font-weight:500;color:var(--gray);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Vendor dell'area</div>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.4rem">${vendorHtml}</div>
+    ${coperturaHtml}
     <div style="font-size:.65rem;font-weight:500;color:var(--gray);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Chi è certificato</div>
     <div style="display:flex;flex-direction:column;gap:8px">${tecHtml}</div>
   `;
@@ -1142,6 +1190,10 @@ function openModalCert() {
   document.getElementById('mc-corso').innerHTML = '<option value="">Prima seleziona brand...</option>';
   document.getElementById('mc-cons').value = new Date().toISOString().split('T')[0];
   document.getElementById('mc-scad').value = ''; document.getElementById('mc-note').value = '';
+  document.getElementById('mc-solo-corso').checked = false;
+  document.getElementById('mc-file-name').style.display = 'none';
+  document.getElementById('mc-file-wrap').style.display = 'block';
+  fileCertAdmin = null;
   document.getElementById('mc-err').classList.remove('show');
   document.getElementById('modal-cert').classList.add('open');
 }
@@ -1150,16 +1202,45 @@ function fillCorsiCert() {
   document.getElementById('mc-corso').innerHTML = !b ? '<option value="">Prima seleziona brand...</option>'
     : COURSES.filter(c => c.brand === b).map(c => `<option value="${c.nome||c.name}">${c.nome||c.name}</option>`).join('');
 }
+// se "solo corso", nascondo l'upload del documento (non c'è attestato)
+function toggleSoloCorso() {
+  const solo = document.getElementById('mc-solo-corso').checked;
+  document.getElementById('mc-file-wrap').style.display = solo ? 'none' : 'block';
+}
+let fileCertAdmin = null;
+function handleFileCertAdmin(input) {
+  if (input.files && input.files[0]) {
+    fileCertAdmin = input.files[0];
+    const d = document.getElementById('mc-file-name');
+    d.textContent = fileCertAdmin.name; d.style.display = 'block';
+  }
+}
 async function salvaCert() {
   const tid=document.getElementById('mc-tec').value, brand=document.getElementById('mc-brand').value;
   const corso=document.getElementById('mc-corso').value, cons=document.getElementById('mc-cons').value;
   const scad=document.getElementById('mc-scad').value, note=document.getElementById('mc-note').value;
+  const soloCorso=document.getElementById('mc-solo-corso').checked;
   const err=document.getElementById('mc-err');
   if (!tid||!brand||!corso||!cons) { err.textContent='Compila i campi obbligatori (*)'; err.classList.add('show'); return; }
   try {
-    const {error} = await sb.from('certificazioni').insert({tech_id:tid,brand,corso,data_conseguimento:cons,data_scadenza:scad||null,note:note||null,stato:'attiva'});
+    // upload documento se presente (e non è "solo corso")
+    let docUrl = null;
+    if (!soloCorso && fileCertAdmin) {
+      const ext = fileCertAdmin.name.split('.').pop();
+      const path = `${tid}/${Date.now()}.${ext}`;
+      const {error:ue} = await sb.storage.from('certificati').upload(path, fileCertAdmin);
+      if (ue) throw new Error('Upload documento fallito: ' + ue.message);
+      const {data:pd} = sb.storage.from('certificati').getPublicUrl(path);
+      docUrl = pd?.publicUrl;
+    }
+    const {error} = await sb.from('certificazioni').insert({
+      tech_id:tid, brand, corso,
+      data_conseguimento:cons, data_scadenza:scad||null,
+      note:note||null, documento_url:docUrl,
+      solo_corso: soloCorso, stato:'attiva'
+    });
     if (error) throw error;
-    closeOverlay('modal-cert'); toast('Certificazione aggiunta!'); await load();
+    closeOverlay('modal-cert'); toast(soloCorso?'Corso registrato!':'Certificazione aggiunta!'); await load();
   } catch(e) { err.textContent='Errore: '+e.message; err.classList.add('show'); }
 }
 
