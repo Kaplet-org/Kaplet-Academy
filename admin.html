@@ -158,6 +158,12 @@ tr:hover td { background: var(--card2); }
 
 /* COMP TAB */
 .comp-tab { display:none; }
+.cf-pill { padding:5px 12px; background:transparent; border:1px solid var(--border); color:var(--gray); font-family:inherit; font-size:.68rem; letter-spacing:.04em; border-radius:20px; cursor:pointer; transition:all .15s; }
+.cf-pill:hover { color:var(--white); border-color:var(--gray); }
+.cf-pill.cf-active { color:#000; background:var(--green); border-color:var(--green); font-weight:500; }
+.vt-tab { padding:4px 10px; background:transparent; border:1px solid var(--border); color:var(--gray); font-family:inherit; font-size:.62rem; letter-spacing:.04em; text-transform:uppercase; border-radius:4px; cursor:pointer; transition:all .15s; }
+.vt-tab:hover { color:var(--white); }
+.vt-tab.vt-active { color:var(--green); border-color:var(--green); }
 
 /* RUOLI CHECKBOX BOX */
 .ruoli-box { display:flex; flex-direction:column; gap:1px; background:var(--border); max-height:260px; overflow-y:auto; }
@@ -312,6 +318,7 @@ label.flabel {
 
 @media(max-width:768px) { nav { padding: 0 1.25rem; } .hero, .main { padding-left: 1.25rem; padding-right: 1.25rem; } .stats-row { flex-wrap: wrap; } }
 </style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
 </head>
 <body>
 
@@ -394,30 +401,69 @@ label.flabel {
   <!-- MATRIX -->
   <div class="section" id="section-matrix">
     <div class="section-head"><div class="section-title">Mappa certificazioni per brand</div></div>
-    <p style="font-size:0.75rem;color:var(--gray);margin-bottom:1.5rem;font-weight:300">Per ogni brand, i tecnici certificati. Verde = attiva · Giallo = in scadenza 60gg · Grigio = scaduta · 👁 = clicca per l'anteprima del documento</p>
+    <p style="font-size:0.75rem;color:var(--gray);margin-bottom:1.5rem;font-weight:300">Per ogni brand, i tecnici certificati. Verde = attiva · Giallo = in scadenza 60gg · Grigio = scaduta · <i class="ti ti-eye" style="font-size:11px;vertical-align:middle;color:var(--green)"></i> = clicca per l'anteprima del documento</p>
     <div class="mx-wrap" id="matrix-body"></div>
   </div>
 
   <!-- COMPETENZE -->
   <div class="section" id="section-competenze">
     <div class="section-head"><div class="section-title">Cruscotto competenze tecniche</div></div>
-    <p style="font-size:0.75rem;color:var(--gray);margin-bottom:1.5rem;font-weight:300">Competenze calcolate dalle certificazioni attive del team. Clicca su un vertical per vederne il dettaglio.</p>
+    <p style="font-size:0.75rem;color:var(--gray);margin-bottom:1rem;font-weight:300">Competenze calcolate dalle certificazioni attive del team. Pesi: base=1, advanced=2.5, specialist=4, +1 con esame.</p>
 
-    <!-- VISTA PANORAMICA -->
-    <div id="comp-overview">
-      <!-- KPI -->
-      <div id="comp-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:2rem"></div>
-
-      <!-- Gauge circolari -->
-      <div id="comp-gauges" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:2rem"></div>
-
-      <!-- Barre semaforo -->
-      <div style="font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:1rem">Dettaglio per vertical</div>
-      <div id="comp-bars" style="display:flex;flex-direction:column;gap:10px"></div>
+    <!-- Filtri area -->
+    <div id="cf-filter" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem;align-items:center">
+      <span style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-right:4px">Filtra per area:</span>
+      <button class="cf-pill cf-active" data-area="ALL" onclick="setAreaFilter('ALL',this)">Tutte</button>
+      <button class="cf-pill" data-area="Network" onclick="setAreaFilter('Network',this)">Network</button>
+      <button class="cf-pill" data-area="Security fisica" onclick="setAreaFilter('Security fisica',this)">Security fisica</button>
+      <button class="cf-pill" data-area="Audio" onclick="setAreaFilter('Audio',this)">Audio</button>
+      <button class="cf-pill" data-area="Video" onclick="setAreaFilter('Video',this)">Video</button>
     </div>
 
-    <!-- VISTA DETTAGLIO (nascosta finché non clicchi un vertical) -->
-    <div id="comp-detail" style="display:none"></div>
+    <!-- KPI 4 cards -->
+    <div id="comp-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:1.8rem"></div>
+
+    <!-- Riga 1: Maturità per area + Competenza per vendor -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:14px;margin-bottom:1.8rem">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.3rem">
+        <div style="font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:1rem">Maturità per area</div>
+        <div id="comp-aree" style="display:flex;flex-direction:column;gap:.9rem"></div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.3rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;gap:8px;flex-wrap:wrap">
+          <div style="font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--green)">Competenza per vendor</div>
+          <div style="display:flex;gap:4px">
+            <button class="vt-tab vt-active" data-tab="livello" onclick="setVTab('livello',this)">Livello</button>
+            <button class="vt-tab" data-tab="cert" onclick="setVTab('cert',this)">Certificazioni</button>
+            <button class="vt-tab" data-tab="copertura" onclick="setVTab('copertura',this)">Copertura</button>
+          </div>
+        </div>
+        <div id="comp-vendor" style="display:flex;flex-direction:column;gap:.55rem"></div>
+      </div>
+    </div>
+
+    <!-- Riga 2: Heatmap + Priorità formative -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:14px;margin-bottom:1.8rem">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.3rem;overflow-x:auto">
+        <div style="font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:1rem">Heatmap area × vendor</div>
+        <div id="comp-heatmap"></div>
+        <div style="display:flex;gap:14px;margin-top:.9rem;font-size:.6rem;color:var(--gray);align-items:center">
+          <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;background:#E24B4A;border-radius:3px"></div>0–1</div>
+          <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;background:#EF9F27;border-radius:3px"></div>2–3</div>
+          <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;background:#36CD81;border-radius:3px"></div>4–5</div>
+        </div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.3rem">
+        <div style="font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:1rem">Priorità formative per area</div>
+        <div id="comp-priorita" style="display:flex;flex-direction:column;gap:.5rem"></div>
+      </div>
+    </div>
+
+    <!-- Riga 3: Grafico a barre impilate -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.3rem">
+      <div style="font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:1rem">Distribuzione livelli per area</div>
+      <div style="position:relative;height:280px"><canvas id="comp-chart"></canvas></div>
+    </div>
   </div>
 
   <!-- IMPOSTAZIONI -->
@@ -844,7 +890,7 @@ function renderMatrix() {
       else { cls = 'pill-ok'; label = 'attiva'; }
       const hasDoc = !!c.documento_url;
       const titleTxt = `${esc(c.corso)}${c.data_scadenza ? ' · scad. ' + fmt(c.data_scadenza) : ''}${hasDoc ? ' · clicca per vedere il documento' : ''}`;
-      const docIcon = hasDoc ? ' 👁' : '';
+      const docIcon = hasDoc ? ' <i class="ti ti-eye" style="font-size:11px;vertical-align:middle"></i>' : '';
       const clickAttr = hasDoc ? ` onclick="apriAnteprima('${c.documento_url}','${(c.corso||'').replace(/'/g,"\\'")}')" style="cursor:pointer"` : '';
       return `<span class="pill ${cls}"${clickAttr} title="${titleTxt}">${esc(t.nome)} ${esc(t.cognome)} · ${label}${docIcon}</span>`;
     }).join('');
@@ -861,294 +907,292 @@ function renderMatrix() {
   wrap.innerHTML = h;
 }
 
-/* ── CRUSCOTTO COMPETENZE ── */
+/* ── CRUSCOTTO COMPETENZE (stile kaplet_competenze_dashboard) ── */
+
 // Mappa ogni brand/vendor al suo vertical
 const VERTICAL_MAP = {
-  // Network
   "CISCO":"Network", "FORTINET":"Network",
-  // Security fisica (TVCC, accessi, intrusion/incendio)
   "AXIS":"Security fisica", "AVIGILON":"Security fisica", "AVIGILON UNITY":"Security fisica",
   "ALTA VIDEO":"Security fisica", "ALTA ACCESS":"Security fisica", "MILESTONE":"Security fisica",
   "ELMO":"Security fisica", "KSENIA":"Security fisica", "NOTIFIER":"Security fisica", "TECNOFIRE":"Security fisica",
-  // Audio
   "SHURE":"Audio", "DANTE":"Audio", "Q-SYS":"Audio", "YAMAHA":"Audio", "POWERSOFT":"Audio",
   "K-ARRAY":"Audio", "K-SCAPE":"Audio", "TELEVIC":"Audio",
-  // Video
   "BARCO":"Video", "BARCO CTRL":"Video", "BARCO VIDEO":"Video", "NOVASTAR":"Video", "CRESTRON":"Video",
   "EXTRON":"Video", "BRIGHTSIGN":"Video", "AVIXA":"Video", "NDI":"Video", "MAXHUB":"Video", "KNX & DALI":"Video"
 };
 const VERTICALS = ["Network","Security fisica","Audio","Video"];
 
-// Peso di una certificazione in base al livello del corso (dai path)
 function pesoCert(cert) {
-  // peso in base al tipo di corso (dai path del catalogo)
   const corso = COURSES.find(c => c.nome === cert.corso);
   let base;
   if (!corso || !corso.paths || !corso.paths.length) base = 1;
-  else if (corso.paths.some(p => p.startsWith('spec_'))) base = 4;     // specialist
-  else if (corso.paths.some(p => p.startsWith('adv_'))) base = 2.5;    // advanced
-  else base = 1;                                                       // core/base
-  // bonus +1 se è una certificazione vera con esame (non solo corso seguito)
-  // cert.solo_corso === true significa "corso seguito senza certificazione"
-  if (cert.solo_corso === true) {
-    base = base * 0.5; // un corso solo seguito vale la metà
-  } else {
-    base = base + 1;   // certificazione con esame: +1
-  }
+  else if (corso.paths.some(p => p.startsWith('spec_'))) base = 4;
+  else if (corso.paths.some(p => p.startsWith('adv_'))) base = 2.5;
+  else base = 1;
+  if (cert.solo_corso === true) base = base * 0.5;
+  else base = base + 1;
   return base;
 }
 
-// Calcola competenza (1-5) per un gruppo di certificazioni attive — versione severa
 function calcolaLivello(certs) {
   if (!certs.length) return 0;
-  const tecniciDiversi = new Set(certs.map(c => c.tech_id)).size;
-  // sommo i pesi (non media): più certifiche e più alte = più competenza
-  const sommaPesi = certs.reduce((s,c) => s + pesoCert(c), 0);
-  // normalizzo: il valore cresce ma con rendimenti decrescenti (radice)
-  // 1 corso base solo seguito (~0.5) -> ~0.7; 1 cert base con esame (2) -> ~1.4;
-  // serve accumulare certifiche avanzate E più tecnici per arrivare a 4-5
-  let liv = Math.sqrt(sommaPesi) * 1.0;
-  // leggero bonus copertura: più tecnici diversi alzano un po'
-  liv += Math.min(1, (tecniciDiversi - 1) * 0.25);
+  const td = new Set(certs.map(c => c.tech_id)).size;
+  const sp = certs.reduce((s,c) => s + pesoCert(c), 0);
+  let liv = Math.sqrt(sp);
+  liv += Math.min(1, (td-1) * 0.25);
   return Math.min(5, Math.max(0, liv));
 }
 
-// Solo certificazioni attive (non scadute)
 function certsAttive() {
   const oggi = new Date();
   return CERTS.filter(c => !c.data_scadenza || new Date(c.data_scadenza) >= oggi);
 }
 
-// Stelle HTML (piene/vuote) da un valore 0-5
-function stelleHtml(val) {
-  const full = Math.round(val);
+// Stelle (mini, da 0 a 5)
+function stelle(v, size) {
+  size = size || 14;
+  const f = Math.round(v);
   let s = '';
-  for (let i = 1; i <= 5; i++) {
-    s += `<span style="color:${i <= full ? 'var(--green)' : 'rgba(255,255,255,0.15)'};font-size:1.1rem">★</span>`;
-  }
+  for (let i = 1; i <= 5; i++)
+    s += `<i class="ti ti-star" style="font-size:${size}px;color:${i<=f?'#36CD81':'rgba(255,255,255,0.18)'}"></i>`;
   return s;
 }
 
-// Target per vertical (modificabile, salvato in localStorage)
-function getTargets() {
-  const t = JSON.parse(localStorage.getItem('kaplet_targets') || '{}');
-  const def = {};
-  VERTICALS.forEach(v => def[v] = t[v] !== undefined ? t[v] : 4);
-  return def;
-}
-function setTarget(vertical, val) {
-  const t = JSON.parse(localStorage.getItem('kaplet_targets') || '{}');
-  t[vertical] = parseFloat(val);
-  localStorage.setItem('kaplet_targets', JSON.stringify(t));
+function colorLiv(v) { return v < 2 ? '#E24B4A' : v < 4 ? '#EF9F27' : '#36CD81'; }
+
+// stato filtro area + tab vendor
+let CF_AREA = 'ALL';
+let CF_VTAB = 'livello';
+let compChartInst = null;
+
+function setAreaFilter(area, btn) {
+  CF_AREA = area;
+  document.querySelectorAll('.cf-pill').forEach(b => b.classList.remove('cf-active'));
+  if (btn) btn.classList.add('cf-active');
   renderCompetenze();
 }
-
-function colorLiv(v) {
-  if (v < 2) return '#E24B4A';
-  if (v < 3.5) return '#EF9F27';
-  return '#36CD81';
-}
-function statoLiv(v) {
-  if (v < 2) return 'critico';
-  if (v < 3.5) return 'da migliorare';
-  return 'forte';
+function setVTab(tab, btn) {
+  CF_VTAB = tab;
+  document.querySelectorAll('.vt-tab').forEach(b => b.classList.remove('vt-active'));
+  if (btn) btn.classList.add('vt-active');
+  renderVendorTable();
 }
 
-const VERT_ICON = { "Network":"ti-network", "Security fisica":"ti-shield-lock", "Audio":"ti-volume", "Video":"ti-video" };
-const VERT_DESC = {
-  "Network":"Networking · Firewall · Sicurezza di rete",
-  "Security fisica":"TVCC · Controllo accessi · Antintrusione · Antincendio",
-  "Audio":"Audio professionale · DSP · Networking audio",
-  "Video":"Videowall · Signage · Collaboration · Controllo"
-};
-
-function datiVerticali() {
+// dati per area (rispettando il filtro)
+function datiAree() {
   const attive = certsAttive();
   const targets = getTargets();
   return VERTICALS.map(v => {
     const certs = attive.filter(c => VERTICAL_MAP[c.brand] === v);
-    const liv = calcolaLivello(certs);
-    const tecnici = new Set(certs.map(c => c.tech_id)).size;
-    return { v, liv, target: targets[v], gap: Math.max(0, targets[v] - liv), n: certs.length, tecnici };
+    return {
+      area: v,
+      liv: calcolaLivello(certs),
+      target: targets[v],
+      n: certs.length,
+      tecnici: new Set(certs.map(c => c.tech_id)).size
+    };
   });
 }
 
 function renderCompetenze() {
-  document.getElementById('comp-overview').style.display = 'block';
-  document.getElementById('comp-detail').style.display = 'none';
-  const dati = datiVerticali();
+  const dati = datiAree();
   const attive = certsAttive();
+
+  // ── KPI ──
   const conDati = dati.filter(x => x.n > 0);
   const livMedio = conDati.length ? conDati.reduce((s,x)=>s+x.liv,0)/conDati.length : 0;
-  const critici = dati.filter(x => x.liv < 2).length;
-  const oggi = new Date();
-  const inScad = CERTS.filter(c => {
-    if (!c.data_scadenza) return false;
-    const g = Math.ceil((new Date(c.data_scadenza) - oggi)/(1000*60*60*24));
-    return g >= 0 && g <= 60;
-  }).length;
+  const targetMedio = dati.reduce((s,x)=>s+x.target,0)/dati.length;
+  const gapMedio = dati.reduce((s,x)=>s+Math.max(0,x.target-x.liv),0)/dati.length;
+  const critiche = dati.filter(x => x.liv < 2 && x.n > 0).length;
   document.getElementById('comp-kpi').innerHTML = `
-    <div style="background:var(--card);padding:1.2rem;text-align:center;border-radius:8px">
-      <div style="font-size:1.8rem;font-weight:300;color:${colorLiv(livMedio)}">${livMedio.toFixed(1)}</div>
-      <div style="font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gray);margin-top:4px">Livello medio</div>
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem">
+      <div style="font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-bottom:6px">Livello medio attuale</div>
+      <div style="display:flex;align-items:center;gap:8px"><div style="font-size:1.6rem;font-weight:300;color:${colorLiv(livMedio)}">${livMedio.toFixed(1)}</div><div style="font-size:.65rem;color:var(--gray)">/ ${targetMedio.toFixed(1)} target</div></div>
+      <div style="margin-top:4px">${stelle(livMedio,12)}</div>
     </div>
-    <div style="background:var(--card);padding:1.2rem;text-align:center;border-radius:8px">
-      <div style="font-size:1.8rem;font-weight:300;color:var(--white)">${attive.length}</div>
-      <div style="font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gray);margin-top:4px">Cert. attive</div>
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem">
+      <div style="font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-bottom:6px">Gap medio</div>
+      <div style="font-size:1.6rem;font-weight:300;color:${gapMedio>1.5?'#EF9F27':'#36CD81'}">${gapMedio.toFixed(1)}</div>
+      <div style="font-size:.62rem;color:var(--gray);margin-top:4px">distanza dal target</div>
     </div>
-    <div style="background:var(--card);padding:1.2rem;text-align:center;border-radius:8px">
-      <div style="font-size:1.8rem;font-weight:300;color:${critici>0?'var(--danger)':'var(--green)'}">${critici}</div>
-      <div style="font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gray);margin-top:4px">Aree critiche</div>
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem">
+      <div style="font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-bottom:6px">Aree critiche</div>
+      <div style="font-size:1.6rem;font-weight:300;color:${critiche>0?'#E24B4A':'#36CD81'}">${critiche}</div>
+      <div style="font-size:.62rem;color:var(--gray);margin-top:4px">sotto soglia livello 2</div>
     </div>
-    <div style="background:var(--card);padding:1.2rem;text-align:center;border-radius:8px">
-      <div style="font-size:1.8rem;font-weight:300;color:${inScad>0?'var(--warn)':'var(--green)'}">${inScad}</div>
-      <div style="font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gray);margin-top:4px">In scadenza 60gg</div>
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem">
+      <div style="font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-bottom:6px">Certificazioni attive</div>
+      <div style="font-size:1.6rem;font-weight:300;color:var(--white)">${attive.length}</div>
+      <div style="font-size:.62rem;color:var(--gray);margin-top:4px">${new Set(attive.map(c=>c.tech_id)).size} tecnici coinvolti</div>
     </div>`;
-  renderGauges(dati);
-  renderBars(dati);
+
+  // ── MATURITÀ PER AREA (barre + stelle + target editabile + gap) ──
+  const areeView = CF_AREA === 'ALL' ? dati : dati.filter(x => x.area === CF_AREA);
+  document.getElementById('comp-aree').innerHTML = areeView.map(x => {
+    const pct = (x.liv/5)*100, tpct = (x.target/5)*100;
+    const gap = Math.max(0, x.target - x.liv);
+    const gapCol = gap <= 0.5 ? '#36CD81' : gap <= 1.5 ? '#EF9F27' : '#E24B4A';
+    const gapLbl = gap <= 0.5 ? 'OK' : `gap ${gap.toFixed(1)}`;
+    return `<div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px;flex-wrap:wrap">
+        <div style="font-size:.8rem;color:var(--white);font-weight:500;min-width:120px">${x.area}</div>
+        <div style="flex:1">${stelle(x.liv,13)}</div>
+        <span style="font-size:.6rem;padding:2px 8px;background:${gapCol};color:#000;border-radius:3px;font-weight:500">${gapLbl}</span>
+        <span style="font-size:.65rem;color:var(--gray)">target
+          <select onchange="setTarget('${x.area}',this.value)" style="background:var(--card2);border:1px solid var(--border);color:var(--white);font-size:.65rem;padding:1px 3px;border-radius:3px">
+            ${[1,2,3,4,5].map(n=>`<option value="${n}" ${n===x.target?'selected':''}>${n}</option>`).join('')}
+          </select>
+        </span>
+      </div>
+      <div style="position:relative;height:6px;background:var(--card2);border-radius:3px">
+        <div style="position:absolute;left:0;top:0;height:6px;width:${pct}%;background:${colorLiv(x.liv)};border-radius:3px"></div>
+        <div style="position:absolute;left:${tpct}%;top:-2px;height:10px;width:2px;background:var(--white)" title="target ${x.target}"></div>
+      </div>
+      <div style="font-size:.58rem;color:var(--gray);margin-top:3px">${x.tecnici} tecnic${x.tecnici===1?'o':'i'} · ${x.n} cert.</div>
+    </div>`;
+  }).join('') || '<div style="color:var(--gray);font-size:.8rem">Nessuna area in questo filtro</div>';
+
+  renderVendorTable();
+  renderHeatmap();
+  renderPriorita(dati);
+  renderCompChart(dati);
 }
 
-function renderGauges(dati) {
-  const cont = document.getElementById('comp-gauges');
-  cont.innerHTML = dati.map(d => {
-    const r = 42, circ = 2*Math.PI*r, off = circ*(1 - d.liv/5);
-    return `<div onclick="apriDettaglioVertical('${d.v}')" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1rem;text-align:center;cursor:pointer" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">
-      <div style="position:relative;width:100px;height:100px;margin:0 auto 10px">
-        <svg width="100" height="100" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="${r}" fill="none" stroke="var(--card2)" stroke-width="7"/>
-          <circle cx="50" cy="50" r="${r}" fill="none" stroke="${colorLiv(d.liv)}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 50 50)"/>
-        </svg>
-        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">
-          <div style="font-size:1.5rem;font-weight:500;color:${colorLiv(d.liv)}">${d.liv.toFixed(1)}</div>
-          <div style="font-size:.6rem;color:var(--gray)">/ ${d.target}</div>
-        </div>
-      </div>
-      <div style="font-size:.85rem;font-weight:500;color:var(--white);margin-bottom:3px">${d.v}</div>
-      <div style="font-size:.62rem;color:var(--gray)">${d.tecnici} tecnic${d.tecnici===1?'o':'i'} · ${d.n} cert.</div>
-    </div>`;
-  }).join('');
-}
-
-function renderBars(dati) {
-  const cont = document.getElementById('comp-bars');
-  const ord = [...dati].sort((a,b) => b.liv - a.liv);
-  cont.innerHTML = ord.map(d => {
-    const pct = d.liv/5*100, tpct = d.target/5*100;
-    const col = colorLiv(d.liv), st = statoLiv(d.liv);
-    return `<div onclick="apriDettaglioVertical('${d.v}')" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;cursor:pointer" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
-        <i class="ti ${VERT_ICON[d.v]}" style="font-size:20px;color:var(--gray)"></i>
-        <span style="font-size:.9rem;font-weight:500;flex:1">${d.v}</span>
-        <span style="font-size:.6rem;font-weight:500;color:${col};background:${col}1f;padding:3px 10px;border-radius:20px">${st}</span>
-        <span style="font-size:.9rem;font-weight:500;color:${col};min-width:55px;text-align:right">${d.liv.toFixed(1)}<span style="font-size:.62rem;color:var(--gray)"> / ${d.target}</span></span>
-      </div>
-      <div style="position:relative;height:10px;background:var(--card2);border-radius:5px">
-        <div style="position:absolute;left:0;top:0;height:10px;width:${pct}%;background:${col};border-radius:5px"></div>
-        <div style="position:absolute;left:${tpct}%;top:-3px;height:16px;width:2px;background:var(--white)" title="Target ${d.target}"></div>
-      </div>
-      <div style="font-size:.6rem;color:var(--gray);margin-top:6px">${d.tecnici} tecnic${d.tecnici===1?'o':'i'} · ${d.n} certificazioni · la linea bianca è il target</div>
-    </div>`;
-  }).join('');
-}
-
-function apriDettaglioVertical(vertical) {
+// ── TABELLA VENDOR (filtrata per area) con 3 tab: Livello/Cert/Copertura ──
+function renderVendorTable() {
   const attive = certsAttive();
-  const targets = getTargets();
-  const certsV = attive.filter(c => VERTICAL_MAP[c.brand] === vertical);
-  const liv = calcolaLivello(certsV);
-  const target = targets[vertical];
-  const gap = Math.max(0, target - liv);
-  const tecniciSet = new Set(certsV.map(c => c.tech_id));
-  const oggi = new Date();
-  const inScad = certsV.filter(c => {
-    if (!c.data_scadenza) return false;
-    const g = Math.ceil((new Date(c.data_scadenza) - oggi)/(1000*60*60*24));
-    return g >= 0 && g <= 60;
-  }).length;
-  const brandsV = [...new Set(certsV.map(c => c.brand))].sort();
-  const vendorHtml = brandsV.length ? brandsV.map(b => {
-    const cb = certsV.filter(c => c.brand === b);
-    const lb = calcolaLivello(cb);
-    const tb = new Set(cb.map(c => c.tech_id)).size;
-    return `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:.9rem 1.1rem;display:flex;align-items:center;gap:14px">
-      <div class="mdot" style="background:${bc(b)};flex-shrink:0"></div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:.85rem;font-weight:500">${b}</div>
-        <div style="font-size:.62rem;color:var(--gray)">${tb} tecnic${tb===1?'o':'i'} · ${cb.length} cert.</div>
-      </div>
-      <div>${stelleHtml(lb)}</div>
-      <div style="font-size:.85rem;font-weight:500;color:${colorLiv(lb)};min-width:30px;text-align:right">${lb.toFixed(1)}</div>
-    </div>`;
-  }).join('') : '<div style="background:var(--card);padding:1.2rem;text-align:center;color:var(--gray);font-size:.8rem;border-radius:12px">Nessuna certificazione attiva in questo vertical</div>';
-  const tecHtml = [...tecniciSet].map(tid => {
-    const t = TECNICI.find(x => x.id === tid);
-    if (!t) return '';
-    const ini = ((t.nome||'')[0]||'') + ((t.cognome||'')[0]||'');
-    const brandsT = [...new Set(certsV.filter(c => c.tech_id === tid).map(c => c.brand))];
-    return `<div style="display:flex;align-items:center;gap:12px;padding:6px 0">
-      <div style="width:34px;height:34px;border-radius:50%;background:rgba(54,205,129,0.15);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:500;color:var(--green);flex-shrink:0">${ini.toUpperCase()}</div>
-      <span style="font-size:.82rem;min-width:140px">${esc(t.nome)} ${esc(t.cognome)}</span>
-      <div style="display:flex;gap:5px;flex-wrap:wrap">${brandsT.map(b=>`<span style="font-size:.58rem;padding:2px 9px;background:var(--card2);border-radius:20px;color:var(--gray)">${b}</span>`).join('')}</div>
-    </div>`;
-  }).join('') || '<div style="color:var(--gray);font-size:.8rem">Nessun tecnico certificato</div>';
-  const alertHtml = liv < target ? `<div style="background:var(--card2);border-left:3px solid ${colorLiv(liv)};padding:.8rem 1rem;margin-bottom:1.2rem;display:flex;align-items:center;gap:10px">
-    <i class="ti ti-alert-triangle" style="font-size:18px;color:${colorLiv(liv)}"></i>
-    <span style="font-size:.78rem;color:var(--gray)">Area sotto il target. Gap di <strong style="color:${colorLiv(liv)}">${gap.toFixed(1)} punti</strong> — ${gap>1.5?'priorità formativa alta':'da rafforzare'}.</span>
-  </div>` : `<div style="background:var(--card2);border-left:3px solid var(--green);padding:.8rem 1rem;margin-bottom:1.2rem;display:flex;align-items:center;gap:10px">
-    <i class="ti ti-circle-check" style="font-size:18px;color:var(--green)"></i>
-    <span style="font-size:.78rem;color:var(--gray)">Area in linea con il target. Competenza solida.</span>
-  </div>`;
+  // filtro per area se selezionata
+  const filtered = CF_AREA === 'ALL' ? attive : attive.filter(c => VERTICAL_MAP[c.brand] === CF_AREA);
+  const brands = [...new Set(filtered.map(c => c.brand))].sort();
+  const cont = document.getElementById('comp-vendor');
+  if (!brands.length) { cont.innerHTML = '<div style="color:var(--gray);font-size:.78rem;padding:.5rem 0">Nessun vendor in questa area</div>'; return; }
 
-  // ── COPERTURA PERSONALE: 5 stelline piene = 5 tecnici ──
-  const nTec = tecniciSet.size;
-  const stelleP = Math.min(5, nTec);
-  let stellePersonale = '';
-  for (let i = 1; i <= 5; i++) {
-    stellePersonale += `<i class="ti ti-star" style="font-size:22px;color:${i <= stelleP ? 'var(--green)' : 'rgba(255,255,255,0.15)'}"></i>`;
+  if (CF_VTAB === 'livello') {
+    cont.innerHTML = brands.map(b => {
+      const certs = filtered.filter(c => c.brand === b);
+      const liv = calcolaLivello(certs);
+      const vert = VERTICAL_MAP[b] || '—';
+      return `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)">
+        <div class="mdot" style="background:${bc(b)};flex-shrink:0"></div>
+        <span style="font-size:.78rem;color:var(--white);min-width:110px">${b}</span>
+        <span style="font-size:.55rem;color:var(--gray);min-width:90px">${vert}</span>
+        <div style="flex:1">${stelle(liv,13)}</div>
+      </div>`;
+    }).join('');
+  } else if (CF_VTAB === 'cert') {
+    const max = Math.max(...brands.map(b => filtered.filter(c=>c.brand===b).length));
+    cont.innerHTML = brands.map(b => {
+      const n = filtered.filter(c => c.brand === b).length;
+      const pct = (n/max)*100;
+      return `<div style="display:flex;align-items:center;gap:10px;padding:6px 0">
+        <div class="mdot" style="background:${bc(b)};flex-shrink:0"></div>
+        <span style="font-size:.78rem;color:var(--white);min-width:110px">${b}</span>
+        <div style="flex:1;height:8px;background:var(--card2);border-radius:4px;position:relative">
+          <div style="position:absolute;left:0;top:0;height:8px;width:${pct}%;background:${bc(b)};border-radius:4px"></div>
+        </div>
+        <span style="font-size:.78rem;color:var(--white);min-width:24px;text-align:right">${n}</span>
+      </div>`;
+    }).join('');
+  } else { // copertura: stelle = numero tecnici (max 5)
+    cont.innerHTML = brands.map(b => {
+      const certs = filtered.filter(c => c.brand === b);
+      const nTec = new Set(certs.map(c => c.tech_id)).size;
+      const stelleP = Math.min(5, nTec);
+      let s = '';
+      for (let i = 1; i <= 5; i++)
+        s += `<i class="ti ti-star" style="font-size:13px;color:${i<=stelleP?'#36CD81':'rgba(255,255,255,0.18)'}"></i>`;
+      return `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)">
+        <div class="mdot" style="background:${bc(b)};flex-shrink:0"></div>
+        <span style="font-size:.78rem;color:var(--white);min-width:110px">${b}</span>
+        <div style="flex:1">${s}</div>
+        <span style="font-size:.65rem;color:var(--gray);min-width:50px;text-align:right">${nTec} tec.</span>
+      </div>`;
+    }).join('');
   }
-  const coperturaHtml = `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.3rem;margin-bottom:1.4rem">
-    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-      <div style="flex:1;min-width:120px">
-        <div style="font-size:.85rem;font-weight:500;margin-bottom:2px">Copertura personale</div>
-        <div style="font-size:.62rem;color:var(--gray)">Quanti tecnici sappiamo operare in quest'area (1 stella = 1 tecnico)</div>
-      </div>
-      <div>${stellePersonale}</div>
-      <div style="font-size:.85rem;color:var(--green);font-weight:500">${nTec}<span style="font-size:.62rem;color:var(--gray)"> tecnic${nTec===1?'o':'i'}</span></div>
-    </div>
-    ${nTec < 2 ? `<div style="font-size:.62rem;color:var(--warn);margin-top:8px"><i class="ti ti-alert-triangle" style="font-size:12px"></i> Pochi tecnici: rischio se l\u2019unica persona è assente</div>` : ''}
-  </div>`;
-
-  document.getElementById('comp-detail').innerHTML = `
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:1.2rem">
-      <button onclick="renderCompetenze()" style="display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--green);color:var(--green);padding:8px 14px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:.75rem;letter-spacing:.03em" onmouseover="this.style.background='rgba(54,205,129,0.12)'" onmouseout="this.style.background='transparent'"><i class="ti ti-arrow-left" style="font-size:15px"></i> Indietro</button>
-      <i class="ti ${VERT_ICON[vertical]}" style="font-size:26px;color:var(--gray)"></i>
-      <div style="flex:1">
-        <div style="font-size:1.1rem;font-weight:500">${vertical}</div>
-        <div style="font-size:.7rem;color:var(--gray)">${VERT_DESC[vertical]||''}</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-size:1.5rem;font-weight:500;color:${colorLiv(liv)}">${liv.toFixed(1)}<span style="font-size:.8rem;color:var(--gray)"> / ${target}</span></div>
-        <div style="font-size:.62rem;color:var(--gray)">livello area</div>
-      </div>
-    </div>
-    ${alertHtml}
-    <div style="display:flex;gap:10px;margin-bottom:1.4rem">
-      <div style="flex:1;background:var(--card);border-radius:8px;padding:.8rem;text-align:center"><div style="font-size:1.3rem;font-weight:500">${tecniciSet.size}</div><div style="font-size:.6rem;color:var(--gray)">tecnici</div></div>
-      <div style="flex:1;background:var(--card);border-radius:8px;padding:.8rem;text-align:center"><div style="font-size:1.3rem;font-weight:500">${certsV.length}</div><div style="font-size:.6rem;color:var(--gray)">certificazioni</div></div>
-      <div style="flex:1;background:var(--card);border-radius:8px;padding:.8rem;text-align:center"><div style="font-size:1.3rem;font-weight:500;color:${inScad>0?'var(--warn)':'var(--white)'}">${inScad}</div><div style="font-size:.6rem;color:var(--gray)">in scadenza</div></div>
-    </div>
-    <div style="font-size:.65rem;font-weight:500;color:var(--gray);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Vendor dell'area</div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.4rem">${vendorHtml}</div>
-    ${coperturaHtml}
-    <div style="font-size:.65rem;font-weight:500;color:var(--gray);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Chi è certificato</div>
-    <div style="display:flex;flex-direction:column;gap:8px">${tecHtml}</div>
-  `;
-  document.getElementById('comp-overview').style.display = 'none';
-  document.getElementById('comp-detail').style.display = 'block';
 }
 
+// ── HEATMAP area × vendor ──
+function renderHeatmap() {
+  const attive = certsAttive();
+  const brands = [...new Set(attive.map(c => c.brand))].sort();
+  const cont = document.getElementById('comp-heatmap');
+  if (!brands.length) { cont.innerHTML = '<div style="color:var(--gray);font-size:.78rem">Nessun dato</div>'; return; }
+  let h = '<table style="border-collapse:collapse;font-size:.6rem"><thead><tr><th style="padding:6px 8px"></th>';
+  brands.forEach(b => { h += `<th style="padding:6px 4px;color:var(--gray);font-weight:400;writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;font-size:.55rem">${b}</th>`; });
+  h += '</tr></thead><tbody>';
+  VERTICALS.forEach(v => {
+    h += `<tr><td style="padding:5px 8px;color:var(--white);white-space:nowrap;font-size:.65rem">${v}</td>`;
+    brands.forEach(b => {
+      if (VERTICAL_MAP[b] !== v) { h += '<td style="padding:0"></td>'; return; }
+      const certs = attive.filter(c => c.brand === b);
+      const liv = calcolaLivello(certs);
+      const bgc = colorLiv(liv);
+      const txt = liv >= 2 && liv < 4 ? '#000' : '#fff';
+      h += `<td title="${v} · ${b}: ${liv.toFixed(1)}" style="padding:6px 8px;text-align:center;background:${bgc};color:${txt};font-weight:500">${liv.toFixed(1)}</td>`;
+    });
+    h += '</tr>';
+  });
+  h += '</tbody></table>';
+  cont.innerHTML = h;
+}
 
+// ── PRIORITÀ FORMATIVE PER AREA (gap maggiori) ──
+function renderPriorita(dati) {
+  const cont = document.getElementById('comp-priorita');
+  const ord = [...dati].map(x => ({...x, gap: Math.max(0, x.target - x.liv)}))
+    .filter(x => x.gap > 0)
+    .sort((a,b) => b.gap - a.gap);
+  if (!ord.length) { cont.innerHTML = '<div style="background:var(--card2);padding:1rem;text-align:center;color:var(--gray);font-size:.78rem;border-radius:8px">Tutte le aree al target. Eccellente!</div>'; return; }
+  cont.innerHTML = ord.map(x => {
+    const gapCol = x.gap <= 0.5 ? '#36CD81' : x.gap <= 1.5 ? '#EF9F27' : '#E24B4A';
+    return `<div style="background:var(--card2);padding:.7rem 1rem;border-radius:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div style="flex:1;font-size:.8rem;color:var(--white);min-width:120px">${x.area}</div>
+      <div>${stelle(x.liv,12)}</div>
+      <div style="font-size:.68rem;color:var(--gray)">${x.liv.toFixed(1)} → ${x.target}</div>
+      <span style="font-size:.6rem;padding:3px 9px;background:${gapCol};color:#000;border-radius:3px;font-weight:500">gap ${x.gap.toFixed(1)}</span>
+    </div>`;
+  }).join('');
+}
 
+// ── GRAFICO a barre impilate (distribuzione cert per fascia di livello) ──
+function renderCompChart(dati) {
+  if (typeof Chart === 'undefined') return;
+  const ctx = document.getElementById('comp-chart');
+  if (!ctx) return;
+  if (compChartInst) compChartInst.destroy();
+  // per ogni area, conto certificazioni in 3 fasce (in base al peso)
+  const attive = certsAttive();
+  const fasce = { '0–1': [], '2–3': [], '4–5': [] };
+  const labels = VERTICALS;
+  const conta = VERTICALS.map(v => {
+    const ce = attive.filter(c => VERTICAL_MAP[c.brand] === v);
+    let basso=0,medio=0,alto=0;
+    ce.forEach(c => {
+      const p = pesoCert(c);
+      if (p < 2) basso++; else if (p < 4) medio++; else alto++;
+    });
+    return {basso,medio,alto};
+  });
+  compChartInst = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Base (livello 0–1)', data: conta.map(c=>c.basso), backgroundColor: '#E24B4A' },
+        { label: 'Advanced (livello 2–3)', data: conta.map(c=>c.medio), backgroundColor: '#EF9F27' },
+        { label: 'Specialist (livello 4–5)', data: conta.map(c=>c.alto), backgroundColor: '#36CD81' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { stacked: true, ticks: { color: '#fff', font: { size: 11 } }, grid: { display: false } },
+        y: { stacked: true, beginAtZero: true, ticks: { color: '#929396' }, grid: { color: 'rgba(255,255,255,0.07)' } }
+      },
+      plugins: { legend: { labels: { color: '#929396', font: { size: 11 } } } }
+    }
+  });
+}
 
 /* ── IMPOSTAZIONI ── */
 function caricaSettings() {
