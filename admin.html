@@ -909,6 +909,21 @@ function renderMatrix() {
 
 /* ── CRUSCOTTO COMPETENZE (stile kaplet_competenze_dashboard) ── */
 
+// Target per ogni area (modificabili, salvati in localStorage)
+function getTargets() {
+  const def = { "Network":4, "Security fisica":4, "Audio":4, "Video":4 };
+  try {
+    const saved = JSON.parse(localStorage.getItem('kaplet_targets') || '{}');
+    return { ...def, ...saved };
+  } catch (e) { return def; }
+}
+function setTarget(area, val) {
+  const t = getTargets();
+  t[area] = parseInt(val, 10) || 4;
+  localStorage.setItem('kaplet_targets', JSON.stringify(t));
+  renderCompetenze();
+}
+
 // Mappa ogni brand/vendor al suo vertical
 const VERTICAL_MAP = {
   "CISCO":"Network", "FORTINET":"Network",
