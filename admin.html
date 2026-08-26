@@ -115,6 +115,22 @@ nav {
   cursor: pointer; transition: all 0.2s; border-radius: 0;
 }
 .btn-danger-sm:hover { border-color: var(--danger); background: rgba(239,68,68,0.08); }
+.btn-danger {
+  height: 38px; padding: 0 20px;
+  background: var(--danger); border: 1px solid var(--danger);
+  color: var(--white); font-family: var(--font); font-size: 0.72rem;
+  font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+  cursor: pointer; transition: all 0.2s; border-radius: 0;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-danger:hover { background: transparent; color: #f87171; }
+.btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+.danger-box {
+  background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2);
+  padding: 0.85rem 1rem; margin-bottom: 1.1rem;
+}
+.danger-box ul { margin: 8px 0 0 18px; padding: 0; }
+.danger-box li { font-size: 0.74rem; color: var(--gray); line-height: 1.7; }
 .btn-sm {
   height: 30px; padding: 0 12px;
   background: transparent; border: 1px solid var(--border);
@@ -674,6 +690,37 @@ label.flabel {
   </div>
 </div>
 
+<!-- MODAL ELIMINA UTENTE -->
+<div class="overlay" id="modal-elimina">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" style="color:#f87171">Elimina definitivamente</div>
+      <button class="modal-close" onclick="closeOverlay('modal-elimina')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="me-id">
+      <div style="background:var(--card2);padding:0.85rem 1rem;margin-bottom:1.1rem;border-left:2px solid var(--danger)">
+        <div style="font-size:.85rem;color:var(--white)" id="me-nome">—</div>
+        <div style="font-size:.68rem;color:var(--gray);margin-top:3px" id="me-email">—</div>
+      </div>
+      <div class="danger-box">
+        <div style="font-size:.72rem;color:#f87171;font-weight:500;letter-spacing:.05em;text-transform:uppercase">Operazione irreversibile</div>
+        <ul id="me-cosa"></ul>
+      </div>
+      <div class="fld">
+        <label class="flabel">Per confermare, digita il cognome <strong id="me-cognome-atteso" style="color:var(--white)"></strong></label>
+        <input type="text" class="finput" id="me-conferma" autocomplete="off" placeholder="Cognome del tecnico">
+        <div class="fhint">Se preferisci conservare lo storico, chiudi e usa "Disattiva": blocca l'accesso lasciando i dati al loro posto.</div>
+      </div>
+      <div class="msg error" id="me-err"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-secondary" id="btn-elimina-annulla" onclick="closeOverlay('modal-elimina')">Annulla</button>
+      <button class="btn-danger" id="btn-elimina" onclick="eliminaTecnico()">Elimina per sempre</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL ANTEPRIMA DOCUMENTO -->
 <div class="overlay" id="modal-preview">
   <div class="modal" style="max-width:900px;width:92%">
@@ -708,6 +755,7 @@ function esc(s) {
 
 let TECNICI = [], CERTS = [], CORSI_ASS = [];
 let selTec = [];
+let ME_ID = null;   // id dell'admin loggato: serve a impedirgli di eliminarsi da solo
 
 const BC = {"AVIXA":"#F59E0B","DANTE":"#EF4444","NDI":"#38BDF8","AXIS":"#4ADE80","FORTINET":"#F87171","CISCO":"#22D3EE","CRESTRON":"#4ADE80","BARCO CTRL":"#FB923C","BARCO VIDEO":"#FBBF24","NOVASTAR":"#C084FC","MILESTONE":"#F472B6","ALTA ACCESS":"#38BDF8","ALTA VIDEO":"#60A5FA","AVIGILON UNITY":"#818CF8","AVIGILON":"#818CF8","BARCO":"#FB923C","SHURE":"#A78BFA","Q-SYS":"#F87171","YAMAHA":"#FCD34D","POWERSOFT":"#34D399","TELEVIC":"#A78BFA","EXTRON":"#F87171","K-ARRAY":"#4ADE80","K-SCAPE":"#34D399","BRIGHTSIGN":"#60A5FA","ELMO":"#FCA5A1","KSENIA":"#C084FC","NOTIFIER":"#FB923C","TECNOFIRE":"#F87171","KNX & DALI":"#818CF8","MAXHUB":"#38BDF8"};
 const bc  = b => BC[b?.toUpperCase()] || '#36CD81';
@@ -722,6 +770,7 @@ const csLabel = s => ({da_fare:'Da fare', in_corso:'In corso', completato:'Compl
   if (!session) { window.location.href = 'login.html'; return; }
   const { data: me } = await sb.from('tecnici').select('is_admin,nome,cognome').eq('id', session.user.id).single();
   if (!me || !me.is_admin) { window.location.href = 'tecnico.html'; return; }
+  ME_ID = session.user.id;
   document.getElementById('nav-nome').textContent = me.nome + ' ' + me.cognome;
   await load();
 })();
@@ -790,6 +839,10 @@ function renderTeam() {
             ${disattivato
               ? `<button class="btn-sm" style="border-color:var(--green-border);color:var(--green)" onclick="toggleAttivo('${t.id}',true)">Riattiva</button>`
               : `<button class="btn-danger-sm" onclick="toggleAttivo('${t.id}',false)">Disattiva</button>`
+            }
+            ${t.id === ME_ID
+              ? ''
+              : `<button class="btn-danger-sm" style="border-color:rgba(239,68,68,0.5)" onclick='openModalElimina(${JSON.stringify(JSON.stringify(t))})'>Elimina</button>`
             }
           </div></td>
         </tr>`;
@@ -1541,6 +1594,82 @@ async function toggleAttivo(id, nuovoStato) {
     await load();
   } catch(e) {
     toast('Errore: ' + e.message);
+  }
+}
+
+/* ── ELIMINA UTENTE DEFINITIVAMENTE ── */
+function openModalElimina(tJson) {
+  const t = JSON.parse(tJson);
+  if (t.id === ME_ID) { toast('Non puoi eliminare il tuo stesso account.'); return; }
+
+  const cert  = CERTS.filter(c => c.tech_id === t.id);
+  const nDoc  = cert.filter(c => c.documento_url).length;
+  const nCors = CORSI_ASS.filter(c => c.tech_id === t.id).length;
+
+  document.getElementById('me-id').value = t.id;
+  document.getElementById('me-nome').textContent = `${t.nome} ${t.cognome}` + (t.is_admin ? ' · Admin' : '');
+  document.getElementById('me-email').textContent = t.email || '—';
+  document.getElementById('me-cognome-atteso').textContent = t.cognome;
+  document.getElementById('me-cosa').innerHTML = [
+    `<li>${cert.length} certificazion${cert.length===1?'e':'i'}${nDoc ? `, di cui ${nDoc} con attestato caricato` : ''}</li>`,
+    `<li>${nCors} cors${nCors===1?'o':'i'} assegnat${nCors===1?'o':'i'}</li>`,
+    `<li>tutti i file nella sua cartella dello storage</li>`,
+    `<li>l'account di accesso: non potrà più entrare</li>`
+  ].join('');
+  document.getElementById('me-conferma').value = '';
+  document.getElementById('me-err').classList.remove('show');
+  document.getElementById('modal-elimina').classList.add('open');
+  setTimeout(() => document.getElementById('me-conferma').focus(), 50);
+}
+
+async function eliminaTecnico() {
+  const id      = document.getElementById('me-id').value;
+  const err     = document.getElementById('me-err');
+  const btn     = document.getElementById('btn-elimina');
+  const annulla = document.getElementById('btn-elimina-annulla');
+  err.classList.remove('show');
+
+  const t = TECNICI.find(x => x.id === id);
+  if (!t) { err.textContent = 'Tecnico non trovato: ricarica la pagina.'; err.classList.add('show'); return; }
+  if (id === ME_ID) { err.textContent = 'Non puoi eliminare il tuo stesso account.'; err.classList.add('show'); return; }
+
+  const digitato = document.getElementById('me-conferma').value.trim();
+  if (digitato.toLowerCase() !== (t.cognome || '').trim().toLowerCase()) {
+    err.textContent = 'Il cognome digitato non corrisponde.'; err.classList.add('show'); return;
+  }
+
+  btn.disabled = true; annulla.disabled = true; btn.textContent = 'Eliminazione...';
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error('Sessione scaduta: rifai il login.');
+
+    const resp = await fetch(SUPA_URL + '/functions/v1/elimina-tecnico', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + session.access_token,
+        'apikey': SUPA_KEY
+      },
+      body: JSON.stringify({ tech_id: id, conferma_cognome: digitato })
+    });
+
+    const result = await resp.json().catch(() => ({}));
+    // 207 = eliminazione riuscita solo in parte: la segnaliamo, non è un errore secco
+    if (!resp.ok && resp.status !== 207) throw new Error(result.error || `Errore ${resp.status}`);
+
+    closeOverlay('modal-elimina');
+    if (result.esito === 'parziale') {
+      const falliti = Object.entries(result.passaggi || {})
+        .filter(([, v]) => String(v).startsWith('ERRORE')).map(([k]) => k);
+      toast(`Eliminazione parziale — non riuscita su: ${falliti.join(', ')}. Dettagli in audit_log.`);
+    } else {
+      toast(`${result.tecnico} eliminato · ${result.certificazioni_eliminate} cert., ${result.corsi_assegnati_eliminati} corsi, ${result.file_rimossi} file.`);
+    }
+    await load();
+  } catch(e) {
+    err.textContent = 'Errore: ' + e.message; err.classList.add('show');
+  } finally {
+    btn.disabled = false; annulla.disabled = false; btn.textContent = 'Elimina per sempre';
   }
 }
 
