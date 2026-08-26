@@ -222,7 +222,14 @@ label.flabel { display: block; font-size: 0.6rem; font-weight: 400; letter-spaci
       <div class="fld"><label class="flabel">Corso / Certificazione *</label><select class="fsel" id="m-corso"><option value="">Prima seleziona un brand…</option></select></div>
       <div class="fgrid">
         <div class="fld"><label class="flabel">Data conseguimento *</label><input type="date" class="finput" id="m-cons"></div>
-        <div class="fld"><label class="flabel">Data scadenza <span style="color:var(--gray)">(se applicabile)</span></label><input type="date" class="finput" id="m-scad"><div class="fhint">Lascia vuoto se non scade</div></div>
+        <div class="fld"><label class="flabel">Data scadenza <span id="m-scad-obb">*</span></label><input type="date" class="finput" id="m-scad"><div class="fhint" id="m-scad-hint">Obbligatoria, salvo la spunta qui sotto</div></div>
+      </div>
+      <div class="fld">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="m-non-scade" style="width:16px;height:16px" onchange="toggleNonScade('m')">
+          <span style="font-size:.82rem;color:var(--white)">Questa certificazione non scade</span>
+        </label>
+        <div class="fhint">Spunta solo se l'attestato non ha una data di rinnovo</div>
       </div>
       <div class="fld">
         <label class="flabel">Documento di prova</label>
@@ -236,7 +243,7 @@ label.flabel { display: block; font-size: 0.6rem; font-weight: 400; letter-spaci
       <div class="msg error" id="m-err"></div>
     </div>
     <div class="modal-foot">
-      <button class="btn-secondary" onclick="closeOverlay('modal-cert')">Annulla</button>
+      <button class="btn-secondary" id="btn-salva-annulla" onclick="closeOverlay('modal-cert')">Annulla</button>
       <button class="btn-primary" id="btn-salva" onclick="salvaCert()">
         <span id="btn-salva-txt">Salva certificazione</span>
         <div class="spinner" id="btn-spin"></div>
@@ -265,7 +272,7 @@ label.flabel { display: block; font-size: 0.6rem; font-weight: 400; letter-spaci
       </div>
       <div class="fld">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-          <input type="checkbox" id="cmp-non-scade" style="width:16px;height:16px" onchange="toggleNonScade()">
+          <input type="checkbox" id="cmp-non-scade" style="width:16px;height:16px" onchange="toggleNonScade('cmp')">
           <span style="font-size:.82rem;color:var(--white)">Questa certificazione non scade</span>
         </label>
         <div class="fhint">Spunta solo se l'attestato non ha una data di rinnovo</div>
@@ -511,7 +518,7 @@ function apriModalCompleta(c) {
   document.getElementById('cmp-cons').value = new Date().toISOString().split('T')[0];
   document.getElementById('cmp-scad').value = '';
   document.getElementById('cmp-non-scade').checked = false;
-  toggleNonScade();
+  toggleNonScade('cmp');
   document.getElementById('cmp-file-name').style.display = 'none';
   document.getElementById('cmp-file-input').value = '';
   fileCompleta = null;
@@ -525,15 +532,16 @@ function allegaAttestato(id) {
   if (c) apriModalCompleta(c);
 }
 
-// "Non scade" spento => la data di scadenza torna obbligatoria
-function toggleNonScade() {
-  const nonScade = document.getElementById('cmp-non-scade').checked;
-  const scad = document.getElementById('cmp-scad');
+// "Non scade" spento => la data di scadenza torna obbligatoria.
+// pfx è il prefisso degli id: 'cmp' per la modale di completamento, 'm' per quella certificazione.
+function toggleNonScade(pfx) {
+  const nonScade = document.getElementById(`${pfx}-non-scade`).checked;
+  const scad = document.getElementById(`${pfx}-scad`);
   scad.disabled = nonScade;
   if (nonScade) scad.value = '';
   scad.style.opacity = nonScade ? '0.4' : '1';
-  document.getElementById('cmp-scad-obb').textContent = nonScade ? '' : '*';
-  document.getElementById('cmp-scad-hint').textContent = nonScade
+  document.getElementById(`${pfx}-scad-obb`).textContent = nonScade ? '' : '*';
+  document.getElementById(`${pfx}-scad-hint`).textContent = nonScade
     ? 'Disattivata: la certificazione è senza scadenza'
     : 'Obbligatoria, salvo la spunta qui sotto';
 }
@@ -587,12 +595,13 @@ function handleFileCompleta(input) {
 }
 
 /* ── VALIDAZIONE DATE ──
-   Unica per i due pulsanti: senza dati completi non si scrive niente
-   e il corso resta nello stato in cui era. */
-function validaCompletamento() {
-  const cons     = document.getElementById('cmp-cons').value;
-  const scad     = document.getElementById('cmp-scad').value;
-  const nonScade = document.getElementById('cmp-non-scade').checked;
+   Unica per completamento corso e inserimento certificazione: senza dati
+   completi non si scrive niente e il corso resta nello stato in cui era.
+   pfx: 'cmp' per la modale di completamento, 'm' per quella certificazione. */
+function validaDateCert(pfx) {
+  const cons     = document.getElementById(`${pfx}-cons`).value;
+  const scad     = document.getElementById(`${pfx}-scad`).value;
+  const nonScade = document.getElementById(`${pfx}-non-scade`).checked;
 
   if (!cons) return { ok:false, msg:'Inserisci la data di conseguimento.' };
 
@@ -661,7 +670,7 @@ async function completaSenzaDoc() {
 
   if (!c) { err.textContent = 'Corso non trovato: ricarica la pagina.'; err.classList.add('show'); return; }
 
-  const v = validaCompletamento();
+  const v = validaDateCert('cmp');
   if (!v.ok) { err.textContent = v.msg; err.classList.add('show'); return; }
 
   bloccaPulsantiCompleta(true, 'Salvataggio...');
@@ -699,7 +708,7 @@ async function completaConDoc() {
 
   if (!c) { err.textContent = 'Corso non trovato: ricarica la pagina.'; err.classList.add('show'); return; }
 
-  const v = validaCompletamento();
+  const v = validaDateCert('cmp');
   if (!v.ok) { err.textContent = v.msg; err.classList.add('show'); return; }
 
   const problemaFile = validaFile(fileCompleta);
@@ -857,7 +866,11 @@ function openModalCert() {
   document.getElementById('m-corso').innerHTML = '<option value="">Prima seleziona un brand…</option>';
   document.getElementById('m-cons').value = new Date().toISOString().split('T')[0];
   document.getElementById('m-scad').value = ''; document.getElementById('m-note').value = '';
-  document.getElementById('file-name-display').style.display = 'none'; fileSelezionato = null;
+  document.getElementById('m-non-scade').checked = false;
+  toggleNonScade('m');
+  document.getElementById('file-name-display').style.display = 'none';
+  document.getElementById('file-input').value = '';
+  fileSelezionato = null;
   document.getElementById('m-err').classList.remove('show');
   document.getElementById('modal-cert').classList.add('open');
 }
@@ -869,29 +882,67 @@ function editCert(id) {
   document.getElementById('m-brand').value = c.brand; fillCorsi();
   document.getElementById('m-corso').value = c.corso;
   document.getElementById('m-cons').value = c.data_conseguimento;
+  // una certificazione salvata senza scadenza è per definizione una che non scade
+  document.getElementById('m-non-scade').checked = !c.data_scadenza;
+  toggleNonScade('m');   // svuota il campo se la spunta è attiva, quindi valorizzo dopo
   document.getElementById('m-scad').value = c.data_scadenza || '';
   document.getElementById('m-note').value = c.note || '';
+  document.getElementById('file-name-display').style.display = 'none';
+  document.getElementById('file-input').value = '';
+  fileSelezionato = null;
+  document.getElementById('m-err').classList.remove('show');
   document.getElementById('modal-cert').classList.add('open');
 }
 
 function handleFile(input) {
-  if (input.files && input.files[0]) {
-    fileSelezionato = input.files[0];
-    const d = document.getElementById('file-name-display'); d.textContent = fileSelezionato.name; d.style.display = 'block';
+  const err = document.getElementById('m-err');
+  err.classList.remove('show');
+  if (!input.files || !input.files[0]) return;
+
+  const file = input.files[0];
+  const problema = validaFile(file);
+  if (problema) {
+    input.value = ''; fileSelezionato = null;
+    document.getElementById('file-name-display').style.display = 'none';
+    err.textContent = problema; err.classList.add('show');
+    return;
   }
+  fileSelezionato = file;
+  const d = document.getElementById('file-name-display');
+  d.textContent = file.name; d.style.display = 'block';
+}
+
+// Blocca o sblocca i pulsanti della modale certificazione
+function bloccaPulsantiCert(bloccato) {
+  const btn     = document.getElementById('btn-salva');
+  const annulla = document.getElementById('btn-salva-annulla');
+  const txt     = document.getElementById('btn-salva-txt');
+  const spin    = document.getElementById('btn-spin');
+  btn.disabled = bloccato; annulla.disabled = bloccato;
+  txt.style.display  = bloccato ? 'none'  : 'block';
+  spin.style.display = bloccato ? 'block' : 'none';
 }
 
 async function salvaCert() {
   const brand=document.getElementById('m-brand').value, corso=document.getElementById('m-corso').value;
-  const cons=document.getElementById('m-cons').value, scad=document.getElementById('m-scad').value;
   const note=document.getElementById('m-note').value; const err=document.getElementById('m-err');
-  if (!brand||!corso||!cons) { err.textContent='Compila brand, corso e data conseguimento.'; err.classList.add('show'); return; }
-  const btn=document.getElementById('btn-salva'), txt=document.getElementById('btn-salva-txt'), spin=document.getElementById('btn-spin');
-  btn.disabled=true; txt.style.display='none'; spin.style.display='block'; err.classList.remove('show');
+  err.classList.remove('show');
+
+  if (!brand || !corso) { err.textContent='Seleziona brand e corso.'; err.classList.add('show'); return; }
+
+  // stesse regole della modale di completamento corso
+  const v = validaDateCert('m');
+  if (!v.ok) { err.textContent = v.msg; err.classList.add('show'); return; }
+  const cons = v.cons, scad = v.scad;
+
+  const problemaFile = validaFile(fileSelezionato);
+  if (problemaFile) { err.textContent = problemaFile; err.classList.add('show'); return; }
+
+  bloccaPulsantiCert(true);
   try {
     let docUrl = null;
     if (fileSelezionato) {
-      const ext = fileSelezionato.name.split('.').pop();
+      const ext  = estensioneSicura(fileSelezionato.name);
       const path = `${ME.id}/${Date.now()}.${ext}`;
       const {error:ue} = await sb.storage.from('certificati').upload(path, fileSelezionato);
       if (ue) { throw new Error('Upload documento fallito: ' + ue.message); }
@@ -901,13 +952,13 @@ async function salvaCert() {
       if (!docUrl) { throw new Error('Link documento non generato.'); }
     }
     if (editId) {
-      const {error:ee} = await sb.from('certificazioni').update({brand,corso,data_conseguimento:cons,data_scadenza:scad||null,note:note||null,...(docUrl&&{documento_url:docUrl})}).eq('id', editId);
+      const {error:ee} = await sb.from('certificazioni').update({brand,corso,data_conseguimento:cons,data_scadenza:scad,note:note||null,...(docUrl&&{documento_url:docUrl})}).eq('id', editId);
       if (ee) throw new Error(messaggioErroreCert(ee));
       toast('Certificazione aggiornata.');
     } else {
       const aggiornata = await upsertCertificazione({
         tech_id:ME.id, brand, corso, data_conseguimento:cons,
-        data_scadenza:scad||null, documento_url:docUrl, note:note||null, stato:'attiva'
+        data_scadenza:scad, documento_url:docUrl, note:note||null, stato:'attiva'
       });
       toast(aggiornata
         ? 'Avevi già una certificazione per questo corso: è stata aggiornata.'
@@ -915,7 +966,7 @@ async function salvaCert() {
     }
     closeOverlay('modal-cert'); await caricaDati();
   } catch(e) { err.textContent='Errore: ' + e.message; err.classList.add('show'); }
-  finally { btn.disabled=false; txt.style.display='block'; spin.style.display='none'; }
+  finally { bloccaPulsantiCert(false); }
 }
 
 async function deleteCert(id, nome) {
