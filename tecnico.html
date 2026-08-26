@@ -609,6 +609,37 @@ function validaCompletamento() {
   return { ok:true, cons, scad: nonScade ? null : scad };
 }
 
+/* ── SCRITTURA CERTIFICAZIONI ──
+   Il vincolo certificazioni_tech_corso_unico su (tech_id, corso) impedisce i
+   doppioni. Invece di inserire e schiantarsi sul 23505, facciamo upsert: se la
+   riga c'è già viene aggiornata. Il controllo preventivo serve solo a dire
+   all'utente cosa è successo davvero. */
+async function certificazioneEsistente(techId, corso) {
+  const {data} = await sb.from('certificazioni')
+    .select('id').eq('tech_id', techId).eq('corso', corso).maybeSingle();
+  return !!data;
+}
+
+// Traduce i codici Postgres nei messaggi che l'utente può capire
+function messaggioErroreCert(e) {
+  switch (e?.code) {
+    case '23505': return 'Esiste già una certificazione per questo corso. Ricarica la pagina: la trovi fra le tue certificazioni e puoi modificarla.';
+    case '23503': return 'Riferimento non valido: ricarica la pagina e riprova.';
+    case '23514': return 'Alcuni valori non sono ammessi per questa certificazione.';
+    case '42501': return 'Non hai il permesso di salvare questa certificazione.';
+    default:      return e?.message || 'Errore sconosciuto.';
+  }
+}
+
+// Ritorna true se ha aggiornato una riga esistente, false se ne ha creata una nuova
+async function upsertCertificazione(riga) {
+  const giaEsisteva = await certificazioneEsistente(riga.tech_id, riga.corso);
+  const {error} = await sb.from('certificazioni')
+    .upsert(riga, { onConflict: 'tech_id,corso' });
+  if (error) throw new Error(messaggioErroreCert(error));
+  return giaEsisteva;
+}
+
 // Blocca o sblocca entrambi i pulsanti della modale durante il salvataggio
 function bloccaPulsantiCompleta(bloccato, testo) {
   const btn   = document.getElementById('btn-cmp');
@@ -635,22 +666,23 @@ async function completaSenzaDoc() {
 
   bloccaPulsantiCompleta(true, 'Salvataggio...');
   try {
-    // Prima la certificazione, poi lo stato del corso: se l'insert fallisce
+    // Prima la certificazione, poi lo stato del corso: se la scrittura fallisce
     // il corso NON risulta completato e non finisce fra i corsi fatti.
-    const {error: ie} = await sb.from('certificazioni').insert({
+    const aggiornata = await upsertCertificazione({
       tech_id: ME.id, brand: c.brand, corso: c.corso,
       data_conseguimento: v.cons, data_scadenza: v.scad,
       documento_url: null, note: 'Corso seguito (senza certificazione)',
       solo_corso: true, stato: 'attiva'
     });
-    if (ie) throw ie;
 
     const {error: ue} = await sb.from('corsi_assegnati').update({stato:'completato'}).eq('id', id);
     if (ue) throw ue;
 
     closeOverlay('modal-completa');
     await caricaDati();
-    toast('Corso completato!');
+    toast(aggiornata
+      ? 'Corso completato — la certificazione che avevi già è stata aggiornata.'
+      : 'Corso completato!');
   } catch(e) {
     err.textContent = 'Errore: ' + e.message; err.classList.add('show');
   } finally {
@@ -690,14 +722,13 @@ async function completaConDoc() {
     // 2) certificazione. Senza documento allegato vale come "solo corso",
     //    esattamente come l'altro pulsante: stesso esito, stesso peso.
     const soloCorso = !docUrl;
-    const {error: ie} = await sb.from('certificazioni').insert({
+    const aggiornata = await upsertCertificazione({
       tech_id: ME.id, brand: c.brand, corso: c.corso,
       data_conseguimento: v.cons, data_scadenza: v.scad,
       documento_url: docUrl,
       note: soloCorso ? 'Corso seguito (senza certificazione)' : 'Da corso completato',
       solo_corso: soloCorso, stato: 'attiva'
     });
-    if (ie) throw ie;
 
     // 3) solo adesso il corso è completato
     const {error: ce} = await sb.from('corsi_assegnati').update({stato:'completato'}).eq('id', id);
@@ -705,7 +736,9 @@ async function completaConDoc() {
 
     closeOverlay('modal-completa');
     await caricaDati();
-    toast(soloCorso ? 'Corso completato!' : 'Corso completato e certificazione creata!');
+    toast(aggiornata
+      ? 'Corso completato — la certificazione che avevi già è stata aggiornata.'
+      : (soloCorso ? 'Corso completato!' : 'Corso completato e certificazione creata!'));
   } catch(e) {
     err.textContent = 'Errore: ' + e.message; err.classList.add('show');
   } finally {
@@ -868,11 +901,17 @@ async function salvaCert() {
       if (!docUrl) { throw new Error('Link documento non generato.'); }
     }
     if (editId) {
-      await sb.from('certificazioni').update({brand,corso,data_conseguimento:cons,data_scadenza:scad||null,note:note||null,...(docUrl&&{documento_url:docUrl})}).eq('id', editId);
+      const {error:ee} = await sb.from('certificazioni').update({brand,corso,data_conseguimento:cons,data_scadenza:scad||null,note:note||null,...(docUrl&&{documento_url:docUrl})}).eq('id', editId);
+      if (ee) throw new Error(messaggioErroreCert(ee));
       toast('Certificazione aggiornata.');
     } else {
-      await sb.from('certificazioni').insert({tech_id:ME.id,brand,corso,data_conseguimento:cons,data_scadenza:scad||null,documento_url:docUrl,note:note||null,stato:'attiva'});
-      toast('Certificazione aggiunta!');
+      const aggiornata = await upsertCertificazione({
+        tech_id:ME.id, brand, corso, data_conseguimento:cons,
+        data_scadenza:scad||null, documento_url:docUrl, note:note||null, stato:'attiva'
+      });
+      toast(aggiornata
+        ? 'Avevi già una certificazione per questo corso: è stata aggiornata.'
+        : 'Certificazione aggiunta!');
     }
     closeOverlay('modal-cert'); await caricaDati();
   } catch(e) { err.textContent='Errore: ' + e.message; err.classList.add('show'); }

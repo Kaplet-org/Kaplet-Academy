@@ -1294,6 +1294,37 @@ function showSection(id, btn) {
   if (id === 'competenze') { setTimeout(() => renderCompetenze(), 50); }
 }
 
+/* ── SCRITTURA CERTIFICAZIONI ──
+   Il vincolo certificazioni_tech_corso_unico su (tech_id, corso) impedisce i
+   doppioni. Invece di inserire e schiantarsi sul 23505 facciamo upsert: se la
+   riga c'è già viene aggiornata. Il controllo preventivo serve solo a dire
+   all'utente cosa è successo davvero. */
+async function certificazioneEsistente(techId, corso) {
+  const {data} = await sb.from('certificazioni')
+    .select('id').eq('tech_id', techId).eq('corso', corso).maybeSingle();
+  return !!data;
+}
+
+// Traduce i codici Postgres nei messaggi che l'utente può capire
+function messaggioErroreCert(e) {
+  switch (e?.code) {
+    case '23505': return 'Questo tecnico ha già una certificazione per lo stesso corso. Ricarica la pagina e modifica quella esistente.';
+    case '23503': return 'Tecnico non valido: ricarica la pagina e riprova.';
+    case '23514': return 'Alcuni valori non sono ammessi per questa certificazione.';
+    case '42501': return 'Non hai il permesso di salvare questa certificazione.';
+    default:      return e?.message || 'Errore sconosciuto.';
+  }
+}
+
+// Ritorna true se ha aggiornato una riga esistente, false se ne ha creata una nuova
+async function upsertCertificazione(riga) {
+  const giaEsisteva = await certificazioneEsistente(riga.tech_id, riga.corso);
+  const {error} = await sb.from('certificazioni')
+    .upsert(riga, { onConflict: 'tech_id,corso' });
+  if (error) throw new Error(messaggioErroreCert(error));
+  return giaEsisteva;
+}
+
 /* ── MODAL CERT ── */
 function openModalCert() {
   document.getElementById('mc-tec').innerHTML = '<option value="">Seleziona...</option>' + TECNICI.map(t => `<option value="${t.id}">${esc(t.nome)} ${esc(t.cognome)}</option>`).join('');
@@ -1345,14 +1376,18 @@ async function salvaCert() {
       const {data:pd} = sb.storage.from('certificati').getPublicUrl(path);
       docUrl = pd?.publicUrl;
     }
-    const {error} = await sb.from('certificazioni').insert({
+    const aggiornata = await upsertCertificazione({
       tech_id:tid, brand, corso,
       data_conseguimento:cons, data_scadenza:scad||null,
       note:note||null, documento_url:docUrl,
       solo_corso: soloCorso, stato:'attiva'
     });
-    if (error) throw error;
-    closeOverlay('modal-cert'); toast(soloCorso?'Corso registrato!':'Certificazione aggiunta!'); await load();
+    closeOverlay('modal-cert');
+    const nomeTec = (TECNICI.find(t => t.id === tid) || {});
+    toast(aggiornata
+      ? `${nomeTec.cognome || 'Il tecnico'} aveva già questo corso: la certificazione è stata aggiornata.`
+      : (soloCorso ? 'Corso registrato!' : 'Certificazione aggiunta!'));
+    await load();
   } catch(e) { err.textContent='Errore: '+e.message; err.classList.add('show'); }
 }
 
