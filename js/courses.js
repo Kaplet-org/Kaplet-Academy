@@ -1,6 +1,6 @@
 // ============================================================
 // KAPLET ACADEMY - Catalogo corsi (auto-generato da Excel)
-// 178 corsi - ogni corso ha i path/ruoli a cui appartiene
+// 183 corsi - ogni corso ha i path/ruoli a cui appartiene
 // ============================================================
 
 const COURSES = [
@@ -1372,6 +1372,51 @@ const COURSES = [
       "core_av",
       "core_doc"
     ]
+  },
+  {
+    "id": "KU-C-140",
+    "brand": "CRESTRON",
+    "gruppo": "",
+    "nome": "Crestron Core Track",
+    "erogazione": "",
+    "durata": "",
+    "paths": []
+  },
+  {
+    "id": "KU-C-141",
+    "brand": "CRESTRON",
+    "gruppo": "",
+    "nome": "Crestron Fundamentals Commercial (CTI-CFC)",
+    "erogazione": "",
+    "durata": "",
+    "paths": []
+  },
+  {
+    "id": "KU-C-142",
+    "brand": "CRESTRON",
+    "gruppo": "",
+    "nome": "Crestron Network Solutions - Introduzione (CNS-I)",
+    "erogazione": "",
+    "durata": "",
+    "paths": []
+  },
+  {
+    "id": "KU-C-143",
+    "brand": "CRESTRON",
+    "gruppo": "",
+    "nome": "Crestron Network Solutions - Design (CNS-D)",
+    "erogazione": "",
+    "durata": "",
+    "paths": []
+  },
+  {
+    "id": "KU-C-144",
+    "brand": "CRESTRON",
+    "gruppo": "",
+    "nome": "DigitalMedia 4K Designer",
+    "erogazione": "",
+    "durata": "",
+    "paths": []
   },
   {
     "id": "KU-C-078",
