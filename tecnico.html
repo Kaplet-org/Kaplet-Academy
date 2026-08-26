@@ -261,7 +261,14 @@ label.flabel { display: block; font-size: 0.6rem; font-weight: 400; letter-spaci
       </div>
       <div class="fgrid">
         <div class="fld"><label class="flabel">Data conseguimento *</label><input type="date" class="finput" id="cmp-cons"></div>
-        <div class="fld"><label class="flabel">Data scadenza <span style="color:var(--gray)">(se applicabile)</span></label><input type="date" class="finput" id="cmp-scad"><div class="fhint">Lascia vuoto se non scade</div></div>
+        <div class="fld"><label class="flabel">Data scadenza <span id="cmp-scad-obb">*</span></label><input type="date" class="finput" id="cmp-scad"><div class="fhint" id="cmp-scad-hint">Obbligatoria, salvo la spunta qui sotto</div></div>
+      </div>
+      <div class="fld">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="cmp-non-scade" style="width:16px;height:16px" onchange="toggleNonScade()">
+          <span style="font-size:.82rem;color:var(--white)">Questa certificazione non scade</span>
+        </label>
+        <div class="fhint">Spunta solo se l'attestato non ha una data di rinnovo</div>
       </div>
       <div class="fld">
         <label class="flabel">Attestato / Documento</label>
@@ -274,7 +281,7 @@ label.flabel { display: block; font-size: 0.6rem; font-weight: 400; letter-spaci
       <div class="msg error" id="cmp-err"></div>
     </div>
     <div class="modal-foot">
-      <button class="btn-secondary" onclick="completaSenzaDoc()">Completa senza documento</button>
+      <button class="btn-secondary" id="btn-cmp-nodoc" onclick="completaSenzaDoc()">Completa senza documento</button>
       <button class="btn-primary" id="btn-cmp" onclick="completaConDoc()">
         <span id="btn-cmp-txt">Completa e allega</span>
         <div class="spinner" id="btn-cmp-spin"></div>
@@ -503,7 +510,10 @@ function apriModalCompleta(c) {
   document.getElementById('cmp-nome').textContent = c.corso;
   document.getElementById('cmp-cons').value = new Date().toISOString().split('T')[0];
   document.getElementById('cmp-scad').value = '';
+  document.getElementById('cmp-non-scade').checked = false;
+  toggleNonScade();
   document.getElementById('cmp-file-name').style.display = 'none';
+  document.getElementById('cmp-file-input').value = '';
   fileCompleta = null;
   document.getElementById('cmp-err').classList.remove('show');
   document.getElementById('modal-completa').classList.add('open');
@@ -515,73 +525,191 @@ function allegaAttestato(id) {
   if (c) apriModalCompleta(c);
 }
 
-function handleFileCompleta(input) {
-  if (input.files && input.files[0]) {
-    fileCompleta = input.files[0];
-    const d = document.getElementById('cmp-file-name');
-    d.textContent = fileCompleta.name; d.style.display = 'block';
+// "Non scade" spento => la data di scadenza torna obbligatoria
+function toggleNonScade() {
+  const nonScade = document.getElementById('cmp-non-scade').checked;
+  const scad = document.getElementById('cmp-scad');
+  scad.disabled = nonScade;
+  if (nonScade) scad.value = '';
+  scad.style.opacity = nonScade ? '0.4' : '1';
+  document.getElementById('cmp-scad-obb').textContent = nonScade ? '' : '*';
+  document.getElementById('cmp-scad-hint').textContent = nonScade
+    ? 'Disattivata: la certificazione è senza scadenza'
+    : 'Obbligatoria, salvo la spunta qui sotto';
+}
+
+/* ── VALIDAZIONE FILE ── */
+const CMP_EXT_OK  = ['pdf','jpg','jpeg','png'];
+const CMP_MIME_OK = ['application/pdf','image/jpeg','image/jpg','image/png'];
+const CMP_MAX_MB  = 10;
+
+// Estensione ripulita: solo lettere/cifre, minuscola, e deve essere fra quelle ammesse.
+// Un file senza punto nel nome non deve produrre un path con l'intero nome come estensione.
+function estensioneSicura(nomeFile) {
+  const pezzi = String(nomeFile || '').split('.');
+  if (pezzi.length < 2) return null;
+  const ext = pezzi.pop().toLowerCase().replace(/[^a-z0-9]/g, '');
+  return CMP_EXT_OK.includes(ext) ? ext : null;
+}
+
+// Ritorna null se il file va bene, altrimenti il messaggio d'errore
+function validaFile(file) {
+  if (!file) return null;
+  if (!estensioneSicura(file.name)) {
+    return `Formato non ammesso. Carica un file ${CMP_EXT_OK.join(', ').toUpperCase()}.`;
   }
+  if (file.type && !CMP_MIME_OK.includes(file.type.toLowerCase())) {
+    return 'Il contenuto del file non corrisponde a un PDF o a un\'immagine.';
+  }
+  if (file.size > CMP_MAX_MB * 1024 * 1024) {
+    return `File troppo grande (${(file.size/1024/1024).toFixed(1)} MB). Il limite è ${CMP_MAX_MB} MB.`;
+  }
+  if (file.size === 0) return 'Il file è vuoto.';
+  return null;
+}
+
+function handleFileCompleta(input) {
+  const err = document.getElementById('cmp-err');
+  err.classList.remove('show');
+  if (!input.files || !input.files[0]) return;
+
+  const file = input.files[0];
+  const problema = validaFile(file);
+  if (problema) {
+    input.value = ''; fileCompleta = null;
+    document.getElementById('cmp-file-name').style.display = 'none';
+    err.textContent = problema; err.classList.add('show');
+    return;
+  }
+  fileCompleta = file;
+  const d = document.getElementById('cmp-file-name');
+  d.textContent = file.name; d.style.display = 'block';
+}
+
+/* ── VALIDAZIONE DATE ──
+   Unica per i due pulsanti: senza dati completi non si scrive niente
+   e il corso resta nello stato in cui era. */
+function validaCompletamento() {
+  const cons     = document.getElementById('cmp-cons').value;
+  const scad     = document.getElementById('cmp-scad').value;
+  const nonScade = document.getElementById('cmp-non-scade').checked;
+
+  if (!cons) return { ok:false, msg:'Inserisci la data di conseguimento.' };
+
+  const oggi = new Date(); oggi.setHours(23,59,59,999);
+  if (new Date(cons) > oggi) {
+    return { ok:false, msg:'La data di conseguimento non può essere nel futuro.' };
+  }
+  if (!nonScade && !scad) {
+    return { ok:false, msg:'Inserisci la data di scadenza, oppure spunta "questa certificazione non scade".' };
+  }
+  if (scad && new Date(scad) <= new Date(cons)) {
+    return { ok:false, msg:'La data di scadenza deve essere successiva a quella di conseguimento.' };
+  }
+  return { ok:true, cons, scad: nonScade ? null : scad };
+}
+
+// Blocca o sblocca entrambi i pulsanti della modale durante il salvataggio
+function bloccaPulsantiCompleta(bloccato, testo) {
+  const btn   = document.getElementById('btn-cmp');
+  const nodoc = document.getElementById('btn-cmp-nodoc');
+  const txt   = document.getElementById('btn-cmp-txt');
+  const spin  = document.getElementById('btn-cmp-spin');
+  btn.disabled = bloccato; nodoc.disabled = bloccato;
+  txt.style.display  = bloccato ? 'none'  : 'block';
+  spin.style.display = bloccato ? 'block' : 'none';
+  if (nodoc) nodoc.textContent = bloccato ? (testo || 'Attendi...') : 'Completa senza documento';
 }
 
 // Completa il corso senza allegare nulla
 async function completaSenzaDoc() {
-  const id = document.getElementById('cmp-corso-id').value;
-  const c = CORSI_ASS.find(x => x.id === id);
-  const cons = document.getElementById('cmp-cons').value || new Date().toISOString().split('T')[0];
-  const scad = document.getElementById('cmp-scad').value;
-  // marco il corso completato
-  await sb.from('corsi_assegnati').update({stato:'completato'}).eq('id', id);
-  // creo un record "solo corso" (senza documento): conta nelle competenze ma con peso ridotto
-  if (c) {
-    await sb.from('certificazioni').insert({
+  const id  = document.getElementById('cmp-corso-id').value;
+  const c   = CORSI_ASS.find(x => x.id === id);
+  const err = document.getElementById('cmp-err');
+  err.classList.remove('show');
+
+  if (!c) { err.textContent = 'Corso non trovato: ricarica la pagina.'; err.classList.add('show'); return; }
+
+  const v = validaCompletamento();
+  if (!v.ok) { err.textContent = v.msg; err.classList.add('show'); return; }
+
+  bloccaPulsantiCompleta(true, 'Salvataggio...');
+  try {
+    // Prima la certificazione, poi lo stato del corso: se l'insert fallisce
+    // il corso NON risulta completato e non finisce fra i corsi fatti.
+    const {error: ie} = await sb.from('certificazioni').insert({
       tech_id: ME.id, brand: c.brand, corso: c.corso,
-      data_conseguimento: cons, data_scadenza: scad || null,
+      data_conseguimento: v.cons, data_scadenza: v.scad,
       documento_url: null, note: 'Corso seguito (senza certificazione)',
       solo_corso: true, stato: 'attiva'
     });
-  }
-  closeOverlay('modal-completa');
-  await caricaDati(); toast('Corso completato!');
-}
+    if (ie) throw ie;
 
-// Completa il corso E crea una certificazione collegata con il documento
-async function completaConDoc() {
-  const id = document.getElementById('cmp-corso-id').value;
-  const c = CORSI_ASS.find(x => x.id === id);
-  if (!c) { closeOverlay('modal-completa'); return; }
-  const cons = document.getElementById('cmp-cons').value;
-  const scad = document.getElementById('cmp-scad').value;
-  const err = document.getElementById('cmp-err');
-  if (!cons) { err.textContent = 'Inserisci almeno la data di conseguimento.'; err.classList.add('show'); return; }
+    const {error: ue} = await sb.from('corsi_assegnati').update({stato:'completato'}).eq('id', id);
+    if (ue) throw ue;
 
-  const btn = document.getElementById('btn-cmp'), txt = document.getElementById('btn-cmp-txt'), spin = document.getElementById('btn-cmp-spin');
-  btn.disabled = true; txt.style.display = 'none'; spin.style.display = 'block'; err.classList.remove('show');
-  try {
-    // 1) upload documento se presente
-    let docUrl = null;
-    if (fileCompleta) {
-      const ext = fileCompleta.name.split('.').pop();
-      const path = `${ME.id}/${Date.now()}.${ext}`;
-      const {error:ue} = await sb.storage.from('certificati').upload(path, fileCompleta);
-      if (ue) { throw new Error('Upload documento fallito: ' + ue.message); }
-      const {data:pd} = sb.storage.from('certificati').getPublicUrl(path);
-      docUrl = pd?.publicUrl;
-    }
-    // 2) marca il corso completato
-    await sb.from('corsi_assegnati').update({stato:'completato'}).eq('id', id);
-    // 3) crea la certificazione collegata
-    await sb.from('certificazioni').insert({
-      tech_id: ME.id, brand: c.brand, corso: c.corso,
-      data_conseguimento: cons, data_scadenza: scad || null,
-      documento_url: docUrl, note: 'Da corso completato', stato: 'attiva'
-    });
     closeOverlay('modal-completa');
     await caricaDati();
-    toast('Corso completato e certificazione creata!');
+    toast('Corso completato!');
   } catch(e) {
     err.textContent = 'Errore: ' + e.message; err.classList.add('show');
   } finally {
-    btn.disabled = false; txt.style.display = 'block'; spin.style.display = 'none';
+    bloccaPulsantiCompleta(false);
+  }
+}
+
+// Completa il corso E crea una certificazione collegata, con o senza documento
+async function completaConDoc() {
+  const id  = document.getElementById('cmp-corso-id').value;
+  const c   = CORSI_ASS.find(x => x.id === id);
+  const err = document.getElementById('cmp-err');
+  err.classList.remove('show');
+
+  if (!c) { err.textContent = 'Corso non trovato: ricarica la pagina.'; err.classList.add('show'); return; }
+
+  const v = validaCompletamento();
+  if (!v.ok) { err.textContent = v.msg; err.classList.add('show'); return; }
+
+  const problemaFile = validaFile(fileCompleta);
+  if (problemaFile) { err.textContent = problemaFile; err.classList.add('show'); return; }
+
+  bloccaPulsantiCompleta(true, 'Salvataggio...');
+  try {
+    // 1) upload documento, se allegato
+    let docUrl = null;
+    if (fileCompleta) {
+      const ext  = estensioneSicura(fileCompleta.name);
+      const path = `${ME.id}/${Date.now()}.${ext}`;
+      const {error:ue} = await sb.storage.from('certificati').upload(path, fileCompleta);
+      if (ue) throw new Error('Upload documento fallito: ' + ue.message);
+      const {data:pd} = sb.storage.from('certificati').getPublicUrl(path);
+      docUrl = pd?.publicUrl;
+      if (!docUrl) throw new Error('Link al documento non generato.');
+    }
+
+    // 2) certificazione. Senza documento allegato vale come "solo corso",
+    //    esattamente come l'altro pulsante: stesso esito, stesso peso.
+    const soloCorso = !docUrl;
+    const {error: ie} = await sb.from('certificazioni').insert({
+      tech_id: ME.id, brand: c.brand, corso: c.corso,
+      data_conseguimento: v.cons, data_scadenza: v.scad,
+      documento_url: docUrl,
+      note: soloCorso ? 'Corso seguito (senza certificazione)' : 'Da corso completato',
+      solo_corso: soloCorso, stato: 'attiva'
+    });
+    if (ie) throw ie;
+
+    // 3) solo adesso il corso è completato
+    const {error: ce} = await sb.from('corsi_assegnati').update({stato:'completato'}).eq('id', id);
+    if (ce) throw ce;
+
+    closeOverlay('modal-completa');
+    await caricaDati();
+    toast(soloCorso ? 'Corso completato!' : 'Corso completato e certificazione creata!');
+  } catch(e) {
+    err.textContent = 'Errore: ' + e.message; err.classList.add('show');
+  } finally {
+    bloccaPulsantiCompleta(false);
   }
 }
 
