@@ -1378,7 +1378,7 @@ const COURSES = [
     "brand": "CRESTRON",
     "gruppo": "",
     "nome": "Crestron Core Track",
-    "erogazione": "",
+    "erogazione": "E-Learning",
     "durata": "",
     "paths": []
   },
@@ -1387,7 +1387,7 @@ const COURSES = [
     "brand": "CRESTRON",
     "gruppo": "",
     "nome": "Crestron Fundamentals Commercial (CTI-CFC)",
-    "erogazione": "",
+    "erogazione": "E-Learning",
     "durata": "",
     "paths": []
   },
@@ -1396,7 +1396,7 @@ const COURSES = [
     "brand": "CRESTRON",
     "gruppo": "",
     "nome": "Crestron Network Solutions - Introduzione (CNS-I)",
-    "erogazione": "",
+    "erogazione": "E-Learning",
     "durata": "",
     "paths": []
   },
@@ -1405,7 +1405,7 @@ const COURSES = [
     "brand": "CRESTRON",
     "gruppo": "",
     "nome": "Crestron Network Solutions - Design (CNS-D)",
-    "erogazione": "",
+    "erogazione": "E-Learning",
     "durata": "",
     "paths": []
   },
@@ -1414,7 +1414,7 @@ const COURSES = [
     "brand": "CRESTRON",
     "gruppo": "",
     "nome": "DigitalMedia 4K Designer",
-    "erogazione": "",
+    "erogazione": "E-Learning",
     "durata": "",
     "paths": []
   },

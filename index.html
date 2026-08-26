@@ -550,6 +550,7 @@ select option { background: #1a1a1a; }
 
 .p-free { color: var(--green); border-color: rgba(54,205,129,0.25); }
 .p-paid { color: #f5c842; border-color: rgba(245,200,66,0.25); }
+.p-na   { color: var(--text-gray); border-color: rgba(255,255,255,0.14); }
 
 .brand-list { display: flex; flex-direction: column; gap: 1px; background: var(--border-dark); }
 
@@ -1489,7 +1490,9 @@ const RAW = COURSES.map(c => ({
   desc: c.desc || '',
   delivery: c.erogazione || '',
   dur: c.durata || '',
-  price: c.prezzo || 0,
+  // prezzo assente e prezzo zero non sono la stessa cosa: null = non noto,
+  // altrimenti un corso senza dato verrebbe mostrato come "Gratuito"
+  price: typeof c.prezzo === 'number' ? c.prezzo : null,
   // converto i path (stringhe) negli indici di ROLES per i filtri
   roles: c.paths.map(p => RUOLI.findIndex(r => r.key === p)).filter(i => i >= 0)
 }));
@@ -1662,7 +1665,7 @@ function renderGrid(){
     const col=bc(c.brand);
     const p=PORTALS[c.brand];
     const rn=c.roles.map(r=>ROLES[r]).filter(Boolean);
-    const ph=c.price===0?`<span class="price-tag p-free">Gratuito</span>`:`<span class="price-tag p-paid">€${c.price}</span>`;
+    const ph=c.price===null?`<span class="price-tag p-na">Prezzo n.d.</span>`:c.price===0?`<span class="price-tag p-free">Gratuito</span>`:`<span class="price-tag p-paid">€${c.price}</span>`;
     const bt=p?`<a class="brand-tag" style="color:${col};border-color:${col}44;background:${col}12" href="${p.url}" target="_blank" rel="noopener">${c.brand} ↗</a>`
               :`<span class="brand-tag" style="color:${col};border-color:${col}44;background:${col}12">${c.brand}</span>`;
     return `<div class="course-card" style="animation-delay:${Math.min(i*.02,.3)}s">
@@ -1701,7 +1704,7 @@ function renderBrandView(){
       </div>
       <div class="brand-table">
         ${groups[b].map(c=>{
-          const ps=c.price===0?`<span class="price-tag p-free" style="font-size:.58rem">Gratuito</span>`:`<span class="price-tag p-paid" style="font-size:.58rem">€${c.price}</span>`;
+          const ps=c.price===null?`<span class="price-tag p-na" style="font-size:.58rem">Prezzo n.d.</span>`:c.price===0?`<span class="price-tag p-free" style="font-size:.58rem">Gratuito</span>`:`<span class="price-tag p-paid" style="font-size:.58rem">€${c.price}</span>`;
           return `<div class="brand-row">
             <div><div class="br-n">${c.name}</div>${c.cat?`<div class="br-c">${c.cat}</div>`:''}</div>
             ${c.delivery?`<span class="d-badge ${dc(c.delivery)}" style="font-size:.55rem">${c.delivery}</span>`:'<span></span>'}
