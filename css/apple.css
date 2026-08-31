@@ -187,3 +187,16 @@ body.g-dragging-on * { cursor: grabbing !important; }
 /* invito al trascinamento sulle schede dell'elenco */
 [data-corso-id] { cursor: grab; touch-action: none; }
 [data-corso-id]:active { cursor: grabbing; }
+
+/* ── Campi data ─────────────────────────────────────────────────────
+   Tutto il campo apre il calendario (vedi js/date-facile.js): il cursore
+   lo dichiara, e l'icona nativa passa dal grigio scuro di sistema al
+   verde di Kaplet. */
+input[type="date"] { cursor: pointer; }
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer; opacity: .5; transition: opacity .2s var(--ease);
+  /* l'icona di sistema è nera: invertita e virata diventa verde menta */
+  filter: invert(64%) sepia(38%) saturate(760%) hue-rotate(96deg) brightness(96%) contrast(88%);
+}
+input[type="date"]:hover::-webkit-calendar-picker-indicator,
+input[type="date"]:focus::-webkit-calendar-picker-indicator { opacity: 1; }

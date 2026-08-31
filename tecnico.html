@@ -409,6 +409,7 @@ label.flabel { display: block; font-size: 0.6rem; font-weight: 400; letter-spaci
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/courses.js"></script>
 <script src="js/gantt-drag.js"></script>
+<script src="js/date-facile.js"></script>
 <script>
 const SUPA_URL = 'https://mcgerrvorboagkukzuzc.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jZ2VycnZvcmJvYWdrdWt6dXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NjEyNzIsImV4cCI6MjA5MzQzNzI3Mn0.eDHZ-QUQLM2tFU4KPDEiIqXZsdfk_Cxnz7Ywxt6T46o';
@@ -1046,7 +1047,8 @@ function pianificaCorso(id) {
 function popolaAnniPiano() {
   const sel = document.getElementById('pf-anno');
   if (!sel) return;
-  const anni = [...new Set(CORSI_ASS.filter(c => c.data_inizio).map(c => c.data_inizio.slice(0,4)))];
+  const anni = [...new Set(CORSI_ASS.flatMap(c =>
+    [c.data_inizio, c.data_fine_prevista, c.data_esame].filter(Boolean).map(d => d.slice(0,4))))];
   const corrente = String(new Date().getFullYear());
   if (!anni.includes(corrente)) anni.push(corrente);
   anni.sort();
