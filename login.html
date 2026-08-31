@@ -269,7 +269,7 @@ async function handleRecovery(e) {
   err.classList.remove('show');
   try {
     const { error } = await sb.auth.resetPasswordForEmail(email, {
-      redirectTo: 'https://kaplet-org.github.io/Kaplet-Academy/login.html'
+      redirectTo: 'https://kaplet.github.io/Kaplet-Academy/login.html'
     });
     if (error) throw error;
     document.getElementById('recovery-form-wrap').style.display = 'none';

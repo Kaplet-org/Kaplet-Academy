@@ -102,7 +102,7 @@ async function sendMail(notifiche: any[]) {
         <tbody>${righe}</tbody>
       </table>
       <div style="margin-top:24px;text-align:center">
-        <a href="https://tuoaccount.github.io/kaplet-academy/admin.html"
+        <a href="https://kaplet.github.io/Kaplet-Academy/admin.html"
            style="display:inline-block;background:#36CD81;color:#0C0E0D;text-decoration:none;
                   padding:11px 26px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase">
           Apri pannello admin
