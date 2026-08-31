@@ -450,7 +450,7 @@ label.flabel {
     <div class="piano-head">
       <div>
         <div class="section-title" style="margin:0">Pianificazione formazione</div>
-        <p style="font-size:0.75rem;color:var(--gray);font-weight:300;margin-top:.35rem">Chi fa cosa e quando. Le date le mettono i tecnici quando avviano un corso: tu puoi correggerle cliccando su una barra.</p>
+        <p style="font-size:0.75rem;color:var(--gray);font-weight:300;margin-top:.35rem">Chi fa cosa e quando. Le date le mettono i tecnici quando avviano un corso. <b style="color:var(--white);font-weight:400">Trascina una barra</b> per spostare un corso nel tempo, o trascina una scheda dall'elenco in fondo per metterla in calendario. Un clic sulla barra apre tutti i campi.</p>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <select class="ca-select" id="pf-anno" onchange="renderPiano()"></select>
@@ -822,6 +822,7 @@ label.flabel {
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/courses.js"></script>
+<script src="js/gantt-drag.js"></script>
 <script>
 const SUPA_URL = 'https://mcgerrvorboagkukzuzc.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jZ2VycnZvcmJvYWdrdWt6dXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NjEyNzIsImV4cCI6MjA5MzQzNzI3Mn0.eDHZ-QUQLM2tFU4KPDEiIqXZsdfk_Cxnz7Ywxt6T46o';
@@ -1624,6 +1625,9 @@ const oggiISO = () => {
 };
 const toDate = iso => new Date(iso + 'T00:00:00');
 
+// ISO di un oggetto Date senza slittamenti di fuso
+const aISOloc = d => new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().split('T')[0];
+
 function addGiorni(iso, n) {
   const d = toDate(iso); d.setDate(d.getDate() + n);
   return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().split('T')[0];
@@ -1679,6 +1683,8 @@ function renderPiano() {
     wrap.innerHTML = costruisciGantt(righe, vista === 'tecnico');
   }
 
+  attivaTrascinamento();
+
   // Corsi assegnati che nessuno ha ancora messo in calendario.
   // Sono centinaia (un catalogo intero per ruolo): se ne mostra una manciata,
   // altrimenti la pagina diventa lunga migliaia di pixel e illeggibile.
@@ -1688,7 +1694,7 @@ function renderPiano() {
     <div class="section-title" style="margin:2.5rem 0 .5rem;font-size:.95rem">Assegnati ma non ancora in calendario (${todo.length})</div>
     <p style="font-size:.72rem;color:var(--gray);margin-bottom:1rem;font-weight:300">Nessuna data: questi corsi non compaiono nella timeline finché il tecnico non li avvia (o finché non metti tu le date).${todo.length > 12 ? ' Filtra per tecnico per restringere l\'elenco.' : ''}</p>
     <div class="ca-grid">${visibili.map(c => `
-      <div class="ca-card">
+      <div class="ca-card" data-corso-id="${c.id}" title="Trascinami sulla timeline per pianificarlo">
         <div class="ca-card-top">
           <span class="ca-brand" style="color:${bc(c.brand)}">${esc(c.brand)}</span>
           <span class="ca-stato ${csClass(c.stato)}">${csLabel(c.stato)}</span>
@@ -1729,6 +1735,36 @@ function renderCarico(righe, anno) {
       <div class="carico-n">${m.corsi}</div>
       <div class="carico-det">cors${m.corsi===1?'o':'i'} · ${m.tecnici.size} tecnic${m.tecnici.size===1?'o':'i'}${m.esami ? ` · <span style="color:var(--warn)">${m.esami} esam${m.esami===1?'e':'i'}</span>` : ''}</div>
     </div>`).join('');
+}
+
+/* Trascinamento: l'admin sposta le barre di chiunque, e trascinando una
+   scheda dall'elenco propone quella data come inizio. */
+function attivaTrascinamento() {
+  if (typeof KapletGantt === 'undefined') return;
+  KapletGantt.abilita({
+    wrap: '#gantt-wrap',
+    lista: '#piano-todo',
+    puoiSpostare: id => {
+      const c = CORSI_ASS.find(x => x.id === id);
+      return !!c && c.stato !== 'completato';   // un corso chiuso non si riprogramma
+    },
+    onSposta: async (id, inizio, fine, esame) => {
+      const patch = { data_inizio: inizio, data_fine_prevista: fine };
+      if (esame) patch.data_esame = esame;
+      const { error } = await sb.from('corsi_assegnati').update(patch).eq('id', id);
+      if (error) { toast('Errore: ' + error.message); await load(); return; }
+      const c = CORSI_ASS.find(x => x.id === id);
+      await load();
+      toast((c ? nomeTec(c.tech_id) + ': ' : '') + 'spostato al ' + fmt(inizio));
+    },
+    onPianifica: (id, data) => {
+      openModalStato(id);
+      document.getElementById('ms-inizio').value = data;
+      // fine prevista lasciata all'admin: qui non c'è la durata di catalogo a portata
+      const c = CORSI_ASS.find(x => x.id === id);
+      if (c && c.stato === 'da_fare') document.getElementById('ms-stato').value = 'in_corso';
+    }
+  });
 }
 
 /* Timeline. `righe` = corsi con data_inizio, ordinati. raggruppa = una fascia per tecnico. */
@@ -1782,7 +1818,7 @@ function costruisciGantt(righe, raggruppa) {
       </div>
       <div class="g-track" style="${trackW}">
         ${griglia}${today}
-        <div class="g-bar ${c.stato}${ritardo ? ' ritardo' : ''}" style="left:${l}%;width:${w}%;${stile}"
+        <div data-id="${c.id}" data-inizio="${c.data_inizio}" data-fine="${fine}" data-esame="${c.data_esame||''}" class="g-bar ${c.stato}${ritardo ? ' ritardo' : ''}" style="left:${l}%;width:${w}%;${stile}"
              title="${esc(nomeTec(c.tech_id))} · ${esc(c.corso)} · ${fmt(c.data_inizio)} → ${fmt(fine)}${c.data_esame ? ' · esame ' + fmt(c.data_esame) : ''}"
              onclick="openModalStato('${c.id}')">${fmt(c.data_inizio).slice(0,5)}</div>
         ${esame}
@@ -1809,7 +1845,8 @@ function costruisciGantt(righe, raggruppa) {
     corpo = righe.map(riga).join('');
   }
 
-  return `<div class="gantt">
+  const giorniScala = Math.round((end - start) / 86400000);
+  return `<div class="gantt" data-start="${aISOloc(start)}" data-giorni="${giorniScala}">
     <div class="gantt-head">
       <div class="gh-label">${raggruppa ? 'Corso' : 'Corso · tecnico'}</div>
       <div style="display:flex;flex:1 0 auto;${trackW}">${mesi.join('')}</div>

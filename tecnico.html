@@ -226,7 +226,7 @@ label.flabel { display: block; font-size: 0.6rem; font-weight: 400; letter-spaci
     <div class="piano-head">
       <div>
         <div class="section-title" style="margin:0">Il mio piano di formazione</div>
-        <p style="font-size:.75rem;color:var(--gray);font-weight:300;margin-top:.35rem">Quando metti un corso "In corso" ti chiedo le date: da lì compare qui sulla timeline.</p>
+        <p style="font-size:.75rem;color:var(--gray);font-weight:300;margin-top:.35rem">Quando metti un corso "In corso" ti chiedo le date e compare qui. Poi <b style="color:var(--white);font-weight:400">trascina le barre</b> per spostarle, o trascina un corso dall'elenco in fondo direttamente sul mese giusto.</p>
       </div>
       <select class="fsel-sm" id="pf-anno" onchange="renderPiano()"></select>
     </div>
@@ -408,6 +408,7 @@ label.flabel { display: block; font-size: 0.6rem; font-weight: 400; letter-spaci
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/courses.js"></script>
+<script src="js/gantt-drag.js"></script>
 <script>
 const SUPA_URL = 'https://mcgerrvorboagkukzuzc.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jZ2VycnZvcmJvYWdrdWt6dXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NjEyNzIsImV4cCI6MjA5MzQzNzI3Mn0.eDHZ-QUQLM2tFU4KPDEiIqXZsdfk_Cxnz7Ywxt6T46o';
@@ -957,6 +958,9 @@ const oggiISO = () => {
 const toDate = iso => new Date(iso + 'T00:00:00');
 
 // Somma giorni di calendario a una data ISO e restituisce ISO
+// ISO di un oggetto Date senza slittamenti di fuso
+const aISOloc = d => new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().split('T')[0];
+
 function addGiorni(iso, n) {
   const d = toDate(iso); d.setDate(d.getDate() + n);
   return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().split('T')[0];
@@ -1091,11 +1095,12 @@ function renderPiano() {
   const todo = CORSI_ASS.filter(c => !c.data_inizio && c.stato !== 'completato')
     .sort((a,b) => (a.scadenza || '9999').localeCompare(b.scadenza || '9999'));
   const visibili = PIANO_TODO_TUTTI ? todo : todo.slice(0, 10);
+  attivaTrascinamento();
   document.getElementById('piano-todo').innerHTML = !todo.length ? '' : `
     <div class="section-title" style="margin:2.5rem 0 .5rem;font-size:.95rem">Da mettere in calendario (${todo.length})</div>
     <p style="font-size:.72rem;color:var(--gray);margin-bottom:1rem;font-weight:300">${todo.length > 10 ? 'I primi per scadenza. ' : ''}Scegli quando seguirli e finiscono nella timeline qui sopra.</p>
     ${visibili.map(c => `
-      <div class="topl-row">
+      <div class="topl-row" data-corso-id="${c.id}" title="Trascinami sulla timeline per pianificarmi">
         <div>
           <div class="gl-brand" style="color:${bc(c.brand)}">${esc(c.brand)}</div>
           <div style="font-size:.82rem;font-weight:300">${esc(c.corso)}</div>
@@ -1110,6 +1115,36 @@ function renderPiano() {
 
 let PIANO_TODO_TUTTI = false;
 function togglePianoTodo() { PIANO_TODO_TUTTI = !PIANO_TODO_TUTTI; renderPiano(); }
+
+/* Trascinamento: spostare una barra riprogramma il corso, trascinare una
+   scheda dall'elenco propone quella data come inizio. */
+function attivaTrascinamento() {
+  if (typeof KapletGantt === 'undefined') return;
+  KapletGantt.abilita({
+    wrap: '#gantt-wrap',
+    lista: '#piano-todo',
+    puoiSpostare: id => {
+      const c = CORSI_ASS.find(x => x.id === id);
+      return !!c && c.stato !== 'completato';   // un corso chiuso non si riprogramma
+    },
+    onSposta: async (id, inizio, fine, esame) => {
+      const patch = { data_inizio: inizio, data_fine_prevista: fine };
+      if (esame) patch.data_esame = esame;
+      const { error } = await sb.from('corsi_assegnati').update(patch).eq('id', id);
+      if (error) { toast('Errore: ' + error.message); await caricaDati(); return; }
+      await caricaDati();
+      toast('Spostato al ' + fmt(inizio));
+    },
+    onPianifica: (id, data) => {
+      const c = CORSI_ASS.find(x => x.id === id);
+      if (!c) return;
+      apriModalPiano(c);
+      document.getElementById('pia-inizio').value = data;
+      document.getElementById('pia-fine').value = '';
+      pianoAutoFine();
+    }
+  });
+}
 
 /* Costruisce la timeline. `righe` sono corsi con data_inizio valorizzata, già ordinati. */
 function costruisciGantt(righe) {
@@ -1162,7 +1197,7 @@ function costruisciGantt(righe) {
       </div>
       <div class="g-track" style="${trackW}">
         ${griglia}${today}
-        <div class="g-bar ${csClass(c.stato)}${ritardo ? ' ritardo' : ''}" style="left:${l}%;width:${w}%;${stile}"
+        <div data-id="${c.id}" data-inizio="${c.data_inizio}" data-fine="${fine}" data-esame="${c.data_esame||''}" class="g-bar ${csClass(c.stato)}${ritardo ? ' ritardo' : ''}" style="left:${l}%;width:${w}%;${stile}"
              title="${esc(c.corso)} · ${fmt(c.data_inizio)} → ${fmt(fine)}${c.data_esame ? ' · esame ' + fmt(c.data_esame) : ''}"
              onclick="pianificaCorso('${c.id}')">${fmt(c.data_inizio).slice(0,5)}</div>
         ${esame}
@@ -1170,7 +1205,8 @@ function costruisciGantt(righe) {
     </div>`;
   }).join('');
 
-  return `<div class="gantt">
+  const giorniScala = Math.round((end - start) / 86400000);
+  return `<div class="gantt" data-start="${aISOloc(start)}" data-giorni="${giorniScala}">
     <div class="gantt-head">
       <div class="gh-label">Corso</div>
       <div style="display:flex;flex:1 0 auto;${trackW}">${mesi.join('')}</div>

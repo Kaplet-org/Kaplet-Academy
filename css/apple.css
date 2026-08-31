@@ -147,3 +147,43 @@ input:focus, select:focus, textarea:focus { box-shadow: var(--sh-glow); outline:
   letter-spacing: -0.02em; color: var(--white);
 }
 .modal-head { padding-top: 1.15rem; padding-bottom: 1.15rem; }
+
+/* ── Trascinamento sulla timeline ───────────────────────────────────── */
+.g-bar { touch-action: none; }
+.g-bar:hover { cursor: grab; }
+.g-bar.g-dragging {
+  cursor: grabbing; z-index: 20; transform: translateY(-50%) scale(1.04);
+  box-shadow: 0 6px 22px rgba(0,0,0,.5); filter: brightness(1.12);
+}
+body.g-dragging-on { cursor: grabbing; user-select: none; }
+body.g-dragging-on * { cursor: grabbing !important; }
+
+/* riquadro con le date che segue il puntatore */
+.g-drag-label {
+  position: fixed; z-index: 400; pointer-events: none;
+  background: var(--card, #141614); border: 1px solid rgba(255,255,255,.14);
+  color: #fff; font-family: var(--font, sans-serif); font-size: .68rem; font-weight: 400;
+  padding: 6px 11px; border-radius: var(--r-pill, 980px); white-space: nowrap;
+  box-shadow: var(--sh-2, 0 8px 30px rgba(0,0,0,.5)); transform: translateX(-50%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%); backdrop-filter: blur(14px) saturate(160%);
+}
+
+/* la scheda trascinata dall'elenco */
+.g-ghost {
+  position: fixed; z-index: 390; pointer-events: none; opacity: .92;
+  transform: rotate(-1.5deg) scale(.96); transform-origin: top left;
+  box-shadow: 0 12px 40px rgba(0,0,0,.55);
+  border: 1px solid var(--green, #36CD81) !important;
+}
+.g-ghost button { display: none; }
+
+/* la timeline si illumina quando può ricevere una scheda */
+.gantt-wrap.g-drop-attivo { outline: 1px dashed rgba(255,255,255,.18); outline-offset: -1px; }
+.gantt-wrap.g-drop-sopra {
+  outline: 1.5px dashed var(--green, #36CD81); outline-offset: -1px;
+  background: rgba(54,205,129,.04);
+}
+
+/* invito al trascinamento sulle schede dell'elenco */
+[data-corso-id] { cursor: grab; touch-action: none; }
+[data-corso-id]:active { cursor: grabbing; }
