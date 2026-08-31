@@ -16,8 +16,8 @@
   --card: #141614;
   --card2: #1A1C1A;
   --font: 'DM Sans', sans-serif;
-  --warn: #F59E0B;
-  --danger: #EF4444;
+  --warn: #FFD60A;
+  --danger: #FF375F;
   --green-dim: rgba(54,205,129,0.08);
   --green-border: rgba(54,205,129,0.2);
 }
@@ -332,9 +332,45 @@ label.flabel {
 .toast.show { display: flex; }
 .toast-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
 
+/* ── PIANIFICAZIONE / GANTT ── */
+.piano-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.gantt-wrap { background: var(--card); border: 1px solid var(--border); overflow-x: auto; }
+.gantt { width: max-content; min-width: 100%; --gmw: 92px; --glw: 250px; }
+.gantt-head { display: flex; border-bottom: 1px solid var(--border); background: var(--black); }
+.gh-label { flex: 0 0 var(--glw); position: sticky; left: 0; background: var(--black); border-right: 1px solid var(--border); padding: 0.6rem 0.9rem; font-size: .58rem; letter-spacing: .12em; text-transform: uppercase; color: var(--green); z-index: 4; }
+.gh-m { flex: 1 0 var(--gmw); text-align: center; padding: 0.6rem 0; font-size: .58rem; letter-spacing: .1em; text-transform: uppercase; color: var(--gray); border-right: 1px solid var(--border); }
+.gh-m.now { color: var(--green); }
+.g-group { position: sticky; left: 0; display: flex; align-items: center; gap: 10px; padding: 0.5rem 0.9rem; background: var(--card2); border-bottom: 1px solid var(--border); border-top: 1px solid var(--border); width: max-content; min-width: 100%; z-index: 3; }
+.g-group-nome { font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; color: var(--white); }
+.g-group-meta { font-size: .6rem; color: var(--gray); }
+.g-row { display: flex; border-bottom: 1px solid var(--border); min-height: 44px; }
+.g-row:hover { background: rgba(255,255,255,0.02); }
+.g-label { flex: 0 0 var(--glw); position: sticky; left: 0; background: var(--card); border-right: 1px solid var(--border); padding: 0.45rem 0.9rem; z-index: 2; }
+.gl-brand { font-size: .55rem; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 2px; }
+.gl-nome { font-size: .73rem; font-weight: 300; color: var(--white); line-height: 1.3; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.g-track { position: relative; flex: 1 0 auto; }
+.g-grid { position: absolute; inset: 0; display: flex; pointer-events: none; }
+.g-grid span { flex: 1 0 var(--gmw); border-right: 1px solid rgba(255,255,255,0.05); }
+.g-today { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--green); opacity: .55; pointer-events: none; z-index: 1; }
+.g-bar { position: absolute; top: 50%; transform: translateY(-50%); height: 20px; min-width: 22px; cursor: pointer; display: flex; align-items: center; padding: 0 7px; font-size: .57rem; font-weight: 500; color: var(--black); white-space: nowrap; overflow: hidden; z-index: 2; transition: filter .15s; }
+.g-bar:hover { filter: brightness(1.15); }
+.g-bar.da_fare { background: transparent !important; border: 1px dashed rgba(255,255,255,.3); color: var(--gray) !important; }
+.g-bar.completato { opacity: .5; }
+.g-bar.ritardo { box-shadow: 0 0 0 1px var(--danger); }
+.g-exam { position: absolute; top: 50%; width: 12px; height: 12px; margin-left: -6px; transform: translateY(-50%) rotate(45deg); background: var(--warn); border: 1px solid var(--black); z-index: 3; cursor: pointer; }
+.g-legend { display: flex; gap: 1.25rem; flex-wrap: wrap; margin-top: 1rem; font-size: .62rem; color: var(--gray); align-items: center; }
+.g-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.g-legend i { display: inline-block; width: 16px; height: 8px; }
+.g-legend i.exam { width: 9px; height: 9px; transform: rotate(45deg); background: var(--warn); }
+.carico-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 1.5rem; }
+.carico-cell { background: var(--card); padding: 0.75rem 0.9rem; }
+.carico-mese { font-size: .55rem; letter-spacing: .1em; text-transform: uppercase; color: var(--green); margin-bottom: 4px; }
+.carico-n { font-size: 1.35rem; font-weight: 200; line-height: 1; }
+.carico-det { font-size: .6rem; color: var(--gray); margin-top: 3px; }
 @media(max-width:768px) { nav { padding: 0 1.25rem; } .hero, .main { padding-left: 1.25rem; padding-right: 1.25rem; } .stats-row { flex-wrap: wrap; } }
 </style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
+<link rel="stylesheet" href="css/apple.css">
 </head>
 <body>
 
@@ -343,6 +379,7 @@ label.flabel {
   <div class="nav-center">
     <button class="nav-tab active" onclick="showSection('team',this)">Team</button>
     <button class="nav-tab" onclick="showSection('corsi',this)">Corsi assegnati</button>
+    <button class="nav-tab" onclick="showSection('piano',this)">Pianificazione</button>
     <button class="nav-tab" onclick="showSection('scadenze',this)">Scadenze</button>
     <button class="nav-tab" onclick="showSection('matrix',this)">Mappa cert.</button>
     <button class="nav-tab" onclick="showSection('competenze',this)">Competenze</button>
@@ -408,6 +445,34 @@ label.flabel {
     <div class="ca-grid" id="ca-grid"><div class="empty"><div class="empty-icon">◌</div><div class="empty-title">Caricamento...</div></div></div>
   </div>
 
+  <!-- PIANIFICAZIONE -->
+  <div class="section" id="section-piano">
+    <div class="piano-head">
+      <div>
+        <div class="section-title" style="margin:0">Pianificazione formazione</div>
+        <p style="font-size:0.75rem;color:var(--gray);font-weight:300;margin-top:.35rem">Chi fa cosa e quando. Le date le mettono i tecnici quando avviano un corso: tu puoi correggerle cliccando su una barra.</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <select class="ca-select" id="pf-anno" onchange="renderPiano()"></select>
+        <select class="ca-select" id="pf-tec" onchange="renderPiano()"><option value="">Tutti i tecnici</option></select>
+        <select class="ca-select" id="pf-vista" onchange="renderPiano()">
+          <option value="tecnico">Raggruppa per tecnico</option>
+          <option value="data">Ordina per data</option>
+        </select>
+      </div>
+    </div>
+    <div class="carico-grid" id="carico-grid"></div>
+    <div class="gantt-wrap" id="gantt-wrap"></div>
+    <div class="g-legend">
+      <span><i style="background:var(--green)"></i> Completato</span>
+      <span><i style="background:linear-gradient(90deg,#22D3EE,#A78BFA,#F472B6)"></i> In corso <span style="opacity:.6">(colore del vendor)</span></span>
+      <span><i style="border:1px dashed rgba(255,255,255,.3)"></i> Pianificato</span>
+      <span><i class="exam"></i> Esame</span>
+      <span><i style="width:1px;background:var(--green)"></i> Oggi</span>
+    </div>
+    <div id="piano-todo"></div>
+  </div>
+
   <!-- SCADENZE -->
   <div class="section" id="section-scadenze">
     <div class="section-head"><div class="section-title">Certificazioni in scadenza (60gg)</div></div>
@@ -464,9 +529,9 @@ label.flabel {
         <div style="font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:1rem">Heatmap area × vendor</div>
         <div id="comp-heatmap"></div>
         <div style="display:flex;gap:14px;margin-top:.9rem;font-size:.6rem;color:var(--gray);align-items:center">
-          <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;background:#E24B4A;border-radius:3px"></div>0–1</div>
-          <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;background:#EF9F27;border-radius:3px"></div>2–3</div>
-          <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;background:#36CD81;border-radius:3px"></div>4–5</div>
+          <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;background:#345142;border-radius:999px"></div>0–1</div>
+          <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;background:#3E986B;border-radius:999px"></div>2–3</div>
+          <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;background:#36CD81;border-radius:999px"></div>4–5</div>
         </div>
       </div>
       <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.3rem">
@@ -611,7 +676,15 @@ label.flabel {
           <option value="completato">Completato</option>
         </select>
       </div>
-      <div class="fld"><label class="flabel">Scadenza</label><input type="date" class="finput" id="ms-scad"></div>
+      <div class="fld"><label class="flabel">Da completare entro</label><input type="date" class="finput" id="ms-scad"></div>
+      <div style="border-top:1px solid var(--border);margin:0 0 1.1rem;padding-top:1.1rem">
+        <div class="flabel" style="margin-bottom:.75rem">Date di pianificazione</div>
+        <div class="fgrid">
+          <div class="fld"><label class="flabel">Inizio</label><input type="date" class="finput" id="ms-inizio"></div>
+          <div class="fld"><label class="flabel">Fine prevista</label><input type="date" class="finput" id="ms-fine"></div>
+        </div>
+        <div class="fld" style="margin-bottom:0"><label class="flabel">Data esame</label><input type="date" class="finput" id="ms-esame"></div>
+      </div>
       <div class="fld"><label class="flabel">Note</label><input type="text" class="finput" id="ms-note"></div>
     </div>
     <div class="modal-foot">
@@ -813,7 +886,8 @@ async function load() {
   const fb = document.getElementById('f-brand');
   fb.innerHTML = '<option value="">Tutti i brand</option>' + brands.map(b => `<option value="${b}">${b}</option>`).join('');
 
-  renderTeam(); renderCorsi(); renderScadenze(); renderMatrix(); renderCompetenze(); caricaSettings();
+  popolaFiltriPiano();
+  renderTeam(); renderCorsi(); renderScadenze(); renderMatrix(); renderCompetenze(); renderPiano(); caricaSettings();
 }
 
 /* ── TEAM ── */
@@ -886,7 +960,7 @@ function renderCorsi() {
       <div class="ca-meta"><div>Anno ${c.anno}</div>${scadHtml}${c.note?`<div style="opacity:.5">${esc(c.note)}</div>`:''}</div>
       ${tec ? `<div class="ca-tec-row"><div class="av-sm">${tec.nome[0].toUpperCase()}</div><div class="ca-tec-nome">${tec.nome} ${tec.cognome}</div></div>` : ''}
       <div class="ca-actions">
-        <button class="btn-sm" onclick="openModalStato('${c.id}','${c.stato}','${c.scadenza||''}','${(c.note||'').replace(/'/g,"\\'")}')">Modifica stato</button>
+        <button class="btn-sm" onclick="openModalStato('${c.id}')">Modifica stato e date</button>
         <button class="btn-danger-sm" onclick="rimuoviCorso('${c.id}')">Rimuovi</button>
       </div>
     </div>`;
@@ -1033,7 +1107,18 @@ function stelle(v, size) {
   return s;
 }
 
-function colorLiv(v) { return v < 2 ? '#E24B4A' : v < 4 ? '#EF9F27' : '#36CD81'; }
+/* Scala di competenza — una sola famiglia: il verde Kaplet che si accende.
+   Spento = competenza assente, pieno = solida. Le tinte sono lo stesso verde
+   (150°) a saturazione e luminosità crescenti, così la scala si legge come
+   un'unica progressione invece che come un semaforo.
+   Il rosa (#FF375F) è il complementare del verde: unico accento, riservato
+   alle criticità, e proprio per questo salta all'occhio. */
+const LIV_BASSO = '#345142', LIV_MEDIO = '#3E986B', LIV_ALTO = '#36CD81';
+const ACCENTO   = '#FF375F', NEUTRO    = '#7E9188';
+function colorLiv(v) { return v < 2 ? LIV_BASSO : v < 4 ? LIV_MEDIO : LIV_ALTO; }
+// Su fondo nero il verde spento sparisce (2.2:1): per testi e barre di
+// avanzamento si usa il verde pieno, e il rosa solo sotto la soglia critica.
+function colorLivVivo(v) { return v < 2 ? ACCENTO : LIV_ALTO; }
 
 // stato filtro area + tab vendor
 let CF_AREA = 'ALL';
@@ -1082,17 +1167,17 @@ function renderCompetenze() {
   document.getElementById('comp-kpi').innerHTML = `
     <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem">
       <div style="font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-bottom:6px">Livello medio attuale</div>
-      <div style="display:flex;align-items:center;gap:8px"><div style="font-size:1.6rem;font-weight:300;color:${colorLiv(livMedio)}">${livMedio.toFixed(1)}</div><div style="font-size:.65rem;color:var(--gray)">/ ${targetMedio.toFixed(1)} target</div></div>
+      <div style="display:flex;align-items:center;gap:8px"><div style="font-size:1.6rem;font-weight:300;color:${colorLivVivo(livMedio)}">${livMedio.toFixed(1)}</div><div style="font-size:.65rem;color:var(--gray)">/ ${targetMedio.toFixed(1)} target</div></div>
       <div style="margin-top:4px">${stelle(livMedio,12)}</div>
     </div>
     <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem">
       <div style="font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-bottom:6px">Gap medio</div>
-      <div style="font-size:1.6rem;font-weight:300;color:${gapMedio>1.5?'#EF9F27':'#36CD81'}">${gapMedio.toFixed(1)}</div>
+      <div style="font-size:1.6rem;font-weight:300;color:${gapMedio>1.5?ACCENTO:LIV_ALTO}">${gapMedio.toFixed(1)}</div>
       <div style="font-size:.62rem;color:var(--gray);margin-top:4px">distanza dal target</div>
     </div>
     <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem">
       <div style="font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-bottom:6px">Aree critiche</div>
-      <div style="font-size:1.6rem;font-weight:300;color:${critiche>0?'#E24B4A':'#36CD81'}">${critiche}</div>
+      <div style="font-size:1.6rem;font-weight:300;color:${critiche>0?ACCENTO:LIV_ALTO}">${critiche}</div>
       <div style="font-size:.62rem;color:var(--gray);margin-top:4px">sotto soglia livello 2</div>
     </div>
     <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem">
@@ -1106,13 +1191,13 @@ function renderCompetenze() {
   document.getElementById('comp-aree').innerHTML = areeView.map(x => {
     const pct = (x.liv/5)*100, tpct = (x.target/5)*100;
     const gap = Math.max(0, x.target - x.liv);
-    const gapCol = gap <= 0.5 ? '#36CD81' : gap <= 1.5 ? '#EF9F27' : '#E24B4A';
+    const gapCol = gap <= 0.5 ? LIV_ALTO : gap <= 1.5 ? NEUTRO : ACCENTO;
     const gapLbl = gap <= 0.5 ? 'OK' : `gap ${gap.toFixed(1)}`;
     return `<div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px;flex-wrap:wrap">
         <div style="font-size:.8rem;color:var(--white);font-weight:500;min-width:120px">${x.area}</div>
         <div style="flex:1">${stelle(x.liv,13)}</div>
-        <span style="font-size:.6rem;padding:2px 8px;background:${gapCol};color:#000;border-radius:3px;font-weight:500">${gapLbl}</span>
+        <span style="font-size:.6rem;padding:2px 8px;background:${gapCol};color:${gapCol===ACCENTO?'#fff':'#0C0E0D'};border-radius:3px;font-weight:500">${gapLbl}</span>
         <span style="font-size:.65rem;color:var(--gray)">target
           <select onchange="setTarget('${x.area}',this.value)" style="background:var(--card2);border:1px solid var(--border);color:var(--white);font-size:.65rem;padding:1px 3px;border-radius:3px">
             ${[1,2,3,4,5].map(n=>`<option value="${n}" ${n===x.target?'selected':''}>${n}</option>`).join('')}
@@ -1120,7 +1205,7 @@ function renderCompetenze() {
         </span>
       </div>
       <div style="position:relative;height:6px;background:var(--card2);border-radius:3px">
-        <div style="position:absolute;left:0;top:0;height:6px;width:${pct}%;background:${colorLiv(x.liv)};border-radius:3px"></div>
+        <div style="position:absolute;left:0;top:0;height:6px;width:${pct}%;background:${colorLivVivo(x.liv)};border-radius:999px"></div>
         <div style="position:absolute;left:${tpct}%;top:-2px;height:10px;width:2px;background:var(--white)" title="target ${x.target}"></div>
       </div>
       <div style="font-size:.58rem;color:var(--gray);margin-top:3px">${x.tecnici} tecnic${x.tecnici===1?'o':'i'} · ${x.n} cert.</div>
@@ -1202,7 +1287,7 @@ function renderHeatmap() {
       const certs = attive.filter(c => c.brand === b);
       const liv = calcolaLivello(certs);
       const bgc = colorLiv(liv);
-      const txt = liv >= 2 && liv < 4 ? '#000' : '#fff';
+      const txt = liv >= 2 ? '#0C0E0D' : '#fff';   // fondo acceso → testo scuro, verde spento → bianco
       h += `<td title="${v} · ${b}: ${liv.toFixed(1)}" style="padding:6px 8px;text-align:center;background:${bgc};color:${txt};font-weight:500">${liv.toFixed(1)}</td>`;
     });
     h += '</tr>';
@@ -1219,12 +1304,12 @@ function renderPriorita(dati) {
     .sort((a,b) => b.gap - a.gap);
   if (!ord.length) { cont.innerHTML = '<div style="background:var(--card2);padding:1rem;text-align:center;color:var(--gray);font-size:.78rem;border-radius:8px">Tutte le aree al target. Eccellente!</div>'; return; }
   cont.innerHTML = ord.map(x => {
-    const gapCol = x.gap <= 0.5 ? '#36CD81' : x.gap <= 1.5 ? '#EF9F27' : '#E24B4A';
+    const gapCol = x.gap <= 0.5 ? LIV_ALTO : x.gap <= 1.5 ? NEUTRO : ACCENTO;
     return `<div style="background:var(--card2);padding:.7rem 1rem;border-radius:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <div style="flex:1;font-size:.8rem;color:var(--white);min-width:120px">${x.area}</div>
       <div>${stelle(x.liv,12)}</div>
       <div style="font-size:.68rem;color:var(--gray)">${x.liv.toFixed(1)} → ${x.target}</div>
-      <span style="font-size:.6rem;padding:3px 9px;background:${gapCol};color:#000;border-radius:3px;font-weight:500">gap ${x.gap.toFixed(1)}</span>
+      <span style="font-size:.6rem;padding:3px 9px;background:${gapCol};color:${gapCol===ACCENTO?'#fff':'#0C0E0D'};border-radius:3px;font-weight:500">gap ${x.gap.toFixed(1)}</span>
     </div>`;
   }).join('');
 }
@@ -1253,8 +1338,8 @@ function renderCompChart(dati) {
     data: {
       labels,
       datasets: [
-        { label: 'Base (livello 0–1)', data: conta.map(c=>c.basso), backgroundColor: '#E24B4A' },
-        { label: 'Advanced (livello 2–3)', data: conta.map(c=>c.medio), backgroundColor: '#EF9F27' },
+        { label: 'Base (livello 0–1)', data: conta.map(c=>c.basso), backgroundColor: LIV_BASSO },
+        { label: 'Advanced (livello 2–3)', data: conta.map(c=>c.medio), backgroundColor: LIV_MEDIO },
         { label: 'Specialist (livello 4–5)', data: conta.map(c=>c.alto), backgroundColor: '#36CD81' }
       ]
     },
@@ -1530,19 +1615,234 @@ async function salvaAssegna() {
   finally { btn.disabled=false; btn.textContent='Assegna'; }
 }
 
+/* ── PIANIFICAZIONE / GANTT ───────────────────────────────────────── */
+const MESI_BREVI = ['GEN','FEB','MAR','APR','MAG','GIU','LUG','AGO','SET','OTT','NOV','DIC'];
+
+const oggiISO = () => {
+  const d = new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().split('T')[0];
+};
+const toDate = iso => new Date(iso + 'T00:00:00');
+
+function addGiorni(iso, n) {
+  const d = toDate(iso); d.setDate(d.getDate() + n);
+  return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().split('T')[0];
+}
+
+const nomeTec = id => {
+  const t = TECNICI.find(x => x.id === id);
+  return t ? t.nome + ' ' + t.cognome : 'Tecnico rimosso';
+};
+
+function popolaFiltriPiano() {
+  const st = document.getElementById('pf-tec');
+  if (st) {
+    const prec = st.value;
+    st.innerHTML = '<option value="">Tutti i tecnici</option>' +
+      TECNICI.map(t => `<option value="${t.id}">${esc(t.nome)} ${esc(t.cognome)}</option>`).join('');
+    st.value = prec;
+  }
+  const sa = document.getElementById('pf-anno');
+  if (sa) {
+    const anni = [...new Set(CORSI_ASS.filter(c => c.data_inizio).map(c => c.data_inizio.slice(0,4)))];
+    const corrente = String(new Date().getFullYear());
+    if (!anni.includes(corrente)) anni.push(corrente);
+    anni.sort();
+    const prec = sa.value;
+    sa.innerHTML = '<option value="">Tutti gli anni</option>' + anni.map(a => `<option value="${a}">Anno ${a}</option>`).join('');
+    sa.value = (prec || anni.includes(corrente)) ? (prec || corrente) : '';
+  }
+}
+
+function renderPiano() {
+  const wrap = document.getElementById('gantt-wrap');
+  if (!wrap) return;
+  const anno  = document.getElementById('pf-anno').value;
+  const ftec  = document.getElementById('pf-tec').value;
+  const vista = document.getElementById('pf-vista').value;
+
+  const righe = CORSI_ASS
+    .filter(c => c.data_inizio)
+    .filter(c => !ftec || c.tech_id === ftec)
+    .filter(c => !anno || c.data_inizio.slice(0,4) === anno || (c.data_fine_prevista||'').slice(0,4) === anno)
+    .sort((a,b) => a.data_inizio.localeCompare(b.data_inizio));
+
+  renderCarico(righe, anno);
+
+  if (!righe.length) {
+    wrap.innerHTML = `<div class="empty" style="padding:3rem 2rem;text-align:center;color:var(--gray)">
+      <div style="font-size:1.5rem;opacity:.3;margin-bottom:.75rem">◌</div>
+      <div style="font-size:.95rem;font-weight:200;color:var(--white)">Nessun corso pianificato${anno ? ' nel ' + anno : ''}</div>
+      <p style="font-size:.8rem;margin-top:.5rem">Le barre compaiono quando un tecnico avvia un corso e indica le date, oppure quando le imposti tu da "Corsi assegnati".</p>
+    </div>`;
+  } else {
+    wrap.innerHTML = costruisciGantt(righe, vista === 'tecnico');
+  }
+
+  // Corsi assegnati che nessuno ha ancora messo in calendario.
+  // Sono centinaia (un catalogo intero per ruolo): se ne mostra una manciata,
+  // altrimenti la pagina diventa lunga migliaia di pixel e illeggibile.
+  const todo = CORSI_ASS.filter(c => !c.data_inizio && c.stato !== 'completato' && (!ftec || c.tech_id === ftec));
+  const visibili = PIANO_TODO_TUTTI ? todo : todo.slice(0, 12);
+  document.getElementById('piano-todo').innerHTML = !todo.length ? '' : `
+    <div class="section-title" style="margin:2.5rem 0 .5rem;font-size:.95rem">Assegnati ma non ancora in calendario (${todo.length})</div>
+    <p style="font-size:.72rem;color:var(--gray);margin-bottom:1rem;font-weight:300">Nessuna data: questi corsi non compaiono nella timeline finché il tecnico non li avvia (o finché non metti tu le date).${todo.length > 12 ? ' Filtra per tecnico per restringere l\'elenco.' : ''}</p>
+    <div class="ca-grid">${visibili.map(c => `
+      <div class="ca-card">
+        <div class="ca-card-top">
+          <span class="ca-brand" style="color:${bc(c.brand)}">${esc(c.brand)}</span>
+          <span class="ca-stato ${csClass(c.stato)}">${csLabel(c.stato)}</span>
+        </div>
+        <div class="ca-nome">${esc(c.corso)}</div>
+        <div class="ca-meta"><div>${esc(nomeTec(c.tech_id))}</div>${c.scadenza ? `<div>Entro il ${fmt(c.scadenza)}</div>` : ''}</div>
+        <div class="ca-actions"><button class="btn-sm" onclick="openModalStato('${c.id}')">Metti le date</button></div>
+      </div>`).join('')}</div>
+    ${todo.length > 12 ? `<div style="text-align:center;margin-top:1.25rem">
+        <button class="btn-secondary" onclick="togglePianoTodo()">${PIANO_TODO_TUTTI ? 'Mostra solo i primi 12' : `Mostra tutti e ${todo.length}`}</button>
+      </div>` : ''}`;
+}
+
+let PIANO_TODO_TUTTI = false;
+function togglePianoTodo() { PIANO_TODO_TUTTI = !PIANO_TODO_TUTTI; renderPiano(); }
+
+/* Carico mensile: quanti corsi e quanti esami cadono in ciascun mese */
+function renderCarico(righe, anno) {
+  const box = document.getElementById('carico-grid');
+  const y = anno || String(new Date().getFullYear());
+  const mesi = Array.from({length:12}, () => ({corsi:0, esami:0, tecnici:new Set()}));
+  righe.forEach(c => {
+    const fine = c.data_fine_prevista || c.data_inizio;
+    // un corso pesa su ogni mese che attraversa
+    let d = toDate(c.data_inizio);
+    const dF = toDate(fine);
+    while (d <= dF) {
+      if (String(d.getFullYear()) === y) { mesi[d.getMonth()].corsi++; mesi[d.getMonth()].tecnici.add(c.tech_id); break; }
+      d = new Date(d.getFullYear(), d.getMonth()+1, 1);
+    }
+    if (c.data_esame && c.data_esame.slice(0,4) === y) mesi[toDate(c.data_esame).getMonth()].esami++;
+  });
+  const attivi = mesi.map((m,i) => ({...m, i})).filter(m => m.corsi || m.esami);
+  box.style.display = attivi.length ? 'grid' : 'none';
+  box.innerHTML = attivi.map(m => `
+    <div class="carico-cell">
+      <div class="carico-mese">${MESI_BREVI[m.i]} ${y.slice(2)}</div>
+      <div class="carico-n">${m.corsi}</div>
+      <div class="carico-det">cors${m.corsi===1?'o':'i'} · ${m.tecnici.size} tecnic${m.tecnici.size===1?'o':'i'}${m.esami ? ` · <span style="color:var(--warn)">${m.esami} esam${m.esami===1?'e':'i'}</span>` : ''}</div>
+    </div>`).join('');
+}
+
+/* Timeline. `righe` = corsi con data_inizio, ordinati. raggruppa = una fascia per tecnico. */
+function costruisciGantt(righe, raggruppa) {
+  const oggi = oggiISO();
+  let min = null, max = null;
+  righe.forEach(c => {
+    [c.data_inizio, c.data_fine_prevista, c.data_esame].filter(Boolean).forEach(d => {
+      if (!min || d < min) min = d;
+      if (!max || d > max) max = d;
+    });
+  });
+  if (!min) return '';
+  if (oggi < min) min = oggi;
+  if (oggi > max) max = oggi;
+
+  const dMin = toDate(min), dMax = toDate(max);
+  const start = new Date(dMin.getFullYear(), dMin.getMonth(), 1);
+  let nMesi = (dMax.getFullYear()-start.getFullYear())*12 + (dMax.getMonth()-start.getMonth()) + 1;
+  if (nMesi < 4) nMesi = 4;
+  const end = new Date(start.getFullYear(), start.getMonth()+nMesi, 1);
+  const tot = end - start;
+  const pos = iso => Math.max(0, Math.min(100, ((toDate(iso) - start) / tot) * 100));
+
+  const mesi = [];
+  for (let i = 0; i < nMesi; i++) {
+    const m = new Date(start.getFullYear(), start.getMonth()+i, 1);
+    const now = m.getFullYear() === new Date().getFullYear() && m.getMonth() === new Date().getMonth();
+    mesi.push(`<div class="gh-m${now ? ' now' : ''}">${MESI_BREVI[m.getMonth()]} ${String(m.getFullYear()).slice(2)}</div>`);
+  }
+  const griglia = '<div class="g-grid">' + '<span></span>'.repeat(nMesi) + '</div>';
+  const today   = `<div class="g-today" style="left:${pos(oggi)}%"></div>`;
+  const trackW  = `width:calc(var(--gmw) * ${nMesi})`;
+
+  const riga = c => {
+    const fine = c.data_fine_prevista || c.data_inizio;
+    const l = pos(c.data_inizio);
+    const w = Math.max(pos(addGiorni(fine, 1)) - l, 0.4);
+    const col = bc(c.brand);
+    const ritardo = c.stato !== 'completato' && c.data_fine_prevista && c.data_fine_prevista < oggi;
+    const stile = c.stato === 'da_fare' ? '' : `background:${c.stato === 'completato' ? 'var(--green)' : col}`;
+    // il rombo dell'esame segue lo stato: verde se il corso è chiuso, rosso se la data è passata invano
+    const colEsame = c.stato === 'completato' ? 'var(--green)' : (c.data_esame < oggi ? 'var(--danger)' : 'var(--warn)');
+    const esame = c.data_esame
+      ? `<div class="g-exam" style="left:${pos(c.data_esame)}%;background:${colEsame}" title="Esame ${fmt(c.data_esame)} · ${esc(nomeTec(c.tech_id))}" onclick="openModalStato('${c.id}')"></div>`
+      : '';
+    return `<div class="g-row">
+      <div class="g-label">
+        <div class="gl-brand" style="color:${col}">${esc(c.brand)}${raggruppa ? '' : ' · ' + esc(nomeTec(c.tech_id))}</div>
+        <div class="gl-nome" title="${esc(c.corso)}">${esc(c.corso)}</div>
+      </div>
+      <div class="g-track" style="${trackW}">
+        ${griglia}${today}
+        <div class="g-bar ${c.stato}${ritardo ? ' ritardo' : ''}" style="left:${l}%;width:${w}%;${stile}"
+             title="${esc(nomeTec(c.tech_id))} · ${esc(c.corso)} · ${fmt(c.data_inizio)} → ${fmt(fine)}${c.data_esame ? ' · esame ' + fmt(c.data_esame) : ''}"
+             onclick="openModalStato('${c.id}')">${fmt(c.data_inizio).slice(0,5)}</div>
+        ${esame}
+      </div>
+    </div>`;
+  };
+
+  let corpo;
+  if (raggruppa) {
+    const gruppi = {};
+    righe.forEach(c => { (gruppi[c.tech_id] = gruppi[c.tech_id] || []).push(c); });
+    corpo = Object.keys(gruppi)
+      .sort((a,b) => nomeTec(a).localeCompare(nomeTec(b)))
+      .map(tid => {
+        const lista = gruppi[tid];
+        const esami = lista.filter(c => c.data_esame).length;
+        return `<div class="g-group">
+            <div class="av-sm">${esc(nomeTec(tid)[0].toUpperCase())}</div>
+            <div class="g-group-nome">${esc(nomeTec(tid))}</div>
+            <div class="g-group-meta">${lista.length} cors${lista.length===1?'o':'i'}${esami ? ` · ${esami} esam${esami===1?'e':'i'}` : ''}</div>
+          </div>${lista.map(riga).join('')}`;
+      }).join('');
+  } else {
+    corpo = righe.map(riga).join('');
+  }
+
+  return `<div class="gantt">
+    <div class="gantt-head">
+      <div class="gh-label">${raggruppa ? 'Corso' : 'Corso · tecnico'}</div>
+      <div style="display:flex;flex:1 0 auto;${trackW}">${mesi.join('')}</div>
+    </div>
+    ${corpo}
+  </div>`;
+}
+
 /* ── MODAL STATO ── */
-function openModalStato(id, stato, scad, note) {
-  document.getElementById('ms-id').value=id; document.getElementById('ms-stato').value=stato;
-  document.getElementById('ms-scad').value=scad; document.getElementById('ms-note').value=note;
+function openModalStato(id) {
+  const c = CORSI_ASS.find(x => x.id === id); if (!c) return;
+  document.getElementById('ms-id').value     = c.id;
+  document.getElementById('ms-stato').value  = c.stato;
+  document.getElementById('ms-scad').value   = c.scadenza || '';
+  document.getElementById('ms-inizio').value = c.data_inizio || '';
+  document.getElementById('ms-fine').value   = c.data_fine_prevista || '';
+  document.getElementById('ms-esame').value  = c.data_esame || '';
+  document.getElementById('ms-note').value   = c.note || '';
   document.getElementById('modal-stato').classList.add('open');
 }
 async function salvaStato() {
   const id=document.getElementById('ms-id').value, stato=document.getElementById('ms-stato').value;
   const scad=document.getElementById('ms-scad').value, note=document.getElementById('ms-note').value;
+  const inizio=document.getElementById('ms-inizio').value, fine=document.getElementById('ms-fine').value;
+  const esame=document.getElementById('ms-esame').value;
+  if (inizio && fine && fine < inizio) { toast('La fine prevista non può venire prima dell\'inizio.'); return; }
   try {
-    const {error} = await sb.from('corsi_assegnati').update({stato,scadenza:scad||null,note:note||null}).eq('id',id);
+    const {error} = await sb.from('corsi_assegnati').update({
+      stato, scadenza:scad||null, note:note||null,
+      data_inizio:inizio||null, data_fine_prevista:fine||null, data_esame:esame||null
+    }).eq('id',id);
     if (error) throw error;
-    closeOverlay('modal-stato'); toast('Stato aggiornato!'); await load();
+    closeOverlay('modal-stato'); toast('Corso aggiornato!'); await load();
   } catch(e) { toast('Errore: '+e.message); }
 }
 async function rimuoviCorso(id) {
