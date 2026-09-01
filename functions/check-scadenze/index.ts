@@ -1,4 +1,4 @@
-// Kaplet Academy - Edge Function: check-scadenze
+// Kaplet University - Edge Function: check-scadenze
 // Deploy: supabase functions deploy check-scadenze
 // Trigger: pg_cron ogni giorno alle 08:00
 //
@@ -13,10 +13,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const MAIL = {
   chiave: Deno.env.get("RESEND_API_KEY") ?? "",
-  da:     Deno.env.get("MAIL_DA") ?? "Kaplet Academy <academy@kaplet.it>",
+  da:     Deno.env.get("MAIL_DA") ?? "Kaplet University <onboarding@resend.dev>",
   a:      Deno.env.get("MAIL_A")  ?? "admin@kaplet.it",
   // dove punta il pulsante "Apri pannello admin" dentro la mail
-  pannello: Deno.env.get("URL_ADMIN") ?? "https://kaplet.github.io/Kaplet-Academy/admin.html",
+  pannello: Deno.env.get("URL_ADMIN") ?? "https://university.kaplet.it/admin.html",
 };
 
 serve(async (req) => {
@@ -80,8 +80,8 @@ async function sendMail(notifiche: any[], prova = false): Promise<string> {
   if (!MAIL.chiave) throw new Error("manca il secret RESEND_API_KEY");
 
   const soggetto = (prova ? "[PROVA] " : "") + (notifiche.length === 1
-    ? `Kaplet Academy - Certificazione in scadenza: ${notifiche[0].cert.tecnici.nome} ${notifiche[0].cert.tecnici.cognome}`
-    : `Kaplet Academy - ${notifiche.length} certificazioni in scadenza`);
+    ? `Kaplet University - Certificazione in scadenza: ${notifiche[0].cert.tecnici.nome} ${notifiche[0].cert.tecnici.cognome}`
+    : `Kaplet University - ${notifiche.length} certificazioni in scadenza`);
 
   const righe = notifiche.map(({ cert, giorni }) => `
     <tr>
@@ -108,7 +108,7 @@ async function sendMail(notifiche: any[], prova = false): Promise<string> {
   <div style="max-width:680px;margin:0 auto;background:#fff">
     <div style="background:#0C0E0D;padding:22px 30px">
       <span style="font-size:14px;letter-spacing:.25em;text-transform:uppercase;color:#fff">
-        <span style="color:#36CD81">·</span>KAPLET Academy
+        <span style="color:#36CD81">·</span>KAPLET University
       </span>
     </div>
     <div style="background:#36CD81;padding:10px 30px">
@@ -146,7 +146,7 @@ async function sendMail(notifiche: any[], prova = false): Promise<string> {
     <div style="background:#f8f8f8;border-top:1px solid #e5e5e5;padding:18px 30px;text-align:center">
       <p style="font-size:11px;color:#999;margin:0">
         Kaplet S.r.l. · Via Cerchia di S. Giorgio, 145 · 47521 Cesena (FC)<br>
-        Notifica automatica Kaplet Academy
+        Notifica automatica Kaplet University
       </p>
     </div>
   </div>

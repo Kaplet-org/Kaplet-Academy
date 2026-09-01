@@ -1,4 +1,4 @@
-// Kaplet Academy - Edge Function: impegno-mensile
+// Kaplet University - Edge Function: impegno-mensile
 // Deploy: supabase functions deploy impegno-mensile
 // Trigger: pg_cron il 1 del mese alle 08:00 (vedi impegno_mensile_cron.sql)
 //
@@ -18,9 +18,9 @@ const MIN_CERT     = 2;
 
 const MAIL = {
   chiave: Deno.env.get("RESEND_API_KEY") ?? "",
-  da:     Deno.env.get("MAIL_DA") ?? "Kaplet Academy <onboarding@resend.dev>",
+  da:     Deno.env.get("MAIL_DA") ?? "Kaplet University <onboarding@resend.dev>",
   a:      Deno.env.get("MAIL_A")  ?? "admin@kaplet.it",
-  pannello: Deno.env.get("URL_ADMIN") ?? "https://kaplet.github.io/Kaplet-Academy/admin.html",
+  pannello: Deno.env.get("URL_ADMIN") ?? "https://university.kaplet.it/admin.html",
 };
 
 const MESI = ["gennaio","febbraio","marzo","aprile","maggio","giugno",
@@ -110,8 +110,8 @@ async function sendMail(
 
   const periodo = `${MESI[mese]} ${anno}`;
   const soggetto = (prova ? "[PROVA] " : "") + (indietro.length
-    ? `Kaplet Academy - ${indietro.length} tecnic${indietro.length === 1 ? "o" : "i"} sotto il minimo di ${periodo}`
-    : `Kaplet Academy - ${periodo}: tutti in regola`);
+    ? `Kaplet University - ${indietro.length} tecnic${indietro.length === 1 ? "o" : "i"} sotto il minimo di ${periodo}`
+    : `Kaplet University - ${periodo}: tutti in regola`);
 
   const cella = (v: number, min: number) => {
     const manca = v < min;
@@ -137,7 +137,7 @@ async function sendMail(
   <div style="max-width:680px;margin:0 auto;background:#fff">
     <div style="background:#0C0E0D;padding:22px 30px">
       <span style="font-size:14px;letter-spacing:.25em;text-transform:uppercase;color:#fff">
-        <span style="color:#36CD81">·</span>KAPLET Academy
+        <span style="color:#36CD81">·</span>KAPLET University
       </span>
     </div>
     <div style="background:#36CD81;padding:10px 30px">
@@ -176,7 +176,7 @@ async function sendMail(
     <div style="background:#f8f8f8;border-top:1px solid #e5e5e5;padding:18px 30px;text-align:center">
       <p style="font-size:11px;color:#999;margin:0">
         Kaplet S.r.l. · Via Cerchia di S. Giorgio, 145 · 47521 Cesena (FC)<br>
-        Notifica automatica Kaplet Academy
+        Notifica automatica Kaplet University
       </p>
     </div>
   </div>

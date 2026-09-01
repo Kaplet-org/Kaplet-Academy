@@ -1,4 +1,4 @@
-// Kaplet Academy - Edge Function: elimina-tecnico
+// Kaplet University - Edge Function: elimina-tecnico
 // Deploy: supabase functions deploy elimina-tecnico
 // Chiamata da admin.html dopo la conferma con digitazione del cognome.
 //

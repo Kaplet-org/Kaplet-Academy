@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login | Kaplet Academy</title>
+<title>Login | Kaplet University</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,200;9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -269,7 +269,7 @@ async function handleRecovery(e) {
   err.classList.remove('show');
   try {
     const { error } = await sb.auth.resetPasswordForEmail(email, {
-      redirectTo: 'https://kaplet.github.io/Kaplet-Academy/login.html'
+      redirectTo: 'https://university.kaplet.it/login.html'
     });
     if (error) throw error;
     document.getElementById('recovery-form-wrap').style.display = 'none';
