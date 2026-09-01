@@ -906,6 +906,23 @@ tr:hover td { background: #f9fff9; }
 .modal-close:hover { color: var(--white); }
 
 .modal-body { padding: 1.5rem; overflow-y: auto; flex: 1 1 auto; }
+/* Segnale che il corpo continua sotto: su macOS le barre di scorrimento sono
+   invisibili finché non muovi la rotella. Stessa scelta di admin.html, ma qui
+   la modale è chiara. */
+.modal { position: relative; }
+.modal-foot { position: relative; }
+.modal-foot::before {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 30px;
+  background: linear-gradient(to top, var(--white), transparent);
+  pointer-events: none; opacity: 0; transition: opacity .18s;
+}
+.modal.ha-altro .modal-foot::before { opacity: 1; }
+.modal-body::-webkit-scrollbar { width: 11px; }
+.modal-body::-webkit-scrollbar-track { background: transparent; }
+.modal-body::-webkit-scrollbar-thumb {
+  background: rgba(12,14,13,0.22); border-radius: 6px; border: 3px solid var(--white);
+}
+.modal-body::-webkit-scrollbar-thumb:hover { background: rgba(12,14,13,0.38); }
 
 .form-group { margin-bottom: 1.25rem; }
 
@@ -1914,6 +1931,34 @@ function openModal(techId=null){
 }
 
 function openModalForTech(techId){ openModal(techId); }
+
+/* ── SEGNALE DI SCORRIMENTO NELLE MODALI ──
+   Come in admin.html e tecnico.html: le modali si aprono da più punti, quindi
+   si sorveglia la classe invece di rincorrere ogni chiamata. */
+function segnalaScorrimento(corpo) {
+  const modale = corpo.closest('.modal');
+  if (!modale) return;
+  modale.classList.toggle('ha-altro', corpo.scrollHeight - corpo.clientHeight - corpo.scrollTop > 2);
+}
+
+(function sorvegliaModali() {
+  const aggiorna = ov => {
+    const corpo = ov.querySelector('.modal-body');
+    if (!corpo) return;
+    segnalaScorrimento(corpo);
+    requestAnimationFrame(() => segnalaScorrimento(corpo));
+    if (!corpo.dataset.sorvegliato) {
+      corpo.dataset.sorvegliato = '1';
+      corpo.addEventListener('scroll', () => segnalaScorrimento(corpo), { passive: true });
+    }
+  };
+  const osserva = new MutationObserver(m => m.forEach(x => {
+    if (x.attributeName === 'class' && x.target.classList.contains('open')) aggiorna(x.target);
+  }));
+  document.querySelectorAll('.modal-overlay').forEach(ov => osserva.observe(ov, { attributes: true }));
+  window.addEventListener('resize', () =>
+    document.querySelectorAll('.modal-overlay.open .modal-body').forEach(segnalaScorrimento));
+})();
 
 function closeModal(){
   document.getElementById('modal').classList.remove('open');
