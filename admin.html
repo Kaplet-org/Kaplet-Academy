@@ -395,6 +395,25 @@ tr:hover td { background: var(--card2); }
 .modal-close:hover { color: var(--white); }
 .modal-body { padding: 1.5rem; overflow-y: auto; flex: 1 1 auto; }
 .modal-foot { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; gap: 0.75rem; justify-content: flex-end; flex: 0 0 auto; }
+/* Segnale che il corpo della modale continua sotto: su macOS le barre di
+   scorrimento sono invisibili finché non muovi la rotella, quindi senza
+   questo il contenuto sembra semplicemente tagliato. */
+.modal { position: relative; }
+.modal-foot { position: relative; }
+.modal-foot::before {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 30px;
+  background: linear-gradient(to top, var(--card), transparent);
+  pointer-events: none; opacity: 0; transition: opacity .18s;
+}
+.modal.ha-altro .modal-foot::before { opacity: 1; }
+/* barra sempre visibile dentro le modali, non solo mentre si scorre */
+.modal-body::-webkit-scrollbar { width: 11px; }
+.modal-body::-webkit-scrollbar-track { background: transparent; }
+.modal-body::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.18); border-radius: 6px; border: 3px solid var(--card);
+}
+.modal-body::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.32); }
+
 
 /* FORM FIELDS — identici al login */
 .fld { margin-bottom: 1.1rem; }
@@ -2868,6 +2887,36 @@ async function eliminaTecnico() {
 
 /* ── HELPERS ── */
 function closeOverlay(id) { document.getElementById(id).classList.remove('open'); selTec = []; }
+
+/* ── SEGNALE DI SCORRIMENTO NELLE MODALI ──
+   Le modali si aprono da più punti con classList.add('open'), quindi invece
+   di rincorrere ogni chiamata si sorveglia la classe con un MutationObserver. */
+function segnalaScorrimento(corpo) {
+  const modale = corpo.closest('.modal');
+  if (!modale) return;
+  modale.classList.toggle('ha-altro', corpo.scrollHeight - corpo.clientHeight - corpo.scrollTop > 2);
+}
+
+(function sorvegliaModali() {
+  const aggiorna = ov => {
+    const corpo = ov.querySelector('.modal-body');
+    if (!corpo) return;
+    segnalaScorrimento(corpo);
+    // il contenuto lo riempie il JS: ricontrollo dopo il primo disegno
+    requestAnimationFrame(() => segnalaScorrimento(corpo));
+    if (!corpo.dataset.sorvegliato) {
+      corpo.dataset.sorvegliato = '1';
+      corpo.addEventListener('scroll', () => segnalaScorrimento(corpo), { passive: true });
+    }
+  };
+  const osserva = new MutationObserver(m => m.forEach(x => {
+    if (x.attributeName === 'class' && x.target.classList.contains('open')) aggiorna(x.target);
+  }));
+  document.querySelectorAll('.overlay').forEach(ov => osserva.observe(ov, { attributes: true }));
+  window.addEventListener('resize', () =>
+    document.querySelectorAll('.overlay.open .modal-body').forEach(segnalaScorrimento));
+})();
+
 function toast(msg) {
   const el=document.getElementById('toast'); document.getElementById('toast-msg').textContent=msg;
   el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 3000);
