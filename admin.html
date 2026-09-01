@@ -250,6 +250,7 @@ tr:hover td { background: var(--card2); }
 .imp-conti { display: flex; gap: 10px; font-size: .68rem; white-space: nowrap; }
 .imp-conto b { font-weight: 400; }
 .imp-manca { color: var(--danger); }
+.imp-attesa { color: var(--gray); }
 .imp-fatto { color: var(--green); }
 .imp-punto { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
@@ -2119,6 +2120,10 @@ function renderImpegno(soloTecnico) {
     opzioni.push(`<option value="${v}" ${v === `${anno}-${String(mese+1).padStart(2,'0')}` ? 'selected' : ''}>${MESI_BREVI[d.getMonth()]} ${d.getFullYear()}</option>`);
   }
 
+  // Un mese ancora in corso non si può giudicare: il primo del mese sono
+  // tutti sotto il minimo, ed è normale. Rosso solo sui mesi chiusi.
+  const inCorso = anno === oggi.getFullYear() && mese === oggi.getMonth();
+
   const persone = TECNICI.filter(t => t.attivo !== false && (!soloTecnico || t.id === soloTecnico));
   const righe = persone.map(t => ({ t, ...impegnoMensile(t.id, anno, mese) }));
   const inRegola = righe.filter(r => r.ok).length;
@@ -2127,16 +2132,18 @@ function renderImpegno(soloTecnico) {
   document.getElementById('imp-box').innerHTML = `
     <div class="imp-head">
       <div>
-        <div class="imp-tit">Impegno formativo del mese${soloTecnico ? ' · ' + esc(nomeTec(soloTecnico)) : ''}</div>
-        <div class="imp-regola">Ogni mese servono almeno <b style="color:var(--white);font-weight:400">${MIN_GIORNATE} giornate di corso</b> e <b style="color:var(--white);font-weight:400">${MIN_CERT} certificazioni</b> a testa.</div>
+        <div class="imp-tit">Impegno formativo${inCorso ? ' · mese in corso' : ''}${soloTecnico ? ' · ' + esc(nomeTec(soloTecnico)) : ''}</div>
+        <div class="imp-regola">Ogni mese servono almeno <b style="color:var(--white);font-weight:400">${MIN_GIORNATE} giornate di corso</b> e <b style="color:var(--white);font-weight:400">${MIN_CERT} certificazioni</b> a testa.${inCorso ? ' Il mese non è ancora finito: qui si vede chi è già a posto.' : ''}</div>
       </div>
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
         <div class="imp-esito">
-          ${soloTecnico
-            ? (indietro ? `<span style="color:var(--danger)">Sotto il minimo</span>` : `<span style="color:var(--green)">In regola</span>`)
-            : (indietro
-                ? `<span style="color:var(--danger)">${indietro}</span><span style="color:var(--gray)"> su ${righe.length} indietro</span>`
-                : `<span style="color:var(--green)">Tutti in regola</span>`)}
+          ${inCorso
+            ? `<span style="color:var(--green)">${inRegola}</span><span style="color:var(--gray)"> su ${righe.length} ha già fatto il minimo</span>`
+            : (soloTecnico
+                ? (indietro ? `<span style="color:var(--danger)">Sotto il minimo</span>` : `<span style="color:var(--green)">In regola</span>`)
+                : (indietro
+                    ? `<span style="color:var(--danger)">${indietro}</span><span style="color:var(--gray)"> su ${righe.length} indietro</span>`
+                    : `<span style="color:var(--green)">Tutti in regola</span>`))}
         </div>
         <select class="ca-select" onchange="cambiaMeseImpegno(this.value)">${opzioni.join('')}</select>
       </div>
@@ -2144,11 +2151,11 @@ function renderImpegno(soloTecnico) {
     <div class="imp-griglia">
       ${righe.length ? righe.map(r => `
         <div class="imp-cella" title="${esc(r.t.nome)} ${esc(r.t.cognome)}: ${r.giornate} giornate, ${r.certificazioni} certificazioni">
-          <div class="imp-punto" style="background:${r.ok ? 'var(--green)' : 'var(--danger)'}"></div>
+          <div class="imp-punto" style="background:${r.ok ? 'var(--green)' : (inCorso ? 'rgba(255,255,255,0.18)' : 'var(--danger)')}"></div>
           <div class="imp-nome">${esc(r.t.nome)} ${esc(r.t.cognome)}</div>
           <div class="imp-conti">
-            <span class="imp-conto ${r.giornate >= MIN_GIORNATE ? 'imp-fatto' : 'imp-manca'}"><b>${r.giornate}</b>/${MIN_GIORNATE} gg</span>
-            <span class="imp-conto ${r.certificazioni >= MIN_CERT ? 'imp-fatto' : 'imp-manca'}"><b>${r.certificazioni}</b>/${MIN_CERT} cert.</span>
+            <span class="imp-conto ${r.giornate >= MIN_GIORNATE ? 'imp-fatto' : (inCorso ? 'imp-attesa' : 'imp-manca')}"><b>${r.giornate}</b>/${MIN_GIORNATE} gg</span>
+            <span class="imp-conto ${r.certificazioni >= MIN_CERT ? 'imp-fatto' : (inCorso ? 'imp-attesa' : 'imp-manca')}"><b>${r.certificazioni}</b>/${MIN_CERT} cert.</span>
           </div>
         </div>`).join('')
       : '<div class="imp-cella" style="color:var(--gray)">Nessun tecnico attivo</div>'}

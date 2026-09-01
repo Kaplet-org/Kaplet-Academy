@@ -1,101 +1,68 @@
 # Kaplet Academy — cosa resta da fare su Supabase
 
-Tutto il codice è scritto, committato e online. Quello che segue richiede il
-dashboard di Supabase, che il 1 settembre 2026 non rispondeva: l'interfaccia si
-disegnava ma il contenuto restava bianco su tutte le pagine (SQL Editor, editor
-delle function, Table Editor). Le API e le Edge Function già pubblicate
-funzionavano regolarmente, quindi era un guasto del loro pannello.
+Aggiornato il 1 settembre 2026.
 
-Quando il dashboard torna, i passi sono questi, **in quest'ordine**.
+## Fatto
 
----
+- Catalogo corsi in database (`corsi_catalogo`, 183 corsi)
+- `KU-C-034 "Avigilon Unity Video"` ritirato dal catalogo
+- Registro `audit_log`
+- Solo gli admin possono cancellare (policy RESTRICTIVE)
+- Edge Function `impegno-mensile` pubblicata
+- **Le mail funzionano**: prova riuscita, Resend ha accettato il messaggio
+  (`impegno-mensile?prova=1` → `mail.inviata: true`)
+- Secret impostati: `RESEND_API_KEY`, `MAIL_DA`
 
-## 1. Ritirare il corso doppione — 1 minuto
+## Resta da fare
 
-Due strade, la prima è la più semplice.
+Entrambe le cose richiedono pagine del dashboard Supabase che il 1 settembre
+2026 restavano bianche — **SQL Editor** ed **editor del codice delle
+function** — mentre l'elenco delle function e il deploy di una nuova
+funzionavano. Guasto intermittente loro.
 
-**Dal pannello Academy** (non serve Supabase):
-Catalogo → cerca `unity` → riga *Avigilon Unity Video* (In-Class, 08:00) →
-**Modifica** → **Ritira dal catalogo**.
+### 1. Ricaricare `check-scadenze` con il modo prova
 
-**Oppure dal SQL Editor**, rilanciando `catalogo_setup.sql`: è idempotente e
-contiene già il ritiro in fondo. Deve rispondere `183 in tabella, 182 in
-catalogo, 1 ritirato`.
-
----
-
-## 2. Ricaricare `check-scadenze` — 3 minuti
-
-La versione online funziona ma è **senza il modo prova**, quindi non c'è modo
-di verificare che le mail arrivino davvero senza aspettare una scadenza vera.
+La versione online funziona ma è **senza `?prova=1`**, quindi le mail di
+scadenza non si possono verificare finché non scade qualcosa davvero.
 
 Supabase → Edge Functions → `check-scadenze` → Code → sostituire tutto con
 `functions/check-scadenze/index.ts` → Deploy.
 
-Poi la prova:
+Poi:
 
 ```bash
 curl -X POST "https://mcgerrvorboagkukzuzc.supabase.co/functions/v1/check-scadenze?prova=1" \
   -H "Authorization: Bearer <anon key>"
 ```
 
-Deve rispondere `{"ok":true,"prova":true,...,"mail":{"inviata":true,...}}` e
-una mail con oggetto `[PROVA]` deve arrivare a **admin@kaplet.it**.
+Deve rispondere `mail.inviata: true` e far arrivare una mail `[PROVA]` a
+admin@kaplet.it.
 
-Se risponde `500` con un messaggio di Resend, il problema è il mittente: vedi
-il punto 4.
+### 2. Schedulare la mail mensile
 
----
+SQL Editor → `impegno_mensile_cron.sql` → Run. Deve elencare il job
+`impegno-mensile` con pianificazione `0 8 1 * *`.
 
-## 3. Pubblicare `impegno-mensile` — 5 minuti
+Senza questo la funzione esiste ma non parte da sola: la mail dell'impegno
+va lanciata a mano.
 
-Supabase → Edge Functions → **Deploy a new function** → *Via Editor* → nome
-esatto `impegno-mensile` → incollare `functions/impegno-mensile/index.ts` →
-Deploy.
+## Facoltativo: mittente `@kaplet.it`
 
-Prova:
+Oggi le mail partono da `onboarding@resend.dev` e possono andare **solo** a
+`admin@kaplet.it`, l'indirizzo di registrazione dell'account Resend. Per le
+notifiche interne basta.
 
-```bash
-curl -X POST "https://mcgerrvorboagkukzuzc.supabase.co/functions/v1/impegno-mensile?prova=1" \
-  -H "Authorization: Bearer <anon key>"
-```
-
-Con `?prova=1` guarda il mese in corso e manda la mail anche se sono tutti in
-regola, così si vede subito com'è fatta.
-
-Poi, **solo dopo che la function risponde**, SQL Editor →
-`impegno_mensile_cron.sql` → Run. Deve elencare il job `impegno-mensile` con
-pianificazione `0 8 1 * *`.
-
-> Se lo script dice `service_role_key non trovata nel Vault`, il job va creato
-> a mano: il file spiega cosa sostituire. In quel caso **non committare** il
-> file con la chiave dentro.
-
----
-
-## 4. Facoltativo: mittente `@kaplet.it`
-
-Oggi le mail partono da `onboarding@resend.dev`, l'indirizzo di prova di
-Resend, che può spedire **solo** verso `admin@kaplet.it` — cioè l'indirizzo con
-cui è registrato l'account. Per le notifiche interne basta.
-
-Per spedire da `academy@kaplet.it`, o verso altri indirizzi, serve verificare
-il dominio: Resend → Domains → Add domain → `kaplet.it` → aggiungere i record
-DNS che propone. Poi cambiare il secret `MAIL_DA` in
-`Kaplet Academy <academy@kaplet.it>`.
-
----
+Per spedire da `academy@kaplet.it` o verso altri indirizzi: Resend → Domains →
+Add domain → `kaplet.it` → aggiungere i record DNS. Poi cambiare il secret
+`MAIL_DA` in `Kaplet Academy <academy@kaplet.it>`.
 
 ## Riferimenti
 
 | Cosa | Dove |
 |---|---|
 | Catalogo corsi | `catalogo_setup.sql` |
-| Registro eliminazioni | `audit_log_setup.sql` (già eseguito) |
-| Solo admin cancella | `blocca_cancellazioni_setup.sql` (già eseguito) |
-| Date di pianificazione | `pianificazione_setup.sql` (già eseguito) |
+| Registro eliminazioni | `audit_log_setup.sql` |
+| Solo admin cancella | `blocca_cancellazioni_setup.sql` |
+| Date di pianificazione | `pianificazione_setup.sql` |
 | Mail scadenze | `functions/check-scadenze/index.ts` |
 | Mail impegno mensile | `functions/impegno-mensile/index.ts` + `impegno_mensile_cron.sql` |
-
-Secret già impostati su Supabase: `RESEND_API_KEY`, `MAIL_DA`.
-Opzionali non impostati: `MAIL_A` (default `admin@kaplet.it`), `URL_ADMIN`.
