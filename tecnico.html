@@ -491,8 +491,8 @@ const csLabel = s => ({da_fare:'Da fare', in_corso:'In corso', completato:'Compl
     if (elNome) elNome.textContent = data.nome + ' ' + data.cognome;
     if (elHero) elHero.textContent = data.nome;
     if (elSub)  elSub.textContent = (data.ruolo || '') + ' · Formazione anno ' + new Date().getFullYear();
-    popolaBrand();
-    await caricaDati();
+    await caricaDati();   // scarica anche il catalogo
+    popolaBrand();        // i brand vengono dal catalogo, quindi solo dopo
   } catch(e) {
     console.error('Init error:', e);
     // NON fare redirect su errore generico — mostra il problema invece di andare in loop
@@ -1238,7 +1238,8 @@ function showTab(id, btn) {
 function popolaBrand() {
   const sel = document.getElementById('m-brand');
   const brands = [...new Set(COURSES.map(c => c.brand))].sort();
-  brands.forEach(b => { const o = document.createElement('option'); o.value=b; o.textContent=b; sel.appendChild(o); });
+  sel.innerHTML = '<option value="">Seleziona brand…</option>' +
+    brands.map(b => `<option value="${esc(b)}">${esc(b)}</option>`).join('');
 }
 
 function fillCorsi() {

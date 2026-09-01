@@ -224,28 +224,14 @@ tr:hover td { background: var(--card2); }
 
 /* CORSI ASSEGNATI GRID */
 .ca-filters { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
-/* Riepilogo dei corsi assegnati: segue i filtri, così scelto un tecnico dice i suoi numeri */
-.ca-riep { display: flex; flex-wrap: wrap; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 1.5rem; }
-.ca-riep-chi {
-  padding: .9rem 1.1rem; border-right: 1px solid var(--border); background: var(--card2);
-  display: flex; flex-direction: column; justify-content: center; min-width: 150px;
-}
-.ca-riep-chi-lab { font-size: .55rem; letter-spacing: .1em; text-transform: uppercase; color: var(--gray); }
-.ca-riep-chi-nome { font-size: .85rem; font-weight: 400; margin-top: 2px; }
-.ca-riep-cella {
-  flex: 1; min-width: 96px; padding: .9rem 1.1rem; border-right: 1px solid var(--border);
-  background: transparent; border-top: none; border-bottom: none; border-left: none;
-  font-family: var(--font); text-align: left; cursor: pointer; transition: background .12s;
-}
-.ca-riep-cella:last-child { border-right: none; }
-.ca-riep-cella:hover { background: var(--card2); }
-.ca-riep-cella.sel { background: rgba(54,205,129,0.07); box-shadow: inset 0 -2px 0 var(--green); }
-.ca-riep-n { font-size: 1.4rem; font-weight: 200; line-height: 1; }
-.ca-riep-lab { font-size: .55rem; letter-spacing: .1em; text-transform: uppercase; color: var(--gray); margin-top: 5px; }
-.ca-riep-n.green  { color: var(--green); }
-.ca-riep-n.warn   { color: var(--warn); }
-.ca-riep-n.danger { color: var(--danger); }
-@media (max-width: 700px) { .ca-riep-chi { width: 100%; border-right: none; border-bottom: 1px solid var(--border); } }
+/* Le card in testata sono l'unico riepilogo: quando è scelto un tecnico
+   diventano i suoi corsi per stato, e si possono cliccare per filtrare. */
+.stat.cliccabile { cursor: pointer; transition: opacity .15s; }
+.stat.cliccabile:hover { opacity: .75; }
+.stat.sel .stat-num { text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 2px; }
+.stat-num.warn   { color: var(--warn); }
+.stat-num.danger { color: var(--danger); }
+.stat-num.spento { opacity: .35; }
 /* Catalogo: 183 righe, quindi tabella densa e scrollabile invece di schede */
 .cat-wrap { border: 1px solid var(--border); border-radius: 10px; overflow-x: auto; }
 .cat-tab { width: 100%; border-collapse: collapse; font-size: .78rem; }
@@ -504,13 +490,7 @@ textarea.finput { height: auto; padding: 12px 14px; resize: vertical; line-heigh
     <h1 style="display:flex;align-items:center;flex-wrap:wrap"><img src="logo-kaplet-university.png" alt="Kaplet University" style="height:68px;width:auto"></h1>
     <p class="hero-sub">Gestione certificazioni e formazione del team.</p>
     <div class="stat-chi" id="stat-chi"></div>
-    <div class="stats-row">
-      <div class="stat"><div class="stat-num green" id="s-tec">—</div><div class="stat-label" id="l-tec">Tecnici</div></div>
-      <div class="stat"><div class="stat-num green" id="s-att">—</div><div class="stat-label">Cert. attive</div></div>
-      <div class="stat"><div class="stat-num" id="s-ca">—</div><div class="stat-label">Corsi assegnati</div></div>
-      <div class="stat"><div class="stat-num warn" id="s-s60">—</div><div class="stat-label">In scadenza 60gg</div></div>
-      <div class="stat"><div class="stat-num danger" id="s-sca">—</div><div class="stat-label">Scadute</div></div>
-    </div>
+    <div class="stats-row" id="stats-row"></div>
   </div>
 </div>
 
@@ -551,7 +531,6 @@ textarea.finput { height: auto; padding: 12px 14px; resize: vertical; line-heigh
       </select>
       <select class="ca-select" id="f-brand" onchange="renderCorsi()"><option value="">Tutti i brand</option></select>
     </div>
-    <div class="ca-riep" id="ca-riep"></div>
     <div class="ca-grid" id="ca-grid"><div class="empty"><div class="empty-icon">◌</div><div class="empty-title">Caricamento...</div></div></div>
   </div>
 
@@ -682,10 +661,10 @@ textarea.finput { height: auto; padding: 12px 14px; resize: vertical; line-heigh
       <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.3rem;overflow-x:auto">
         <div style="font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:1rem">Heatmap area × vendor</div>
         <div id="comp-heatmap"></div>
-        <div style="display:flex;gap:14px;margin-top:.9rem;font-size:.6rem;color:var(--gray);align-items:center">
-          <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;background:#345142;border-radius:999px"></div>0–1</div>
-          <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;background:#3E986B;border-radius:999px"></div>2–3</div>
-          <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;background:#36CD81;border-radius:999px"></div>4–5</div>
+        <div style="display:flex;gap:10px;margin-top:.9rem;font-size:.6rem;color:var(--gray);align-items:center;flex-wrap:wrap">
+          <span>Livello</span>
+          <div style="display:flex;align-items:center;gap:2px" id="comp-heatmap-legenda"></div>
+          <span>0 = scoperto · 5 = solido</span>
         </div>
       </div>
       <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.3rem">
@@ -1141,15 +1120,14 @@ function renderCorsi() {
   const ft = document.getElementById('f-tec').value;
   const fs = document.getElementById('f-stato').value;
   const fb = document.getElementById('f-brand').value;
-  // Il riepilogo si calcola su tecnico + brand ma NON sullo stato: così le sue
-  // celle restano una fotografia completa e servono da filtro per lo stato.
+  // Le card in testata si calcolano su tecnico + brand ma NON sullo stato:
+  // così restano la fotografia completa e possono fare da filtro per lo stato.
   const base = CORSI_ASS.filter(c => {
     if (ft && c.tech_id !== ft) return false;
     if (fb && c.brand !== fb)   return false;
     return true;
   });
-  renderRiepilogoCorsi(base, ft, fs);
-  aggiornaStatistiche();   // la testata segue il tecnico scelto qui
+  aggiornaStatistiche();   // la testata è il riepilogo: segue il tecnico scelto qui
 
   const filtered = base.filter(c => {
     if (fs === '__scaduti') return inRitardo(c);
@@ -1467,9 +1445,29 @@ function stelle(v, size) {
    un'unica progressione invece che come un semaforo.
    Il rosa (#FF375F) è il complementare del verde: unico accento, riservato
    alle criticità, e proprio per questo salta all'occhio. */
-const LIV_BASSO = '#345142', LIV_MEDIO = '#3E986B', LIV_ALTO = '#36CD81';
+/* Rampa dei livelli 0–5: un solo verde, cinque gradini di chiarezza.
+   Scelta calcolata, non a occhio: ogni gradino sta sopra 3:1 sul fondo della
+   scheda (#141614) e il numero stampato dentro la cella supera 4,5:1 col
+   bianco o col nero. La rampa vecchia partiva da #345142, che sul nero era a
+   2,2:1 — invisibile, ed è il motivo per cui la heatmap non si leggeva. */
+const LIV_RAMPA = ['#187144', '#1F8753', '#269E62', '#2EB571', '#36CD81'];
+// il numero dentro la cella: bianco sui due gradini scuri, nero sui tre chiari
+const LIV_TESTO = ['#FFFFFF', '#FFFFFF', '#0C0E0D', '#0C0E0D', '#0C0E0D'];
+const LIV_BASSO = LIV_RAMPA[0], LIV_MEDIO = LIV_RAMPA[2], LIV_ALTO = LIV_RAMPA[4];
 const ACCENTO   = '#FF375F', NEUTRO    = '#7E9188';
-function colorLiv(v) { return v < 2 ? LIV_BASSO : v < 4 ? LIV_MEDIO : LIV_ALTO; }
+const FONDO_SCHEDA = '#141614';
+
+/* Pillola del gap: colore sul testo, non sul fondo. Il rosa pieno con testo
+   bianco stava a 3,5:1, sotto la soglia per un testo di questa dimensione;
+   come testo su fondo tenue arriva a 4,9:1 ed è anche lo stile del resto dell'app. */
+function pilloraGap(col) {
+  return `color:${col};background:${col}14;border:1px solid ${col}40`;
+}
+
+// Indice 0–4 della rampa per un livello 0–5
+function livIdx(v) { return Math.max(0, Math.min(4, Math.floor(v))); }
+function colorLiv(v) { return LIV_RAMPA[livIdx(v)]; }
+function testoLiv(v) { return LIV_TESTO[livIdx(v)]; }
 // Su fondo nero il verde spento sparisce (2.2:1): per testi e barre di
 // avanzamento si usa il verde pieno, e il rosa solo sotto la soglia critica.
 function colorLivVivo(v) { return v < 2 ? ACCENTO : LIV_ALTO; }
@@ -1551,7 +1549,7 @@ function renderCompetenze() {
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px;flex-wrap:wrap">
         <div style="font-size:.8rem;color:var(--white);font-weight:500;min-width:120px">${x.area}</div>
         <div style="flex:1">${stelle(x.liv,13)}</div>
-        <span style="font-size:.6rem;padding:2px 8px;background:${gapCol};color:${gapCol===ACCENTO?'#fff':'#0C0E0D'};border-radius:3px;font-weight:500">${gapLbl}</span>
+        <span style="font-size:.6rem;padding:2px 8px;${pilloraGap(gapCol)};border-radius:4px;font-weight:500">${gapLbl}</span>
         <span style="font-size:.65rem;color:var(--gray)">target
           <select onchange="setTarget('${x.area}',this.value)" style="background:var(--card2);border:1px solid var(--border);color:var(--white);font-size:.65rem;padding:1px 3px;border-radius:3px">
             ${[1,2,3,4,5].map(n=>`<option value="${n}" ${n===x.target?'selected':''}>${n}</option>`).join('')}
@@ -1631,23 +1629,32 @@ function renderHeatmap() {
   const brands = [...new Set(attive.map(c => c.brand))].sort();
   const cont = document.getElementById('comp-heatmap');
   if (!brands.length) { cont.innerHTML = '<div style="color:var(--gray);font-size:.78rem">Nessun dato</div>'; return; }
-  let h = '<table style="border-collapse:collapse;font-size:.6rem"><thead><tr><th style="padding:6px 8px"></th>';
-  brands.forEach(b => { h += `<th style="padding:6px 4px;color:var(--gray);font-weight:400;writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;font-size:.55rem">${b}</th>`; });
+  // border-spacing invece di collapse: 2px di fondo tra una cella e l'altra,
+  // altrimenti due gradini vicini della rampa si fondono in un blocco unico.
+  let h = '<table style="border-collapse:separate;border-spacing:2px;font-size:.6rem"><thead><tr><th style="padding:6px 8px"></th>';
+  brands.forEach(b => { h += `<th style="padding:6px 4px;color:var(--gray);font-weight:400;writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;font-size:.55rem">${esc(b)}</th>`; });
   h += '</tr></thead><tbody>';
   VERTICALS.forEach(v => {
-    h += `<tr><td style="padding:5px 8px;color:var(--white);white-space:nowrap;font-size:.65rem">${v}</td>`;
+    h += `<tr><td style="padding:5px 8px;color:var(--white);white-space:nowrap;font-size:.65rem">${esc(v)}</td>`;
     brands.forEach(b => {
-      if (VERTICAL_MAP[b] !== v) { h += '<td style="padding:0"></td>'; return; }
+      // il vendor non appartiene a quest'area: cella vuota, ma segnata, non un buco
+      if (VERTICAL_MAP[b] !== v) {
+        h += '<td style="padding:6px 8px;text-align:center;color:rgba(255,255,255,0.12);border-radius:4px">·</td>';
+        return;
+      }
       const certs = attive.filter(c => c.brand === b);
       const liv = calcolaLivello(certs);
-      const bgc = colorLiv(liv);
-      const txt = liv >= 2 ? '#0C0E0D' : '#fff';   // fondo acceso → testo scuro, verde spento → bianco
-      h += `<td title="${v} · ${b}: ${liv.toFixed(1)}" style="padding:6px 8px;text-align:center;background:${bgc};color:${txt};font-weight:500">${liv.toFixed(1)}</td>`;
+      h += `<td title="${esc(v)} · ${esc(b)}: livello ${liv.toFixed(1)} su 5" style="padding:6px 8px;text-align:center;background:${colorLiv(liv)};color:${testoLiv(liv)};font-weight:500;border-radius:4px">${liv.toFixed(1)}</td>`;
     });
     h += '</tr>';
   });
   h += '</tbody></table>';
   cont.innerHTML = h;
+
+  // La legenda nasce dalla rampa stessa: se la rampa cambia, si aggiorna da sola
+  const leg = document.getElementById('comp-heatmap-legenda');
+  if (leg) leg.innerHTML = LIV_RAMPA.map((c, i) =>
+    `<span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:18px;background:${c};color:${LIV_TESTO[i]};border-radius:3px;font-size:.55rem;font-weight:500">${i}</span>`).join('');
 }
 
 // ── PRIORITÀ FORMATIVE PER AREA (gap maggiori) ──
@@ -1663,7 +1670,7 @@ function renderPriorita(dati) {
       <div style="flex:1;font-size:.8rem;color:var(--white);min-width:120px">${x.area}</div>
       <div>${stelle(x.liv,12)}</div>
       <div style="font-size:.68rem;color:var(--gray)">${x.liv.toFixed(1)} → ${x.target}</div>
-      <span style="font-size:.6rem;padding:3px 9px;background:${gapCol};color:${gapCol===ACCENTO?'#fff':'#0C0E0D'};border-radius:3px;font-weight:500">gap ${x.gap.toFixed(1)}</span>
+      <span style="font-size:.6rem;padding:3px 9px;${pilloraGap(gapCol)};border-radius:4px;font-weight:500">gap ${x.gap.toFixed(1)}</span>
     </div>`;
   }).join('');
 }
@@ -1691,19 +1698,39 @@ function renderCompChart(dati) {
     type: 'bar',
     data: {
       labels,
+      // Tre gradini distanti della stessa rampa: le fasce sono ordinate,
+      // quindi un solo verde che si schiarisce, non tre colori diversi.
+      // Il bordo del colore del fondo stacca un segmento dall'altro.
       datasets: [
-        { label: 'Base (livello 0–1)', data: conta.map(c=>c.basso), backgroundColor: LIV_BASSO },
-        { label: 'Advanced (livello 2–3)', data: conta.map(c=>c.medio), backgroundColor: LIV_MEDIO },
-        { label: 'Specialist (livello 4–5)', data: conta.map(c=>c.alto), backgroundColor: '#36CD81' }
-      ]
+        { label: 'Base (livello 0–1)',        data: conta.map(c=>c.basso), backgroundColor: LIV_RAMPA[0] },
+        { label: 'Advanced (livello 2–3)',    data: conta.map(c=>c.medio), backgroundColor: LIV_RAMPA[2] },
+        { label: 'Specialist (livello 4–5)',  data: conta.map(c=>c.alto),  backgroundColor: LIV_RAMPA[4] }
+      ].map(d => ({...d, borderColor: FONDO_SCHEDA, borderWidth: 2, borderRadius: 4, borderSkipped: false }))
     },
     options: {
       responsive: true, maintainAspectRatio: false,
+      // barre sottili: la colonna non deve riempire tutta la sua fetta
+      datasets: { bar: { barPercentage: 0.62, categoryPercentage: 0.72 } },
       scales: {
-        x: { stacked: true, ticks: { color: '#fff', font: { size: 11 } }, grid: { display: false } },
-        y: { stacked: true, beginAtZero: true, ticks: { color: '#929396' }, grid: { color: 'rgba(255,255,255,0.07)' } }
+        x: { stacked: true, ticks: { color: 'rgba(255,255,255,0.85)', font: { size: 11 } }, grid: { display: false }, border: { color: 'rgba(255,255,255,0.10)' } },
+        y: { stacked: true, beginAtZero: true, ticks: { color: 'rgba(255,255,255,0.55)', font: { size: 11 }, precision: 0 },
+             grid: { color: 'rgba(255,255,255,0.06)' }, border: { display: false },
+             title: { display: true, text: 'Certificazioni attive', color: 'rgba(255,255,255,0.55)', font: { size: 10 } } }
       },
-      plugins: { legend: { labels: { color: '#929396', font: { size: 11 } } } }
+      plugins: {
+        legend: { labels: { color: 'rgba(255,255,255,0.55)', font: { size: 11 }, boxWidth: 10, boxHeight: 10, usePointStyle: true, pointStyle: 'rectRounded' } },
+        tooltip: {
+          backgroundColor: '#1A1C1A', borderColor: 'rgba(255,255,255,0.10)', borderWidth: 1,
+          titleColor: '#FFFFFF', bodyColor: 'rgba(255,255,255,0.85)', padding: 10, displayColors: true,
+          callbacks: {
+            label: c => ` ${c.dataset.label}: ${c.parsed.y} cert.`,
+            footer: items => {
+              const tot = items[0].chart.data.datasets.reduce((s, d) => s + (d.data[items[0].dataIndex] || 0), 0);
+              return 'Totale area: ' + tot;
+            }
+          }
+        }
+      }
     }
   });
 }
@@ -2427,28 +2454,63 @@ function costruisciGantt(righe, raggruppa) {
    (che filtrata non direbbe niente) a "Corsi completati". */
 function aggiornaStatistiche() {
   const ft = document.getElementById('f-tec').value;
-  const certs = ft ? CERTS.filter(c => c.tech_id === ft) : CERTS;
-  const corsi = ft ? CORSI_ASS.filter(c => c.tech_id === ft) : CORSI_ASS;
-
+  const fs = document.getElementById('f-stato').value;
   const oggi = new Date();
-  const att  = certs.filter(c => c.stato==='attiva' && (!c.data_scadenza || new Date(c.data_scadenza) >= oggi));
-  const sca  = certs.filter(c => c.data_scadenza && new Date(c.data_scadenza) < oggi);
-  const s60  = att.filter(c => c.data_scadenza && gg(c.data_scadenza) <= 60);
 
-  document.getElementById('s-tec').textContent  = ft ? corsi.filter(c => c.stato === 'completato').length : TECNICI.length;
-  document.getElementById('l-tec').textContent  = ft ? 'Corsi completati' : 'Tecnici';
-  document.getElementById('s-att').textContent  = att.length;
-  document.getElementById('s-ca').textContent   = corsi.length;
-  document.getElementById('s-s60').textContent  = s60.length;
-  document.getElementById('s-sca').textContent  = sca.length;
+  let carte;
+  if (!ft) {
+    // Nessun tecnico scelto: il quadro del team, come è sempre stato
+    const att = CERTS.filter(c => c.stato==='attiva' && (!c.data_scadenza || new Date(c.data_scadenza) >= oggi));
+    carte = [
+      { n: TECNICI.length,   lab: 'Tecnici',          cls: 'green' },
+      { n: att.length,       lab: 'Cert. attive',     cls: 'green' },
+      { n: CORSI_ASS.length, lab: 'Corsi assegnati',  cls: '' },
+      { n: att.filter(c => c.data_scadenza && gg(c.data_scadenza) <= 60).length, lab: 'In scadenza 60gg', cls: 'warn' },
+      { n: CERTS.filter(c => c.data_scadenza && new Date(c.data_scadenza) < oggi).length, lab: 'Scadute', cls: 'danger' }
+    ];
+  } else {
+    // Tecnico scelto: i suoi corsi divisi per stato, e le card filtrano.
+    // Il brand eventualmente scelto conta, lo stato no: altrimenti le card
+    // mostrerebbero il risultato del filtro invece del quadro completo.
+    const fb = document.getElementById('f-brand').value;
+    const suoi = CORSI_ASS.filter(c => c.tech_id === ft && (!fb || c.brand === fb));
+    const cert = CERTS.filter(c => c.tech_id === ft);
+    const attive = cert.filter(c => c.stato==='attiva' && (!c.data_scadenza || new Date(c.data_scadenza) >= oggi));
+    const conta = st => suoi.filter(c => c.stato === st).length;
+    carte = [
+      { n: suoi.length,                   lab: 'Corsi assegnati', cls: '',       filtro: '' },
+      { n: conta('da_fare'),              lab: 'Da fare',         cls: '',       filtro: 'da_fare' },
+      { n: conta('in_corso'),             lab: 'In corso',        cls: 'warn',   filtro: 'in_corso' },
+      { n: conta('completato'),           lab: 'Completati',      cls: 'green',  filtro: 'completato' },
+      { n: suoi.filter(inRitardo).length, lab: 'In ritardo',      cls: 'danger', filtro: '__scaduti' },
+      { n: attive.length,                 lab: 'Cert. attive',    cls: 'green' }
+    ];
+  }
 
-  // La riga che spiega di chi sono i numeri: senza, chi cambia tab non capisce
+  document.getElementById('stats-row').innerHTML = carte.map(c => {
+    const cliccabile = c.filtro !== undefined;
+    const scelta = cliccabile && fs === c.filtro && c.filtro !== '';
+    return `<div class="stat ${cliccabile ? 'cliccabile' : ''} ${scelta ? 'sel' : ''}"
+      ${cliccabile ? `onclick="filtraStatoCorsi('${c.filtro}')" title="${scelta ? 'Togli il filtro' : 'Mostra solo questi'}"` : ''}>
+      <div class="stat-num ${c.cls} ${c.n ? '' : 'spento'}">${c.n}</div>
+      <div class="stat-label">${c.lab}</div>
+    </div>`;
+  }).join('');
+
+  // Chi sta guardando cosa: senza questa riga, chi cambia tab non capisce
   // perché la testata dice 12 invece di 387.
   const chi = document.getElementById('stat-chi');
   chi.classList.toggle('on', !!ft);
   chi.innerHTML = ft
-    ? `<span>Numeri di <b>${esc(nomeTec(ft))}</b></span><button onclick="mostraTuttoIlTeam()">Mostra tutto il team</button>`
+    ? `<span>Corsi di <b>${esc(nomeTec(ft))}</b></span><button onclick="mostraTuttoIlTeam()">Mostra tutto il team</button>`
     : '';
+}
+
+// Clic su una card: imposta il filtro di stato, o lo toglie se era già quello
+function filtraStatoCorsi(valore) {
+  const sel = document.getElementById('f-stato');
+  sel.value = (sel.value === valore) ? '' : valore;
+  renderCorsi();
 }
 
 // Toglie il filtro tecnico e riporta la testata sui numeri del team
@@ -2460,38 +2522,6 @@ function mostraTuttoIlTeam() {
 /* Un corso assegnato è in ritardo se la scadenza è passata e non è stato completato */
 function inRitardo(c) {
   return c.stato !== 'completato' && !!c.scadenza && c.scadenza < oggiISO();
-}
-
-/* Riepilogo sopra la griglia: quanti corsi ha davvero il tecnico scelto.
-   Le celle sono cliccabili e pilotano il filtro dello stato. */
-function renderRiepilogoCorsi(base, ft, fs) {
-  const chi = ft ? nomeTec(ft) : 'Tutto il team';
-  const conta = st => base.filter(c => c.stato === st).length;
-  const celle = [
-    { v: '',            n: base.length,             lab: 'Assegnati',  cls: '' },
-    { v: 'da_fare',     n: conta('da_fare'),        lab: 'Da fare',    cls: '' },
-    { v: 'in_corso',    n: conta('in_corso'),       lab: 'In corso',   cls: 'warn' },
-    { v: 'completato',  n: conta('completato'),     lab: 'Completati', cls: 'green' },
-    { v: '__scaduti',   n: base.filter(inRitardo).length, lab: 'In ritardo', cls: 'danger' }
-  ];
-  document.getElementById('ca-riep').innerHTML = `
-    <div class="ca-riep-chi">
-      <div class="ca-riep-chi-lab">Riepilogo</div>
-      <div class="ca-riep-chi-nome">${esc(chi)}</div>
-    </div>
-    ${celle.map(c => `
-      <button class="ca-riep-cella ${fs === c.v ? 'sel' : ''}" onclick="filtraStatoCorsi('${c.v}')"
-              title="${c.v === fs && c.v ? 'Togli il filtro' : 'Mostra solo questi'}">
-        <div class="ca-riep-n ${c.cls}" style="${c.n ? '' : 'opacity:.35'}">${c.n}</div>
-        <div class="ca-riep-lab">${c.lab}</div>
-      </button>`).join('')}`;
-}
-
-// Clic su una cella del riepilogo: imposta lo stato, o lo toglie se era già quello
-function filtraStatoCorsi(valore) {
-  const sel = document.getElementById('f-stato');
-  sel.value = (sel.value === valore) ? '' : valore;
-  renderCorsi();
 }
 
 function linkCorsoHtml(brand, corso) {
