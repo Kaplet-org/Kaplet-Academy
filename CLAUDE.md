@@ -84,4 +84,6 @@ Secret e variabili: **`RESEND_API_KEY`** (obbligatorio), più gli opzionali `MAI
 
 ## Convenzioni
 
+Le modali sono `flex-direction: column` con `max-height: 100%` dentro un `.overlay` con padding: testata e piede fermi, scorre solo `.modal-body`. Non rimettere `overflow-y: auto` sul `.modal` intero — così il piede con Salva finisce sotto il bordo su finestre basse. Vale in `admin.html`, `tecnico.html` e `index.html`.
+
 Tutto — UI, commenti, nomi di funzioni e variabili — è in **italiano** (`caricaDocumento`, `giorniAllaScadenza`, `certsAttive`). Mantieni questa scelta. Lo stile è quello del codice esistente: funzioni globali, `async/await` diretto su supabase-js, `toast()` per i messaggi, `openOverlay`/`closeOverlay` per le modali.
