@@ -520,6 +520,11 @@ select option { background: #1a1a1a; }
   color: rgba(255,255,255,0.3);
 }
 
+.card-link {
+  display: block; margin-top: .6rem; font-size: .68rem; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--green); text-decoration: none;
+}
+.card-link:hover { text-decoration: underline; }
 .card-foot {
   display: flex;
   align-items: center;
@@ -1470,33 +1475,52 @@ try { sbIdx = supabase.createClient(SUPA_URL_IDX, SUPA_KEY_IDX); } catch(e) {}
 // nascondo subito il contenuto finché non verifico la sessione
 document.documentElement.style.visibility = 'hidden';
 (async function checkAuth(){
+  // 1. sessione: senza, si torna al login
   try {
     const { data: { session } } = await sbIdx.auth.getSession();
     if (!session) { window.location.replace('login.html'); return; }
-    // utente loggato: mostro la pagina
-    document.documentElement.style.visibility = 'visible';
   } catch(e) {
     window.location.replace('login.html');
+    return;
+  }
+  // 2. catalogo: arriva dal database, la pagina non ha senso senza
+  try {
+    await caricaCatalogo(sbIdx);
+    costruisciRAW();
+    initCourses();
+    document.documentElement.style.visibility = 'visible';
+  } catch(e) {
+    // meglio dirlo che mostrare un catalogo vuoto come se fosse la verità
+    document.documentElement.style.visibility = 'visible';
+    document.body.innerHTML = '<div style="padding:3rem;text-align:center;font-family:system-ui">'
+      + '<h2>Catalogo non disponibile</h2><p>' + (e.message || e) + '</p>'
+      + '<p><a href="login.html">Torna al login</a></p></div>';
   }
 })();
 
-// I 183 corsi vengono dal file unico js/courses.js (stesso di admin/tecnico).
+// I corsi arrivano dalla tabella corsi_catalogo (vedi js/courses.js).
 // Costruisco ROLES e RAW nel formato che questa pagina usa, a partire da COURSES/RUOLI.
 const ROLES = RUOLI.map(r => r.label);
 
-const RAW = COURSES.map(c => ({
-  brand: c.brand,
-  cat: c.gruppo || '',
-  name: c.nome,
-  desc: c.desc || '',
-  delivery: c.erogazione || '',
-  dur: c.durata || '',
-  // prezzo assente e prezzo zero non sono la stessa cosa: null = non noto,
-  // altrimenti un corso senza dato verrebbe mostrato come "Gratuito"
-  price: typeof c.prezzo === 'number' ? c.prezzo : null,
-  // converto i path (stringhe) negli indici di ROLES per i filtri
-  roles: c.paths.map(p => RUOLI.findIndex(r => r.key === p)).filter(i => i >= 0)
-}));
+// Riempito da costruisciRAW() dopo che il catalogo è stato scaricato.
+let RAW = [];
+
+function costruisciRAW() {
+  RAW = COURSES.map(c => ({
+    brand: c.brand,
+    cat: c.gruppo || '',
+    name: c.nome,
+    desc: c.desc || '',
+    delivery: c.erogazione || '',
+    dur: c.durata || '',
+    link: c.link || '',
+    // prezzo assente e prezzo zero non sono la stessa cosa: null = non noto,
+    // altrimenti un corso senza dato verrebbe mostrato come "Gratuito"
+    price: typeof c.prezzo === 'number' ? c.prezzo : null,
+    // converto i path (stringhe) negli indici di ROLES per i filtri
+    roles: c.paths.map(p => RUOLI.findIndex(r => r.key === p)).filter(i => i >= 0)
+  }));
+}
 
 const PORTALS={
   "AVIXA":{url:"https://www.avixa.org/training-section/online-training",note:"Portal ufficiale AVIXA (richiede account)"},
@@ -1593,7 +1617,7 @@ function switchPage(page) {
   });
 }
 
-let curView='grid', filteredCourses=[...RAW];
+let curView='grid', filteredCourses=[];
 
 function initCourses(){
   document.getElementById('stat-total').textContent = RAW.length;
@@ -1679,6 +1703,7 @@ function renderGrid(){
         ${c.dur?`<div class="meta-dur"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${c.dur}</div>`:''}
         ${ph}
       </div>
+      ${c.link?`<a class="card-link" href="${c.link}" target="_blank" rel="noopener">Scheda del corso ↗</a>`:''}
     </div>`;
   }).join('');
 }
@@ -1926,7 +1951,7 @@ function removeCert(certId){
   renderAdmin();
 }
 
-initCourses();
+// initCourses() parte da checkAuth(), quando il catalogo è arrivato.
 </script>
 </body>
 </html>

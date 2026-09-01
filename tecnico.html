@@ -320,6 +320,7 @@ label.flabel { display: block; font-size: 0.6rem; font-weight: 400; letter-spaci
       <div style="background:var(--card2);padding:0.85rem 1rem;margin-bottom:1.25rem;border-left:2px solid var(--green)">
         <div style="font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--green)" id="pia-brand">&mdash;</div>
         <div style="font-size:.85rem;color:var(--white);margin-top:3px" id="pia-nome">&mdash;</div>
+        <div style="margin-top:5px" id="pia-link"></div>
       </div>
       <div class="fgrid">
         <div class="fld"><label class="flabel">Data inizio *</label><input type="date" class="finput" id="pia-inizio" onchange="pianoAutoFine()"></div>
@@ -510,7 +511,9 @@ async function doLogout() {
 async function caricaDati() {
   const [r1, r2] = await Promise.all([
     sb.from('certificazioni').select('*').eq('tech_id', ME.id).order('data_conseguimento', {ascending:false}),
-    sb.from('corsi_assegnati').select('*').eq('tech_id', ME.id).order('assegnato_il', {ascending:false})
+    sb.from('corsi_assegnati').select('*').eq('tech_id', ME.id).order('assegnato_il', {ascending:false}),
+    // il catalogo ora vive in DB: serve al percorso consigliato e ai link dei corsi
+    caricaCatalogo(sb).catch(e => toast('Catalogo non caricato: ' + e.message))
   ]);
   CERTS = r1.data || []; CORSI_ASS = r2.data || [];
   aggiornaStats(); renderCorsi(); renderCert(); renderPercorso(); popolaAnniPiano(); renderPiano();
@@ -566,8 +569,11 @@ function renderCorsi() {
   grid.innerHTML = filtered.map(c => {
     const col = bc(c.brand); const g = gg(c.scadenza);
     const scadHtml = c.scadenza ? `<div style="font-size:.65rem;color:${g<0?'var(--danger)':g<=30?'var(--warn)':'var(--gray)'}">Scadenza: ${fmt(c.scadenza)}</div>` : '';
-    const url = portalUrl(c.brand);
-    const linkHtml = url ? `<a href="${url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;font-size:.62rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--green);text-decoration:none;margin-bottom:0.75rem">Vai al portale formativo ↗</a>` : '';
+    // il link del corso, se il catalogo ce l'ha, batte quello generico del portale
+    const cat = corsoDiCatalogo(c.brand, c.corso);
+    const url = (cat && cat.link) || portalUrl(c.brand);
+    const linkTxt = (cat && cat.link) ? 'Apri la scheda del corso ↗' : 'Vai al portale formativo ↗';
+    const linkHtml = url ? `<a href="${esc(url)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;font-size:.62rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--green);text-decoration:none;margin-bottom:0.75rem">${linkTxt}</a>` : '';
     // se il corso è completato, controllo se esiste già una certificazione collegata
     const haCert = CERTS.some(cert => cert.brand === c.brand && cert.corso === c.corso);
     // riga con le date del piano, se il corso è già stato messo in calendario
@@ -981,6 +987,11 @@ function apriModalPiano(c) {
   document.getElementById('pia-id').value = c.id;
   document.getElementById('pia-brand').textContent = c.brand;
   document.getElementById('pia-nome').textContent  = c.corso;
+  const catPia = corsoDiCatalogo(c.brand, c.corso);
+  const linkPia = document.getElementById('pia-link');
+  linkPia.innerHTML = catPia && catPia.link
+    ? `<a href="${esc(catPia.link)}" target="_blank" rel="noopener" style="font-size:.65rem;color:var(--green);text-decoration:none">Apri la scheda del corso ↗</a>`
+    : '';
   document.getElementById('pia-title').textContent = c.data_inizio ? 'Modifica le date' : 'Quando lo fai?';
   document.getElementById('pia-inizio').value = c.data_inizio || oggiISO();
   document.getElementById('pia-esame').value  = c.data_esame  || '';

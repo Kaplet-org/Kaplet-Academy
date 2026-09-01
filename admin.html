@@ -74,6 +74,16 @@ nav {
 
 /* STATS — identici alla struttura login */
 .stats-row { display: flex; gap: 0; margin-top: 2rem; border-top: 1px solid var(--border); }
+/* Riga che compare quando i numeri qui sopra sono di un tecnico solo */
+.stat-chi { display: none; margin-top: 1.75rem; align-items: center; gap: 10px; font-size: .72rem; font-weight: 300; color: var(--gray); }
+.stat-chi.on { display: flex; }
+.stat-chi b { color: var(--green); font-weight: 400; }
+.stat-chi button {
+  background: transparent; border: 1px solid var(--border); color: var(--gray);
+  font-family: var(--font); font-size: .62rem; letter-spacing: .06em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 5px; cursor: pointer; transition: all .15s;
+}
+.stat-chi button:hover { color: var(--white); border-color: var(--green); }
 .stat { flex: 1; padding: 1.5rem 1.5rem 1rem 0; border-right: 1px solid var(--border); margin-right: 1.5rem; }
 .stat:last-child { border-right: none; margin-right: 0; }
 .stat-num { font-size: 2rem; font-weight: 200; line-height: 1; margin-bottom: 4px; }
@@ -125,6 +135,14 @@ nav {
 }
 .btn-danger:hover { background: transparent; color: #f87171; }
 .btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+/* Link alla scheda del corso sul sito del vendor */
+.link-corso {
+  display: inline-flex; align-items: center; gap: 5px; margin-top: .5rem;
+  font-size: .72rem; font-weight: 300; color: var(--green); text-decoration: none;
+  border-bottom: 1px solid transparent; transition: border-color .15s;
+}
+.link-corso:hover { border-bottom-color: var(--green); }
+.link-corso i { font-size: 13px; }
 .danger-box {
   background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2);
   padding: 0.85rem 1rem; margin-bottom: 1.1rem;
@@ -205,7 +223,49 @@ tr:hover td { background: var(--card2); }
 .prog-label { font-size: 0.62rem; color: var(--gray); }
 
 /* CORSI ASSEGNATI GRID */
-.ca-filters { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.ca-filters { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
+/* Riepilogo dei corsi assegnati: segue i filtri, così scelto un tecnico dice i suoi numeri */
+.ca-riep { display: flex; flex-wrap: wrap; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 1.5rem; }
+.ca-riep-chi {
+  padding: .9rem 1.1rem; border-right: 1px solid var(--border); background: var(--card2);
+  display: flex; flex-direction: column; justify-content: center; min-width: 150px;
+}
+.ca-riep-chi-lab { font-size: .55rem; letter-spacing: .1em; text-transform: uppercase; color: var(--gray); }
+.ca-riep-chi-nome { font-size: .85rem; font-weight: 400; margin-top: 2px; }
+.ca-riep-cella {
+  flex: 1; min-width: 96px; padding: .9rem 1.1rem; border-right: 1px solid var(--border);
+  background: transparent; border-top: none; border-bottom: none; border-left: none;
+  font-family: var(--font); text-align: left; cursor: pointer; transition: background .12s;
+}
+.ca-riep-cella:last-child { border-right: none; }
+.ca-riep-cella:hover { background: var(--card2); }
+.ca-riep-cella.sel { background: rgba(54,205,129,0.07); box-shadow: inset 0 -2px 0 var(--green); }
+.ca-riep-n { font-size: 1.4rem; font-weight: 200; line-height: 1; }
+.ca-riep-lab { font-size: .55rem; letter-spacing: .1em; text-transform: uppercase; color: var(--gray); margin-top: 5px; }
+.ca-riep-n.green  { color: var(--green); }
+.ca-riep-n.warn   { color: var(--warn); }
+.ca-riep-n.danger { color: var(--danger); }
+@media (max-width: 700px) { .ca-riep-chi { width: 100%; border-right: none; border-bottom: 1px solid var(--border); } }
+/* Catalogo: 183 righe, quindi tabella densa e scrollabile invece di schede */
+.cat-wrap { border: 1px solid var(--border); border-radius: 10px; overflow-x: auto; }
+.cat-tab { width: 100%; border-collapse: collapse; font-size: .78rem; }
+.cat-tab th {
+  text-align: left; padding: .7rem .9rem; font-size: .58rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--gray); font-weight: 400;
+  background: var(--card2); border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+.cat-tab td { padding: .7rem .9rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+.cat-tab tr:last-child td { border-bottom: none; }
+.cat-tab tbody tr:hover { background: var(--card2); }
+.cat-id { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .68rem; color: var(--gray); white-space: nowrap; }
+.cat-nome { font-weight: 400; }
+.cat-gruppo { font-size: .65rem; color: var(--gray); font-weight: 300; margin-top: .15rem; }
+.cat-paths { display: flex; flex-wrap: wrap; gap: 4px; max-width: 260px; }
+.cat-path { font-size: .58rem; padding: 2px 6px; border-radius: 4px; background: rgba(54,205,129,0.1); color: var(--green); white-space: nowrap; }
+.cat-path.vuoto { background: rgba(245,158,11,0.12); color: var(--warn); }
+.cat-azioni { display: flex; gap: 6px; white-space: nowrap; }
+.cat-link-si { color: var(--green); font-size: 15px; }
+.cat-link-no { color: var(--border); font-size: 15px; }
 .ca-select {
   height: 36px; background: var(--card); border: 1px solid var(--border);
   color: var(--white); font-family: var(--font); font-size: 0.75rem;
@@ -255,6 +315,50 @@ tr:hover td { background: var(--card2); }
 
 /* MATRIX */
 .mx-wrap { overflow-x: auto; }
+/* Mappa certificazioni: vista a griglia tecnici × brand */
+.mx-tab {
+  background: transparent; border: 1px solid var(--border); color: var(--gray);
+  font-family: var(--font); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase;
+  padding: 8px 14px; cursor: pointer; transition: all .15s; border-radius: 6px;
+}
+.mx-tab:hover { color: var(--white); }
+.mx-tab.mx-attiva { color: var(--green); border-color: var(--green); background: var(--green-dim); }
+.mx-grid { border-collapse: separate; border-spacing: 0; font-size: .75rem; min-width: max-content; }
+.mx-grid th, .mx-grid td { border-bottom: 1px solid var(--border); }
+.mx-grid thead th {
+  padding: .6rem .5rem; vertical-align: bottom; text-align: center;
+  font-size: .58rem; letter-spacing: .06em; text-transform: uppercase; font-weight: 400;
+  white-space: nowrap; background: var(--card2);
+}
+/* i nomi dei brand sono lunghi: verticali, altrimenti la griglia non ci sta */
+.mx-brand-v { writing-mode: vertical-rl; transform: rotate(180deg); height: 108px; margin: 0 auto; }
+.mx-grid th.mx-ang, .mx-grid td.mx-tec {
+  position: sticky; left: 0; z-index: 2; background: var(--card2);
+  text-align: left; padding: .55rem .9rem; white-space: nowrap;
+  border-right: 1px solid var(--border); min-width: 170px; max-width: 260px;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.mx-grid th.mx-ang { z-index: 3; }
+.mx-grid td.mx-tec { font-weight: 400; font-size: .78rem; }
+.mx-tec-ruolo { font-size: .58rem; color: var(--gray); font-weight: 300; margin-top: 1px; }
+.mx-cella { text-align: center; padding: .45rem .3rem; cursor: default; }
+.mx-cella.ha { cursor: pointer; }
+.mx-cella.ha:hover { background: var(--card2); }
+.mx-pallino { display: inline-block; width: 11px; height: 11px; border-radius: 50%; }
+.mx-pallino.ok   { background: var(--green); }
+.mx-pallino.warn { background: var(--warn); }
+.mx-pallino.exp  { background: rgba(255,255,255,0.18); }
+.mx-vuoto { color: rgba(255,255,255,0.13); }
+.mx-n { font-size: .5rem; color: var(--gray); vertical-align: super; margin-left: 1px; }
+.mx-tot { text-align: center; color: var(--gray); font-size: .68rem; padding: .45rem .3rem; }
+/* Scoperture: i brand dove il team è a rischio */
+.mx-buchi { border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.04); border-radius: 10px; padding: 1rem 1.2rem; margin-bottom: 1.5rem; }
+.mx-buchi-tit { font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; color: var(--danger); margin-bottom: .6rem; }
+.mx-buchi-riga { font-size: .75rem; font-weight: 300; margin-bottom: .3rem; }
+.mx-buchi-riga:last-child { margin-bottom: 0; }
+.mx-buchi-b { font-weight: 400; }
+.mx-conta { display: flex; gap: 5px; align-items: center; }
+.mx-conta span { font-size: .55rem; padding: 1px 6px; border-radius: 4px; border: 1px solid; }
 .mx-header { display: flex; gap: 1px; background: var(--border); margin-bottom: 1px; }
 .mh-lbl { background: var(--card2); padding: 0.6rem 1rem; font-size: 0.58rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray); min-width: 72px; text-align: center; }
 .mh-brand { min-width: 160px; text-align: left; }
@@ -306,6 +410,8 @@ label.flabel {
 }
 .finput:focus, .fsel:focus { border-color: var(--green); }
 .finput::placeholder { color: rgba(255,255,255,0.2); }
+/* l'altezza fissa di .finput non va bene per un campo su più righe */
+textarea.finput { height: auto; padding: 12px 14px; resize: vertical; line-height: 1.5; }
 .fsel {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2336CD81' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 12px center; padding-right: 30px;
@@ -379,6 +485,7 @@ label.flabel {
   <div class="nav-center">
     <button class="nav-tab active" onclick="showSection('team',this)">Team</button>
     <button class="nav-tab" onclick="showSection('corsi',this)">Corsi assegnati</button>
+    <button class="nav-tab" onclick="showSection('catalogo',this)">Catalogo</button>
     <button class="nav-tab" onclick="showSection('piano',this)">Pianificazione</button>
     <button class="nav-tab" onclick="showSection('scadenze',this)">Scadenze</button>
     <button class="nav-tab" onclick="showSection('matrix',this)">Mappa cert.</button>
@@ -396,8 +503,9 @@ label.flabel {
     <div class="hero-label">Pannello amministratore</div>
     <h1 style="display:flex;align-items:center;flex-wrap:wrap"><img src="logo-kaplet-university.png" alt="Kaplet University" style="height:68px;width:auto"></h1>
     <p class="hero-sub">Gestione certificazioni e formazione del team.</p>
+    <div class="stat-chi" id="stat-chi"></div>
     <div class="stats-row">
-      <div class="stat"><div class="stat-num green" id="s-tec">—</div><div class="stat-label">Tecnici</div></div>
+      <div class="stat"><div class="stat-num green" id="s-tec">—</div><div class="stat-label" id="l-tec">Tecnici</div></div>
       <div class="stat"><div class="stat-num green" id="s-att">—</div><div class="stat-label">Cert. attive</div></div>
       <div class="stat"><div class="stat-num" id="s-ca">—</div><div class="stat-label">Corsi assegnati</div></div>
       <div class="stat"><div class="stat-num warn" id="s-s60">—</div><div class="stat-label">In scadenza 60gg</div></div>
@@ -439,10 +547,38 @@ label.flabel {
         <option value="da_fare">Da fare</option>
         <option value="in_corso">In corso</option>
         <option value="completato">Completato</option>
+        <option value="__scaduti">In ritardo</option>
       </select>
       <select class="ca-select" id="f-brand" onchange="renderCorsi()"><option value="">Tutti i brand</option></select>
     </div>
+    <div class="ca-riep" id="ca-riep"></div>
     <div class="ca-grid" id="ca-grid"><div class="empty"><div class="empty-icon">◌</div><div class="empty-title">Caricamento...</div></div></div>
+  </div>
+
+  <!-- CATALOGO -->
+  <div class="section" id="section-catalogo">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Catalogo corsi</div>
+        <p style="font-size:0.75rem;color:var(--gray);font-weight:300;margin-top:.35rem">Tutti i corsi che si possono assegnare. Qui aggiungi un corso nuovo, correggi quelli che ci sono e ne ritiri uno che il vendor non fa più. Il <b style="color:var(--white);font-weight:400">link</b> è la pagina del vendor con programma e iscrizione: si apre da ovunque compaia il corso.</p>
+      </div>
+      <button class="btn-primary" onclick="openModalCorso()">+ Aggiungi corso</button>
+    </div>
+    <div class="ca-filters">
+      <input type="text" class="ca-select" id="cat-cerca" placeholder="Cerca per nome, codice o brand..." oninput="renderCatalogo()" style="min-width:240px">
+      <select class="ca-select" id="cat-brand" onchange="renderCatalogo()"><option value="">Tutti i brand</option></select>
+      <select class="ca-select" id="cat-path" onchange="renderCatalogo()">
+        <option value="">Tutti i percorsi</option>
+        <option value="__nessuno">Senza percorso</option>
+      </select>
+      <select class="ca-select" id="cat-link" onchange="renderCatalogo()">
+        <option value="">Con o senza link</option>
+        <option value="si">Solo con link</option>
+        <option value="no">Solo senza link</option>
+      </select>
+    </div>
+    <div id="cat-info" style="font-size:.72rem;color:var(--gray);margin:0 0 1rem;font-weight:300"></div>
+    <div class="cat-wrap"><table class="cat-tab" id="cat-tab"></table></div>
   </div>
 
   <!-- PIANIFICAZIONE -->
@@ -481,8 +617,26 @@ label.flabel {
 
   <!-- MATRIX -->
   <div class="section" id="section-matrix">
-    <div class="section-head"><div class="section-title">Mappa certificazioni per brand</div></div>
-    <p style="font-size:0.75rem;color:var(--gray);margin-bottom:1.5rem;font-weight:300">Per ogni brand, i tecnici certificati. Verde = attiva · Giallo = in scadenza 60gg · Grigio = scaduta · <i class="ti ti-eye" style="font-size:11px;vertical-align:middle;color:var(--green)"></i> = clicca per l'anteprima del documento</p>
+    <div class="section-head">
+      <div>
+        <div class="section-title">Mappa certificazioni</div>
+        <p style="font-size:0.75rem;color:var(--gray);font-weight:300;margin-top:.35rem">Chi è certificato su cosa, e soprattutto dove il team è scoperto. Verde = attiva · Giallo = in scadenza entro 60gg · Grigio = scaduta.</p>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="mx-tab mx-attiva" onclick="setMxVista('griglia',this)">Griglia</button>
+        <button class="mx-tab" onclick="setMxVista('brand',this)">Per brand</button>
+      </div>
+    </div>
+    <div class="ca-filters">
+      <input type="text" class="ca-select" id="mx-cerca" placeholder="Cerca un tecnico o un brand..." oninput="renderMatrix()" style="min-width:230px">
+      <select class="ca-select" id="mx-stato" onchange="renderMatrix()">
+        <option value="">Tutte le certificazioni</option>
+        <option value="attiva">Solo attive</option>
+        <option value="scadenza">Solo in scadenza (60gg)</option>
+        <option value="scaduta">Solo scadute</option>
+      </select>
+    </div>
+    <div id="mx-buchi"></div>
     <div class="mx-wrap" id="matrix-body"></div>
   </div>
 
@@ -660,6 +814,53 @@ label.flabel {
   </div>
 </div>
 
+<!-- MODAL CORSO DI CATALOGO -->
+<div class="overlay" id="modal-corso">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="mk-titolo">Nuovo corso</div>
+      <button class="modal-close" onclick="closeOverlay('modal-corso')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="mk-id-orig">
+      <div class="fgrid">
+        <div class="fld"><label class="flabel">Codice</label><input type="text" class="finput" id="mk-id" placeholder="KU-C-184"><div class="fhint">Lascialo vuoto e lo genero io</div></div>
+        <div class="fld"><label class="flabel">Brand *</label>
+          <input type="text" class="finput" id="mk-brand" list="mk-brand-list" placeholder="es. CISCO">
+          <datalist id="mk-brand-list"></datalist>
+        </div>
+      </div>
+      <div class="fld"><label class="flabel">Nome del corso *</label><input type="text" class="finput" id="mk-nome" placeholder="Titolo esatto come lo chiama il vendor"><div class="fhint">È il nome con cui il corso comparirà nelle assegnazioni e nelle certificazioni: cambiarlo su un corso già assegnato spezza il collegamento</div></div>
+      <div class="fld"><label class="flabel">Link alla scheda del corso</label><input type="url" class="finput" id="mk-link" placeholder="https://..."><div class="fhint">La pagina del vendor con programma e iscrizione</div></div>
+      <div class="fgrid">
+        <div class="fld"><label class="flabel">Gruppo</label><input type="text" class="finput" id="mk-gruppo" placeholder="es. NET101"></div>
+        <div class="fld"><label class="flabel">Erogazione</label>
+          <input type="text" class="finput" id="mk-erogazione" list="mk-erog-list" placeholder="es. E-Learning">
+          <datalist id="mk-erog-list"></datalist>
+        </div>
+      </div>
+      <div class="fgrid">
+        <div class="fld"><label class="flabel">Durata</label><input type="text" class="finput" id="mk-durata" placeholder="hh:mm, es. 03:30"></div>
+        <div class="fld"><label class="flabel">Prezzo €</label><input type="number" class="finput" id="mk-prezzo" min="0" step="1" placeholder="vuoto = non noto"><div class="fhint">0 = gratuito · vuoto = prezzo non noto</div></div>
+      </div>
+      <div class="fld"><label class="flabel">Descrizione</label><textarea class="finput" id="mk-desc" rows="4" placeholder="A cosa serve il corso, a chi è rivolto..."></textarea></div>
+      <div class="fld">
+        <label class="flabel">Percorsi</label>
+        <div class="fhint" style="margin-bottom:6px">A chi va assegnato in automatico. Senza percorsi il corso resta nel catalogo ma non arriva a nessuno da solo.</div>
+        <div id="mk-ruoli" class="ruoli-box"></div>
+      </div>
+      <div class="msg error" id="mk-err"></div>
+    </div>
+    <div class="modal-foot" style="justify-content:space-between">
+      <button class="btn-danger-sm" id="mk-elimina" onclick="eliminaCorsoCatalogo()">Ritira dal catalogo</button>
+      <div style="display:flex;gap:.75rem">
+        <button class="btn-secondary" onclick="closeOverlay('modal-corso')">Annulla</button>
+        <button class="btn-primary" id="mk-salva" onclick="salvaCorsoCatalogo()">Salva</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL MODIFICA STATO -->
 <div class="overlay" id="modal-stato">
   <div class="modal" style="max-width:400px">
@@ -669,6 +870,7 @@ label.flabel {
     </div>
     <div class="modal-body">
       <input type="hidden" id="ms-id">
+      <div id="ms-testata" style="margin-bottom:1.1rem"></div>
       <div class="fld"><label class="flabel">Stato</label>
         <select class="fsel" id="ms-stato">
           <option value="da_fare">Da fare</option>
@@ -687,9 +889,12 @@ label.flabel {
       </div>
       <div class="fld"><label class="flabel">Note</label><input type="text" class="finput" id="ms-note"></div>
     </div>
-    <div class="modal-foot">
-      <button class="btn-secondary" onclick="closeOverlay('modal-stato')">Annulla</button>
-      <button class="btn-primary" onclick="salvaStato()">Salva</button>
+    <div class="modal-foot" style="justify-content:space-between">
+      <button class="btn-danger-sm" onclick="rimuoviCorsoDaModale()">Togli il corso</button>
+      <div style="display:flex;gap:.75rem">
+        <button class="btn-secondary" onclick="closeOverlay('modal-stato')">Annulla</button>
+        <button class="btn-primary" onclick="salvaStato()">Salva</button>
+      </div>
     </div>
   </div>
 </div>
@@ -867,29 +1072,28 @@ async function load() {
   const [r1, r2, r3] = await Promise.all([
     sb.from('tecnici').select('*').order('cognome'),
     sb.from('certificazioni').select('*').order('inserita_il', {ascending:false}),
-    sb.from('corsi_assegnati').select('*').order('assegnato_il', {ascending:false})
+    sb.from('corsi_assegnati').select('*').order('assegnato_il', {ascending:false}),
+    // il catalogo ora vive in DB: senza non si disegnano assegnazioni né percorsi
+    caricaCatalogo(sb).catch(e => toast('Catalogo non caricato: ' + e.message))
   ]);
   TECNICI = r1.data || []; CERTS = r2.data || []; CORSI_ASS = r3.data || [];
 
-  const oggi = new Date();
-  const att  = CERTS.filter(c => c.stato==='attiva' && (!c.data_scadenza || new Date(c.data_scadenza) >= oggi));
-  const sca  = CERTS.filter(c => c.data_scadenza && new Date(c.data_scadenza) < oggi);
-  const s60  = att.filter(c => c.data_scadenza && gg(c.data_scadenza) <= 60);
-  document.getElementById('s-tec').textContent = TECNICI.length;
-  document.getElementById('s-att').textContent = att.length;
-  document.getElementById('s-ca').textContent  = CORSI_ASS.length;
-  document.getElementById('s-s60').textContent = s60.length;
-  document.getElementById('s-sca').textContent = sca.length;
-
-  // filtri
+  // Filtri: riempire le option azzera la scelta, quindi la salvo e la rimetto.
+  // Senza, dopo ogni salvataggio il tecnico selezionato spariva.
   const ft = document.getElementById('f-tec');
+  const tecPrima = ft.value;
   ft.innerHTML = '<option value="">Tutti i tecnici</option>' + TECNICI.map(t => `<option value="${t.id}">${esc(t.nome)} ${esc(t.cognome)}</option>`).join('');
+  if (TECNICI.some(t => t.id === tecPrima)) ft.value = tecPrima;
+
   const brands = [...new Set(CORSI_ASS.map(c => c.brand))].sort();
   const fb = document.getElementById('f-brand');
+  const brandPrima = fb.value;
   fb.innerHTML = '<option value="">Tutti i brand</option>' + brands.map(b => `<option value="${b}">${b}</option>`).join('');
+  if (brands.includes(brandPrima)) fb.value = brandPrima;
 
-  popolaFiltriPiano();
-  renderTeam(); renderCorsi(); renderScadenze(); renderMatrix(); renderCompetenze(); renderPiano(); caricaSettings();
+  aggiornaStatistiche();
+  popolaFiltriPiano(); popolaFiltriCatalogo();
+  renderTeam(); renderCorsi(); renderCatalogo(); renderScadenze(); renderMatrix(); renderCompetenze(); renderPiano(); caricaSettings();
 }
 
 /* ── TEAM ── */
@@ -937,10 +1141,19 @@ function renderCorsi() {
   const ft = document.getElementById('f-tec').value;
   const fs = document.getElementById('f-stato').value;
   const fb = document.getElementById('f-brand').value;
-  const filtered = CORSI_ASS.filter(c => {
+  // Il riepilogo si calcola su tecnico + brand ma NON sullo stato: così le sue
+  // celle restano una fotografia completa e servono da filtro per lo stato.
+  const base = CORSI_ASS.filter(c => {
     if (ft && c.tech_id !== ft) return false;
-    if (fs && c.stato !== fs)   return false;
     if (fb && c.brand !== fb)   return false;
+    return true;
+  });
+  renderRiepilogoCorsi(base, ft, fs);
+  aggiornaStatistiche();   // la testata segue il tecnico scelto qui
+
+  const filtered = base.filter(c => {
+    if (fs === '__scaduti') return inRitardo(c);
+    if (fs && c.stato !== fs) return false;
     return true;
   });
   const grid = document.getElementById('ca-grid');
@@ -960,6 +1173,7 @@ function renderCorsi() {
       </div>
       <div class="ca-nome">${esc(c.corso)}</div>
       <div class="ca-meta"><div>Anno ${c.anno}</div>${scadHtml}${c.note?`<div style="opacity:.5">${esc(c.note)}</div>`:''}</div>
+      ${linkCorsoHtml(c.brand, c.corso)}
       ${tec ? `<div class="ca-tec-row"><div class="av-sm">${tec.nome[0].toUpperCase()}</div><div class="ca-tec-nome">${tec.nome} ${tec.cognome}</div></div>` : ''}
       <div class="ca-actions">
         <button class="btn-sm" onclick="openModalStato('${c.id}')">Modifica stato e date</button>
@@ -1003,27 +1217,135 @@ function apriAnteprima(url, titolo) {
   document.getElementById('modal-preview').classList.add('open');
 }
 
+let MX_VISTA = 'griglia';
+
+function setMxVista(v, btn) {
+  MX_VISTA = v;
+  document.querySelectorAll('.mx-tab').forEach(t => t.classList.remove('mx-attiva'));
+  btn.classList.add('mx-attiva');
+  renderMatrix();
+}
+
+/* I percorsi di un tecnico in una riga sola: due, poi "+n" (l'elenco intero sta nel title) */
+function ruoliBrevi(ruoloStr) {
+  const r = parseRuoli(ruoloStr).map(labelRuolo);
+  if (!r.length) return '';
+  return r.slice(0,2).join(' · ') + (r.length > 2 ? ` +${r.length-2}` : '');
+}
+
+/* Stato di una certificazione: 'attiva' | 'scadenza' (entro 60gg) | 'scaduta' */
+function statoCert(c) {
+  if (!c.data_scadenza) return 'attiva';           // non scade mai
+  const g = gg(c.data_scadenza);
+  if (g === null) return 'attiva';
+  if (g < 0)  return 'scaduta';
+  if (g <= 60) return 'scadenza';
+  return 'attiva';
+}
+
+const MX_CLASSE = { attiva:'ok', scadenza:'warn', scaduta:'exp' };
+
+/* La certificazione che conta di più in una cella: attiva batte in scadenza, che batte scaduta */
+function certMigliore(lista) {
+  const ordine = { attiva:0, scadenza:1, scaduta:2 };
+  return lista.slice().sort((x,y) => ordine[statoCert(x)] - ordine[statoCert(y)])[0];
+}
+
 function renderMatrix() {
-  const brands = [...new Set(CERTS.map(c => c.brand))].sort();
+  const q  = (document.getElementById('mx-cerca').value || '').trim().toLowerCase();
+  const fs = document.getElementById('mx-stato').value;
+
+  // Filtro sulle certificazioni, non sui brand: così "solo scadute" mostra
+  // davvero solo quelle, invece di brand interi con dentro roba mista.
+  const certs = CERTS.filter(c => {
+    if (fs && statoCert(c) !== fs) return false;
+    if (q) {
+      const t = TECNICI.find(x => x.id === c.tech_id);
+      const testo = `${c.brand} ${c.corso} ${t ? t.nome + ' ' + t.cognome : ''}`.toLowerCase();
+      if (!testo.includes(q)) return false;
+    }
+    return true;
+  });
+
+  renderScoperture();
+
   const wrap = document.getElementById('matrix-body');
-  if (!brands.length) {
-    wrap.innerHTML = '<div class="empty"><div class="empty-icon">◌</div><div class="empty-title">Nessuna certificazione ancora</div></div>';
+  if (!certs.length) {
+    wrap.innerHTML = `<div class="empty"><div class="empty-icon">◌</div><div class="empty-title">${
+      CERTS.length ? 'Nessuna certificazione con questi filtri' : 'Nessuna certificazione ancora'}</div></div>`;
     return;
   }
+  wrap.innerHTML = MX_VISTA === 'griglia' ? grigliaMatrix(certs) : brandMatrix(certs);
+}
+
+/* Vista griglia: una riga per tecnico, una colonna per brand */
+function grigliaMatrix(certs) {
+  const brands = [...new Set(certs.map(c => c.brand))].sort();
+  // solo i tecnici che compaiono, altrimenti la griglia è mezza vuota
+  const tecnici = TECNICI.filter(t => certs.some(c => c.tech_id === t.id));
+  if (!tecnici.length) return '<div class="empty"><div class="empty-title">Nessun tecnico da mostrare</div></div>';
+
+  const perCella = {};
+  certs.forEach(c => { (perCella[c.tech_id + '|' + c.brand] = perCella[c.tech_id + '|' + c.brand] || []).push(c); });
+
+  const testa = `<thead><tr>
+      <th class="mx-ang">Tecnico</th>
+      ${brands.map(b => `<th><div class="mx-brand-v" style="color:${bc(b)}">${esc(b)}</div></th>`).join('')}
+      <th style="padding:0 .8rem">Tot</th>
+    </tr></thead>`;
+
+  const corpo = tecnici.map(t => {
+    const suoi = certs.filter(c => c.tech_id === t.id);
+    return `<tr>
+      <td class="mx-tec">
+        <div>${esc(t.nome)} ${esc(t.cognome)}</div>
+        ${t.ruolo ? `<div class="mx-tec-ruolo" title="${esc(parseRuoli(t.ruolo).map(labelRuolo).join(' · '))}">${esc(ruoliBrevi(t.ruolo))}</div>` : ''}
+      </td>
+      ${brands.map(b => {
+        const lista = perCella[t.id + '|' + b];
+        if (!lista) return '<td class="mx-cella"><span class="mx-vuoto">·</span></td>';
+        const capo = certMigliore(lista);
+        const titolo = lista.map(c => `${c.corso}${c.data_scadenza ? ' (scad. ' + fmt(c.data_scadenza) + ')' : ' (non scade)'}`).join(' — ');
+        const doc = lista.find(c => c.documento_url);
+        const click = doc ? ` onclick="apriAnteprima('${doc.documento_url}','${(doc.corso||'').replace(/'/g,"\\'")}')"` : '';
+        return `<td class="mx-cella ${doc ? 'ha' : ''}" title="${esc(titolo)}"${click}>
+          <span class="mx-pallino ${MX_CLASSE[statoCert(capo)]}"></span>${lista.length > 1 ? `<span class="mx-n">${lista.length}</span>` : ''}
+        </td>`;
+      }).join('')}
+      <td class="mx-tot">${suoi.length}</td>
+    </tr>`;
+  }).join('');
+
+  const totali = `<tr>
+      <td class="mx-tec" style="color:var(--gray);font-weight:300">Tecnici per brand</td>
+      ${brands.map(b => {
+        const n = new Set(certs.filter(c => c.brand === b).map(c => c.tech_id)).size;
+        return `<td class="mx-tot" style="${n === 1 ? 'color:var(--warn)' : ''}">${n}</td>`;
+      }).join('')}
+      <td class="mx-tot">${certs.length}</td>
+    </tr>`;
+
+  return `<table class="mx-grid">${testa}<tbody>${corpo}${totali}</tbody></table>`;
+}
+
+/* Vista per brand: l'elenco di prima, con i contatori accanto al nome */
+function brandMatrix(certs) {
+  const brands = [...new Set(certs.map(c => c.brand))].sort();
   let h = '<div style="display:flex;flex-direction:column;gap:1px;background:var(--border)">';
   brands.forEach(b => {
-    // Tecnici che hanno la certificazione di questo brand
-    const certB = CERTS.filter(c => c.brand === b);
+    const certB = certs.filter(c => c.brand === b);
+    const n = st => certB.filter(c => statoCert(c) === st).length;
+    const conta = `<div class="mx-conta">
+      ${n('attiva')   ? `<span style="color:var(--green);border-color:var(--green-border);background:var(--green-dim)">${n('attiva')} attive</span>` : ''}
+      ${n('scadenza') ? `<span style="color:var(--warn);border-color:rgba(245,158,11,0.25);background:rgba(245,158,11,0.05)">${n('scadenza')} in scadenza</span>` : ''}
+      ${n('scaduta')  ? `<span style="color:rgba(255,255,255,0.3);border-color:var(--border)">${n('scaduta')} scadute</span>` : ''}
+    </div>`;
     const chips = certB.map(c => {
       const t = TECNICI.find(x => x.id === c.tech_id);
       if (!t) return '';
-      const g = gg(c.data_scadenza);
-      const oggi = new Date();
-      const isExp = c.data_scadenza && new Date(c.data_scadenza) < oggi;
-      let cls, label;
-      if (isExp) { cls = 'pill-exp'; label = 'scaduta'; }
-      else if (g !== null && g <= 60) { cls = 'pill-warn'; label = g + 'gg'; }
-      else { cls = 'pill-ok'; label = 'attiva'; }
+      const st = statoCert(c);
+      const cls = st === 'scaduta' ? 'pill-exp' : st === 'scadenza' ? 'pill-warn' : 'pill-ok';
+      const label = st === 'scaduta' ? 'scaduta' : st === 'scadenza' ? gg(c.data_scadenza) + 'gg' : 'attiva';
       const hasDoc = !!c.documento_url;
       const titleTxt = `${esc(c.corso)}${c.data_scadenza ? ' · scad. ' + fmt(c.data_scadenza) : ''}${hasDoc ? ' · clicca per vedere il documento' : ''}`;
       const docIcon = hasDoc ? ' <i class="ti ti-eye" style="font-size:11px;vertical-align:middle"></i>' : '';
@@ -1031,16 +1353,46 @@ function renderMatrix() {
       return `<span class="pill ${cls}"${clickAttr} title="${titleTxt}">${esc(t.nome)} ${esc(t.cognome)} · ${label}${docIcon}</span>`;
     }).join('');
     h += `<div style="background:var(--card);padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:1.25rem;flex-wrap:wrap">
-      <div style="display:flex;align-items:center;gap:8px;min-width:160px">
-        <div class="mdot" style="background:${bc(b)}"></div>
-        <div class="mname">${b}</div>
-        <span style="font-size:.6rem;color:var(--gray)">${certB.length}</span>
+      <div style="min-width:180px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="mdot" style="background:${bc(b)}"></div>
+          <div class="mname">${esc(b)}</div>
+        </div>
+        <div style="margin-top:6px">${conta}</div>
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;flex:1">${chips || '<span style="font-size:.7rem;color:rgba(255,255,255,.2)">Nessuno</span>'}</div>
     </div>`;
   });
-  h += '</div>';
-  wrap.innerHTML = h;
+  return h + '</div>';
+}
+
+/* Le scoperture vere: brand su cui il team non regge. Si calcolano su TUTTE
+   le certificazioni, non su quelle filtrate: è un avviso, non una vista. */
+function renderScoperture() {
+  const box = document.getElementById('mx-buchi');
+  const brands = [...new Set(CERTS.map(c => c.brand))].sort();
+  const guai = [];
+  brands.forEach(b => {
+    const certB  = CERTS.filter(c => c.brand === b);
+    const vivi   = new Set(certB.filter(c => statoCert(c) !== 'scaduta').map(c => c.tech_id));
+    if (!vivi.size) {
+      guai.push({b, msg: 'nessuna certificazione ancora valida', gravita: 0});
+    } else if (vivi.size === 1) {
+      const t = TECNICI.find(x => x.id === [...vivi][0]);
+      const soloScadenza = certB.filter(c => vivi.has(c.tech_id)).every(c => statoCert(c) === 'scadenza');
+      guai.push({
+        b,
+        msg: `un solo tecnico coperto (${t ? t.nome + ' ' + t.cognome : '—'})${soloScadenza ? ', e scade entro 60 giorni' : ''}`,
+        gravita: soloScadenza ? 0 : 1
+      });
+    }
+  });
+  if (!guai.length) { box.innerHTML = ''; return; }
+  guai.sort((x,y) => x.gravita - y.gravita || x.b.localeCompare(y.b));
+  box.innerHTML = `<div class="mx-buchi">
+    <div class="mx-buchi-tit">Dove il team è scoperto (${guai.length})</div>
+    ${guai.map(g => `<div class="mx-buchi-riga"><span class="mx-buchi-b" style="color:${bc(g.b)}">${esc(g.b)}</span> — ${esc(g.msg)}</div>`).join('')}
+  </div>`;
 }
 
 /* ── CRUSCOTTO COMPETENZE (stile kaplet_competenze_dashboard) ── */
@@ -1617,6 +1969,217 @@ async function salvaAssegna() {
   finally { btn.disabled=false; btn.textContent='Assegna'; }
 }
 
+/* ── CATALOGO CORSI ────────────────────────────────────────────────
+   COURSES arriva da corsi_catalogo (js/courses.js). Qui l'admin lo
+   modifica; dopo ogni scrittura si ricarica e si ridisegna tutto,
+   perché il catalogo alimenta anche assegnazioni, percorsi e competenze. */
+
+function popolaFiltriCatalogo() {
+  const brands = [...new Set(COURSES.map(c => c.brand))].sort();
+  const selB = document.getElementById('cat-brand');
+  const primaB = selB.value;
+  selB.innerHTML = '<option value="">Tutti i brand</option>' +
+    brands.map(b => `<option value="${esc(b)}">${esc(b)}</option>`).join('');
+  selB.value = primaB;
+
+  const selP = document.getElementById('cat-path');
+  const primaP = selP.value;
+  let lastGrp = '', opts = '';
+  RUOLI.forEach(r => {
+    if (r.gruppo !== lastGrp) { opts += `<optgroup label="${esc(r.gruppo)}">`; lastGrp = r.gruppo; }
+    opts += `<option value="${r.key}">${esc(r.label)}</option>`;
+  });
+  selP.innerHTML = '<option value="">Tutti i percorsi</option><option value="__nessuno">Senza percorso</option>' + opts;
+  selP.value = primaP;
+}
+
+function renderCatalogo() {
+  const q     = (document.getElementById('cat-cerca').value || '').trim().toLowerCase();
+  const fb    = document.getElementById('cat-brand').value;
+  const fp    = document.getElementById('cat-path').value;
+  const fl    = document.getElementById('cat-link').value;
+
+  const righe = COURSES.filter(c => {
+    if (fb && c.brand !== fb) return false;
+    if (fp === '__nessuno' && c.paths.length) return false;
+    if (fp && fp !== '__nessuno' && !c.paths.includes(fp)) return false;
+    if (fl === 'si' && !c.link) return false;
+    if (fl === 'no' && c.link)  return false;
+    if (q && !(`${c.id} ${c.brand} ${c.nome} ${c.gruppo}`.toLowerCase().includes(q))) return false;
+    return true;
+  }).sort((a,b) => a.brand.localeCompare(b.brand) || a.nome.localeCompare(b.nome));
+
+  const senzaPath = COURSES.filter(c => !c.paths.length).length;
+  const senzaLink = COURSES.filter(c => !c.link).length;
+  document.getElementById('cat-info').innerHTML =
+    `<b style="color:var(--white);font-weight:400">${righe.length}</b> corsi mostrati su ${COURSES.length} in catalogo` +
+    (senzaPath ? ` · <span style="color:var(--warn)">${senzaPath} senza percorso</span>` : '') +
+    (senzaLink ? ` · ${senzaLink} senza link` : '');
+
+  const tab = document.getElementById('cat-tab');
+  if (!righe.length) {
+    tab.innerHTML = `<tbody><tr><td style="text-align:center;padding:2.5rem;color:var(--gray)">Nessun corso con questi filtri</td></tr></tbody>`;
+    return;
+  }
+  tab.innerHTML = `
+    <thead><tr>
+      <th>Codice</th><th>Brand</th><th>Corso</th><th>Erogazione</th>
+      <th>Durata</th><th>Prezzo</th><th>Percorsi</th><th>Link</th><th></th>
+    </tr></thead>
+    <tbody>${righe.map(c => {
+      const usato = quantoUsato(c);
+      return `<tr>
+        <td class="cat-id">${esc(c.id)}</td>
+        <td style="color:${bc(c.brand)};white-space:nowrap">${esc(c.brand)}</td>
+        <td>
+          <div class="cat-nome">${esc(c.nome)}</div>
+          ${c.gruppo ? `<div class="cat-gruppo">${esc(c.gruppo)}</div>` : ''}
+          ${usato ? `<div class="cat-gruppo">${usato} assegnazion${usato===1?'e':'i'} / certificazion${usato===1?'e':'i'}</div>` : ''}
+        </td>
+        <td style="white-space:nowrap;color:var(--gray)">${esc(c.erogazione || '—')}</td>
+        <td style="white-space:nowrap;color:var(--gray)">${esc(c.durata || '—')}</td>
+        <td style="white-space:nowrap;color:var(--gray)">${prezzoLabel(c.prezzo)}</td>
+        <td><div class="cat-paths">${c.paths.length
+            ? c.paths.map(pk => `<span class="cat-path">${esc(labelRuolo(pk))}</span>`).join('')
+            : '<span class="cat-path vuoto">nessuno</span>'}</div></td>
+        <td style="text-align:center">${c.link
+            ? `<a href="${esc(c.link)}" target="_blank" rel="noopener" title="${esc(c.link)}"><i class="ti ti-external-link cat-link-si"></i></a>`
+            : `<span class="cat-link-no" title="Nessun link">—</span>`}</td>
+        <td><div class="cat-azioni">
+          <button class="btn-sm" onclick="openModalCorso('${esc(c.id)}')">Modifica</button>
+        </div></td>
+      </tr>`;
+    }).join('')}</tbody>`;
+}
+
+// Quante righe (certificazioni + assegnazioni) puntano a questo corso.
+// Il legame è brand+nome, non l'id: serve per avvisare prima di ritirarlo.
+function quantoUsato(c) {
+  const n1 = CORSI_ASS.filter(x => x.brand === c.brand && x.corso === c.nome).length;
+  const n2 = CERTS.filter(x => x.brand === c.brand && x.corso === c.nome).length;
+  return n1 + n2;
+}
+
+function prezzoLabel(p) {
+  if (p === undefined || p === null) return '—';
+  return p === 0 ? 'Gratuito' : '€ ' + p;
+}
+
+// Codice per un corso nuovo: prende il numero più alto dei KU-C-### e va avanti
+function prossimoCodiceCorso() {
+  let max = 0;
+  COURSES.forEach(c => {
+    const m = /^KU-C-(\d+)$/.exec(c.id || '');
+    if (m) max = Math.max(max, parseInt(m[1], 10));
+  });
+  return 'KU-C-' + String(max + 1).padStart(3, '0');
+}
+
+function openModalCorso(id) {
+  const c = id ? COURSES.find(x => x.id === id) : null;
+  document.getElementById('mk-titolo').textContent = c ? 'Modifica corso' : 'Nuovo corso';
+  document.getElementById('mk-id-orig').value   = c ? c.id : '';
+  document.getElementById('mk-id').value        = c ? c.id : '';
+  document.getElementById('mk-id').placeholder  = c ? '' : prossimoCodiceCorso();
+  document.getElementById('mk-brand').value     = c ? c.brand : '';
+  document.getElementById('mk-nome').value      = c ? c.nome : '';
+  document.getElementById('mk-link').value      = c ? (c.link || '') : '';
+  document.getElementById('mk-gruppo').value    = c ? (c.gruppo || '') : '';
+  document.getElementById('mk-erogazione').value= c ? (c.erogazione || '') : '';
+  document.getElementById('mk-durata').value    = c ? (c.durata || '') : '';
+  document.getElementById('mk-prezzo').value    = (c && typeof c.prezzo === 'number') ? c.prezzo : '';
+  document.getElementById('mk-desc').value      = c ? (c.desc || '') : '';
+  buildRuoliBox('mk-ruoli', c ? c.paths : []);
+
+  // suggerimenti dai valori già in catalogo
+  document.getElementById('mk-brand-list').innerHTML =
+    [...new Set(COURSES.map(x => x.brand))].sort().map(b => `<option value="${esc(b)}">`).join('');
+  document.getElementById('mk-erog-list').innerHTML =
+    [...new Set(COURSES.map(x => x.erogazione).filter(Boolean))].sort().map(e => `<option value="${esc(e)}">`).join('');
+
+  // un corso che non esiste ancora non si può ritirare
+  document.getElementById('mk-elimina').style.display = c ? '' : 'none';
+  document.getElementById('mk-err').classList.remove('show');
+  document.getElementById('modal-corso').classList.add('open');
+}
+
+async function salvaCorsoCatalogo() {
+  const err = document.getElementById('mk-err');
+  const orig   = document.getElementById('mk-id-orig').value;
+  const id     = (document.getElementById('mk-id').value || '').trim() || prossimoCodiceCorso();
+  const brand  = (document.getElementById('mk-brand').value || '').trim().toUpperCase();
+  const nome   = (document.getElementById('mk-nome').value || '').trim();
+  const link   = (document.getElementById('mk-link').value || '').trim();
+  const prezzoTxt = document.getElementById('mk-prezzo').value;
+
+  const stop = m => { err.textContent = m; err.classList.add('show'); };
+  if (!brand) return stop('Manca il brand.');
+  if (!nome)  return stop('Manca il nome del corso.');
+  if (link && !/^https?:\/\//i.test(link)) return stop('Il link deve iniziare con http:// o https://');
+  if (!orig && COURSES.some(c => c.id === id)) return stop(`Il codice ${id} è già usato.`);
+  const gemello = COURSES.find(c => c.brand === brand && c.nome === nome && c.id !== orig);
+  if (gemello) return stop(`${brand} ha già un corso con questo nome (${gemello.id}).`);
+
+  // Rinominare un corso già assegnato spezzerebbe il legame brand+nome
+  if (orig) {
+    const vecchio = COURSES.find(c => c.id === orig);
+    if (vecchio && (vecchio.nome !== nome || vecchio.brand !== brand)) {
+      const n = quantoUsato(vecchio);
+      if (n && !confirm(`${n} tra assegnazioni e certificazioni puntano a "${vecchio.nome}". Cambiando nome o brand smetteranno di riconoscere questo corso. Procedo?`)) return;
+    }
+  }
+
+  const riga = {
+    id, brand, nome,
+    gruppo:      (document.getElementById('mk-gruppo').value || '').trim() || null,
+    descrizione: (document.getElementById('mk-desc').value || '').trim() || null,
+    erogazione:  (document.getElementById('mk-erogazione').value || '').trim() || null,
+    durata:      (document.getElementById('mk-durata').value || '').trim() || null,
+    prezzo:      prezzoTxt === '' ? null : Number(prezzoTxt),
+    link:        link || null,
+    paths:       getRuoliSelezionati('mk-ruoli'),
+    attivo:      true
+  };
+
+  const btn = document.getElementById('mk-salva'); btn.disabled = true; btn.textContent = 'Salvataggio...';
+  try {
+    // cambiare il codice significa spostare la riga: si cancella la vecchia
+    if (orig && orig !== id) {
+      const { error: e1 } = await sb.from('corsi_catalogo').insert(riga);
+      if (e1) throw e1;
+      await sb.from('corsi_catalogo').delete().eq('id', orig);
+    } else if (orig) {
+      const { error: e2 } = await sb.from('corsi_catalogo').update(riga).eq('id', orig);
+      if (e2) throw e2;
+    } else {
+      const { error: e3 } = await sb.from('corsi_catalogo').insert(riga);
+      if (e3) throw e3;
+    }
+    closeOverlay('modal-corso');
+    toast(orig ? 'Corso aggiornato!' : 'Corso aggiunto al catalogo!');
+    await load();
+  } catch(e) {
+    stop('Errore: ' + e.message);
+  } finally { btn.disabled = false; btn.textContent = 'Salva'; }
+}
+
+// Ritiro, non cancellazione: attivo = false. Le certificazioni e le
+// assegnazioni già registrate restano dove sono.
+async function eliminaCorsoCatalogo() {
+  const id = document.getElementById('mk-id-orig').value;
+  const c  = COURSES.find(x => x.id === id); if (!c) return;
+  const n  = quantoUsato(c);
+  const avviso = n
+    ? `"${c.nome}" è usato da ${n} tra assegnazioni e certificazioni.\n\nRitirandolo sparisce dal catalogo e non si potrà più assegnare, ma le righe già registrate restano.\n\nProcedo?`
+    : `Ritirare "${c.nome}" dal catalogo?`;
+  if (!confirm(avviso)) return;
+  const { error } = await sb.from('corsi_catalogo').update({attivo:false}).eq('id', id);
+  if (error) { toast('Errore: ' + error.message); return; }
+  closeOverlay('modal-corso');
+  toast('Corso ritirato dal catalogo.');
+  await load();
+}
+
 /* ── PIANIFICAZIONE / GANTT ───────────────────────────────────────── */
 const MESI_BREVI = ['GEN','FEB','MAR','APR','MAG','GIU','LUG','AGO','SET','OTT','NOV','DIC'];
 
@@ -1703,6 +2266,7 @@ function renderPiano() {
         </div>
         <div class="ca-nome">${esc(c.corso)}</div>
         <div class="ca-meta"><div>${esc(nomeTec(c.tech_id))}</div>${c.scadenza ? `<div>Entro il ${fmt(c.scadenza)}</div>` : ''}</div>
+        ${linkCorsoHtml(c.brand, c.corso)}
         <div class="ca-actions"><button class="btn-sm" onclick="openModalStato('${c.id}')">Metti le date</button></div>
       </div>`).join('')}</div>
     ${todo.length > 12 ? `<div style="text-align:center;margin-top:1.25rem">
@@ -1857,9 +2421,97 @@ function costruisciGantt(righe, raggruppa) {
   </div>`;
 }
 
+/* Link alla scheda del corso, se il catalogo ne ha uno per questo brand+nome */
+/* Le card in testata. Se in "Corsi assegnati" è scelto un tecnico, mostrano i
+   numeri suoi invece di quelli del team, e la prima card passa da "Tecnici"
+   (che filtrata non direbbe niente) a "Corsi completati". */
+function aggiornaStatistiche() {
+  const ft = document.getElementById('f-tec').value;
+  const certs = ft ? CERTS.filter(c => c.tech_id === ft) : CERTS;
+  const corsi = ft ? CORSI_ASS.filter(c => c.tech_id === ft) : CORSI_ASS;
+
+  const oggi = new Date();
+  const att  = certs.filter(c => c.stato==='attiva' && (!c.data_scadenza || new Date(c.data_scadenza) >= oggi));
+  const sca  = certs.filter(c => c.data_scadenza && new Date(c.data_scadenza) < oggi);
+  const s60  = att.filter(c => c.data_scadenza && gg(c.data_scadenza) <= 60);
+
+  document.getElementById('s-tec').textContent  = ft ? corsi.filter(c => c.stato === 'completato').length : TECNICI.length;
+  document.getElementById('l-tec').textContent  = ft ? 'Corsi completati' : 'Tecnici';
+  document.getElementById('s-att').textContent  = att.length;
+  document.getElementById('s-ca').textContent   = corsi.length;
+  document.getElementById('s-s60').textContent  = s60.length;
+  document.getElementById('s-sca').textContent  = sca.length;
+
+  // La riga che spiega di chi sono i numeri: senza, chi cambia tab non capisce
+  // perché la testata dice 12 invece di 387.
+  const chi = document.getElementById('stat-chi');
+  chi.classList.toggle('on', !!ft);
+  chi.innerHTML = ft
+    ? `<span>Numeri di <b>${esc(nomeTec(ft))}</b></span><button onclick="mostraTuttoIlTeam()">Mostra tutto il team</button>`
+    : '';
+}
+
+// Toglie il filtro tecnico e riporta la testata sui numeri del team
+function mostraTuttoIlTeam() {
+  document.getElementById('f-tec').value = '';
+  renderCorsi();
+}
+
+/* Un corso assegnato è in ritardo se la scadenza è passata e non è stato completato */
+function inRitardo(c) {
+  return c.stato !== 'completato' && !!c.scadenza && c.scadenza < oggiISO();
+}
+
+/* Riepilogo sopra la griglia: quanti corsi ha davvero il tecnico scelto.
+   Le celle sono cliccabili e pilotano il filtro dello stato. */
+function renderRiepilogoCorsi(base, ft, fs) {
+  const chi = ft ? nomeTec(ft) : 'Tutto il team';
+  const conta = st => base.filter(c => c.stato === st).length;
+  const celle = [
+    { v: '',            n: base.length,             lab: 'Assegnati',  cls: '' },
+    { v: 'da_fare',     n: conta('da_fare'),        lab: 'Da fare',    cls: '' },
+    { v: 'in_corso',    n: conta('in_corso'),       lab: 'In corso',   cls: 'warn' },
+    { v: 'completato',  n: conta('completato'),     lab: 'Completati', cls: 'green' },
+    { v: '__scaduti',   n: base.filter(inRitardo).length, lab: 'In ritardo', cls: 'danger' }
+  ];
+  document.getElementById('ca-riep').innerHTML = `
+    <div class="ca-riep-chi">
+      <div class="ca-riep-chi-lab">Riepilogo</div>
+      <div class="ca-riep-chi-nome">${esc(chi)}</div>
+    </div>
+    ${celle.map(c => `
+      <button class="ca-riep-cella ${fs === c.v ? 'sel' : ''}" onclick="filtraStatoCorsi('${c.v}')"
+              title="${c.v === fs && c.v ? 'Togli il filtro' : 'Mostra solo questi'}">
+        <div class="ca-riep-n ${c.cls}" style="${c.n ? '' : 'opacity:.35'}">${c.n}</div>
+        <div class="ca-riep-lab">${c.lab}</div>
+      </button>`).join('')}`;
+}
+
+// Clic su una cella del riepilogo: imposta lo stato, o lo toglie se era già quello
+function filtraStatoCorsi(valore) {
+  const sel = document.getElementById('f-stato');
+  sel.value = (sel.value === valore) ? '' : valore;
+  renderCorsi();
+}
+
+function linkCorsoHtml(brand, corso) {
+  const cat = corsoDiCatalogo(brand, corso);
+  if (!cat || !cat.link) return '';
+  return `<a class="link-corso" href="${esc(cat.link)}" target="_blank" rel="noopener"
+             onclick="event.stopPropagation()"><i class="ti ti-external-link"></i> Scheda del corso</a>`;
+}
+
 /* ── MODAL STATO ── */
 function openModalStato(id) {
   const c = CORSI_ASS.find(x => x.id === id); if (!c) return;
+  // Testata: di chi è il corso, e il link alla scheda del vendor se il catalogo ce l'ha
+  const cat = corsoDiCatalogo(c.brand, c.corso);
+  document.getElementById('ms-testata').innerHTML = `
+    <div style="font-size:.72rem;color:${bc(c.brand)};letter-spacing:.08em;text-transform:uppercase">${esc(c.brand)}</div>
+    <div style="font-size:.9rem;margin:.2rem 0 .3rem">${esc(c.corso)}</div>
+    <div style="font-size:.72rem;color:var(--gray);font-weight:300">${esc(nomeTec(c.tech_id))}</div>
+    ${cat && cat.link ? `<a class="link-corso" href="${esc(cat.link)}" target="_blank" rel="noopener">
+        <i class="ti ti-external-link"></i> Apri la scheda del corso</a>` : ''}`;
   document.getElementById('ms-id').value     = c.id;
   document.getElementById('ms-stato').value  = c.stato;
   document.getElementById('ms-scad').value   = c.scadenza || '';
@@ -1887,7 +2539,18 @@ async function salvaStato() {
 async function rimuoviCorso(id) {
   if (!confirm('Rimuovere questo corso?')) return;
   const {error} = await sb.from('corsi_assegnati').delete().eq('id',id);
-  if (!error) { toast('Corso rimosso.'); await load(); }
+  if (error) { toast('Errore: ' + error.message); return; }
+  toast('Corso rimosso.'); await load();
+}
+
+// Stesso gesto, ma dalla modale aperta dalla timeline: chiude prima di ricaricare
+async function rimuoviCorsoDaModale() {
+  const id = document.getElementById('ms-id').value;
+  const c = CORSI_ASS.find(x => x.id === id); if (!c) return;
+  if (!confirm(`Togliere "${c.corso}" a ${nomeTec(c.tech_id)}?`)) return;
+  const {error} = await sb.from('corsi_assegnati').delete().eq('id', id);
+  if (error) { toast('Errore: ' + error.message); return; }
+  closeOverlay('modal-stato'); toast('Corso tolto.'); await load();
 }
 
 /* ── HELPERS ── */
