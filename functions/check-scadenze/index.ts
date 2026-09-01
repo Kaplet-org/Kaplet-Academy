@@ -19,7 +19,11 @@ const MAIL = {
   pannello: Deno.env.get("URL_ADMIN") ?? "https://kaplet.github.io/Kaplet-Academy/admin.html",
 };
 
-serve(async () => {
+serve(async (req) => {
+  // ?prova=1 manda una mail di esempio con dati finti: serve a verificare che
+  // la catena funzioni senza aspettare che una certificazione scada davvero.
+  const prova = new URL(req.url).searchParams.get("prova") === "1";
+
   const sb = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
@@ -44,28 +48,40 @@ serve(async () => {
 
   // L'esito dell'invio finisce nella risposta: prima la funzione diceva
   // sempre ok, anche quando il server rifiutava la mail.
+  if (prova && notifiche.length === 0) {
+    notifiche.push({
+      giorni: 30,
+      cert: {
+        brand: "ESEMPIO",
+        corso: "Mail di prova - nessuna scadenza reale",
+        data_scadenza: new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0],
+        tecnici: { nome: "Mario", cognome: "Rossi", ruolo: "Esempio" },
+      },
+    });
+  }
+
   let esito: Record<string, unknown> = { inviata: false, motivo: "nessuna scadenza oggi" };
   if (notifiche.length > 0) {
     try {
-      esito = { inviata: true, id: await sendMail(notifiche) };
+      esito = { inviata: true, id: await sendMail(notifiche, prova) };
     } catch (e) {
       esito = { inviata: false, motivo: String(e instanceof Error ? e.message : e) };
     }
   }
 
   const ok = notifiche.length === 0 || esito.inviata === true;
-  return new Response(JSON.stringify({ ok, n: notifiche.length, mail: esito }), {
+  return new Response(JSON.stringify({ ok, prova, n: notifiche.length, mail: esito }), {
     status: ok ? 200 : 500,
     headers: { "Content-Type": "application/json" },
   });
 });
 
-async function sendMail(notifiche: any[]): Promise<string> {
+async function sendMail(notifiche: any[], prova = false): Promise<string> {
   if (!MAIL.chiave) throw new Error("manca il secret RESEND_API_KEY");
 
-  const soggetto = notifiche.length === 1
+  const soggetto = (prova ? "[PROVA] " : "") + (notifiche.length === 1
     ? `Kaplet Academy - Certificazione in scadenza: ${notifiche[0].cert.tecnici.nome} ${notifiche[0].cert.tecnici.cognome}`
-    : `Kaplet Academy - ${notifiche.length} certificazioni in scadenza`;
+    : `Kaplet Academy - ${notifiche.length} certificazioni in scadenza`);
 
   const righe = notifiche.map(({ cert, giorni }) => `
     <tr>
