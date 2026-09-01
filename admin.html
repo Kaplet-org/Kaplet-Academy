@@ -558,7 +558,6 @@ textarea.finput { height: auto; padding: 12px 14px; resize: vertical; line-heigh
         <button class="btn-primary" onclick="openModalAssegna()">+ Assegna corsi</button>
       </div>
     </div>
-    <div class="imp-box" id="imp-box"></div>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Tecnico</th><th>Ruolo</th><th>Certificazioni</th><th>Corsi assegnati</th><th>Avanzamento</th><th>Azioni</th></tr></thead>
@@ -574,7 +573,7 @@ textarea.finput { height: auto; padding: 12px 14px; resize: vertical; line-heigh
       <button class="btn-primary" onclick="openModalAssegna()">+ Assegna corsi</button>
     </div>
     <div class="ca-filters">
-      <select class="ca-select" id="f-tec" onchange="renderCorsi()"><option value="">Tutti i tecnici</option></select>
+      <select class="ca-select" id="f-tec" onchange="scegliTecnico(this.value)"><option value="">Tutti i tecnici</option></select>
       <select class="ca-select" id="f-stato" onchange="renderCorsi()">
         <option value="">Tutti gli stati</option>
         <option value="da_fare">Da fare</option>
@@ -622,13 +621,14 @@ textarea.finput { height: auto; padding: 12px 14px; resize: vertical; line-heigh
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <select class="ca-select" id="pf-anno" onchange="renderPiano()"></select>
-        <select class="ca-select" id="pf-tec" onchange="renderPiano()"><option value="">Tutti i tecnici</option></select>
+        <select class="ca-select" id="pf-tec" onchange="scegliTecnico(this.value)"><option value="">Tutti i tecnici</option></select>
         <select class="ca-select" id="pf-vista" onchange="renderPiano()">
           <option value="tecnico">Raggruppa per tecnico</option>
           <option value="data">Ordina per data</option>
         </select>
       </div>
     </div>
+    <div class="imp-box" id="imp-box"></div>
     <div class="carico-grid" id="carico-grid"></div>
     <div class="gantt-wrap" id="gantt-wrap"></div>
     <div class="g-legend">
@@ -1125,7 +1125,7 @@ async function load() {
 
   aggiornaStatistiche();
   popolaFiltriPiano(); popolaFiltriCatalogo();
-  renderTeam(); renderImpegno(); renderCorsi(); renderCatalogo(); renderScadenze(); renderMatrix(); renderCompetenze(); renderPiano(); caricaSettings();
+  renderTeam(); renderCorsi(); renderCatalogo(); renderScadenze(); renderMatrix(); renderCompetenze(); renderPiano(); caricaSettings();
 }
 
 /* ── TEAM ── */
@@ -2100,9 +2100,12 @@ function impegnoMensile(techId, anno, mese) {
 
 let IMP_MESE = null;   // 'AAAA-MM', null = mese corrente
 
-function cambiaMeseImpegno(v) { IMP_MESE = v; renderImpegno(); }
+function cambiaMeseImpegno(v) {
+  IMP_MESE = v;
+  renderImpegno(document.getElementById('pf-tec').value);
+}
 
-function renderImpegno() {
+function renderImpegno(soloTecnico) {
   const oggi = new Date();
   const [anno, mese] = IMP_MESE
     ? [parseInt(IMP_MESE.slice(0,4), 10), parseInt(IMP_MESE.slice(5,7), 10) - 1]
@@ -2116,7 +2119,7 @@ function renderImpegno() {
     opzioni.push(`<option value="${v}" ${v === `${anno}-${String(mese+1).padStart(2,'0')}` ? 'selected' : ''}>${MESI_BREVI[d.getMonth()]} ${d.getFullYear()}</option>`);
   }
 
-  const persone = TECNICI.filter(t => t.attivo !== false);
+  const persone = TECNICI.filter(t => t.attivo !== false && (!soloTecnico || t.id === soloTecnico));
   const righe = persone.map(t => ({ t, ...impegnoMensile(t.id, anno, mese) }));
   const inRegola = righe.filter(r => r.ok).length;
   const indietro = righe.length - inRegola;
@@ -2124,14 +2127,16 @@ function renderImpegno() {
   document.getElementById('imp-box').innerHTML = `
     <div class="imp-head">
       <div>
-        <div class="imp-tit">Impegno formativo del mese</div>
+        <div class="imp-tit">Impegno formativo del mese${soloTecnico ? ' · ' + esc(nomeTec(soloTecnico)) : ''}</div>
         <div class="imp-regola">Ogni mese servono almeno <b style="color:var(--white);font-weight:400">${MIN_GIORNATE} giornate di corso</b> e <b style="color:var(--white);font-weight:400">${MIN_CERT} certificazioni</b> a testa.</div>
       </div>
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
         <div class="imp-esito">
-          ${indietro
-            ? `<span style="color:var(--danger)">${indietro}</span><span style="color:var(--gray)"> su ${righe.length} indietro</span>`
-            : `<span style="color:var(--green)">Tutti in regola</span>`}
+          ${soloTecnico
+            ? (indietro ? `<span style="color:var(--danger)">Sotto il minimo</span>` : `<span style="color:var(--green)">In regola</span>`)
+            : (indietro
+                ? `<span style="color:var(--danger)">${indietro}</span><span style="color:var(--gray)"> su ${righe.length} indietro</span>`
+                : `<span style="color:var(--green)">Tutti in regola</span>`)}
         </div>
         <select class="ca-select" onchange="cambiaMeseImpegno(this.value)">${opzioni.join('')}</select>
       </div>
@@ -2411,6 +2416,8 @@ function renderPiano() {
   const ftec  = document.getElementById('pf-tec').value;
   const vista = document.getElementById('pf-vista').value;
 
+  renderImpegno(ftec);   // il riquadro dell'impegno sta in questa sezione e segue il filtro
+
   const righe = CORSI_ASS
     .filter(c => c.data_inizio)
     .filter(c => !ftec || c.tech_id === ftec)
@@ -2660,6 +2667,19 @@ function aggiornaStatistiche() {
     : '';
 }
 
+/* Il tecnico si sceglie da due punti — Corsi assegnati e Pianificazione — ma
+   è la stessa scelta: i due menu restano allineati e la testata segue
+   entrambi. Prima la testata guardava solo il filtro dei corsi assegnati,
+   quindi filtrando dalla pianificazione i numeri non si muovevano. */
+function scegliTecnico(id) {
+  const f = document.getElementById('f-tec');
+  const p = document.getElementById('pf-tec');
+  if (f) f.value = id;
+  if (p) p.value = id;
+  renderCorsi();     // ridisegna le schede e la testata
+  renderPiano();     // ridisegna timeline, carico e impegno del mese
+}
+
 // Clic su una card: imposta il filtro di stato, o lo toglie se era già quello
 function filtraStatoCorsi(valore) {
   const sel = document.getElementById('f-stato');
@@ -2668,10 +2688,7 @@ function filtraStatoCorsi(valore) {
 }
 
 // Toglie il filtro tecnico e riporta la testata sui numeri del team
-function mostraTuttoIlTeam() {
-  document.getElementById('f-tec').value = '';
-  renderCorsi();
-}
+function mostraTuttoIlTeam() { scegliTecnico(''); }
 
 /* Un corso assegnato è in ritardo se la scadenza è passata e non è stato completato */
 function inRitardo(c) {

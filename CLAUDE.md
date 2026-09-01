@@ -29,6 +29,8 @@ Quattro pagine HTML autonome, senza framework. Ogni pagina contiene **il proprio
 - `tecnico.html` — area personale: corsi assegnati, certificazioni, percorso consigliato
 - `admin.html` — pannello admin: team, corsi assegnati, catalogo, pianificazione, scadenze, matrice brand, cruscotto competenze, impostazioni
 
+Il filtro "tecnico" è uno solo pur comparendo in due sezioni: `f-tec` (Corsi assegnati) e `pf-tec` (Pianificazione) sono tenuti allineati da `scegliTecnico(id)`, che ridisegna entrambe le sezioni e la testata. Non collegare `onchange` direttamente a `renderCorsi`/`renderPiano`, o la testata smette di seguire uno dei due.
+
 Conseguenza pratica: **una modifica trasversale (palette, guardia di sessione, helper) va replicata in ogni pagina**. I token colore (`--black #0C0E0D`, `--green #36CD81`, `--warn`, `--danger`, …) sono duplicati nel `:root` di ciascun file.
 
 ### File morti — non modificarli aspettandosi un effetto
@@ -82,7 +84,7 @@ Regola aziendale: ogni tecnico, ogni mese, almeno **2 giornate di corso** e **2 
 
 Una giornata conta se il corso ha `data_inizio` e **non** è in stato `da_fare` (pianificato ≠ fatto); i giorni si contano come sovrapposizione fra `[data_inizio, data_fine_prevista]` e il mese, quindi un corso a cavallo di due mesi pesa su entrambi per la sua parte. Le certificazioni contano per `data_conseguimento`.
 
-Il riquadro sta in cima alla sezione *Team* di `admin.html` (`renderImpegno`), con un menu per guardare gli ultimi 12 mesi. La mail mensile è `functions/impegno-mensile/index.ts`, schedulata da `impegno_mensile_cron.sql` il giorno 1 alle 08:00; `?prova=1` la fa girare sul mese in corso e spedisce anche quando sono tutti in regola.
+Il riquadro sta nella sezione *Pianificazione* di `admin.html` (`renderImpegno`, chiamata da `renderPiano`), con un menu per guardare gli ultimi 12 mesi; segue il tecnico filtrato. La mail mensile è `functions/impegno-mensile/index.ts`, schedulata da `impegno_mensile_cron.sql` il giorno 1 alle 08:00; `?prova=1` la fa girare sul mese in corso e spedisce anche quando sono tutti in regola.
 
 ### Notifiche scadenze
 `functions/check-scadenze/index.ts` (Deno): chiama la RPC `aggiorna_stato_scadute`, cerca le certificazioni che scadono esattamente tra 60/30/7 giorni e invia una mail HTML tramite l'**API di Resend**. Schedulata con `pg_cron` alle 08:00.
