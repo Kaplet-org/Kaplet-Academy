@@ -216,6 +216,17 @@ tr:hover td { background: var(--card2); }
 .pill-ok   { color: var(--green); border-color: var(--green-border); background: var(--green-dim); }
 .pill-warn { color: var(--warn); border-color: rgba(245,158,11,0.25); background: rgba(245,158,11,0.05); }
 .pill-exp  { color: rgba(255,255,255,0.25); border-color: var(--border); }
+/* La ✕ per cancellare una certificazione: compare passandoci sopra, così le
+   pillole restano leggibili e non si clicca per sbaglio. */
+.pill-cert { position: relative; padding-right: 7px; }
+.pill-cert:hover { padding-right: 20px; }
+.pill-x {
+  position: absolute; right: 3px; top: 50%; transform: translateY(-50%);
+  display: none; background: transparent; border: none; cursor: pointer;
+  color: var(--danger); font-size: 11px; line-height: 1; padding: 2px 3px;
+}
+.pill-cert:hover .pill-x { display: block; }
+.pill-x:hover { color: #fff; background: var(--danger); border-radius: 3px; }
 
 /* PROGRESS */
 .prog-bg { height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; margin-bottom: 3px; }
@@ -1328,7 +1339,9 @@ function brandMatrix(certs) {
       const titleTxt = `${esc(c.corso)}${c.data_scadenza ? ' · scad. ' + fmt(c.data_scadenza) : ''}${hasDoc ? ' · clicca per vedere il documento' : ''}`;
       const docIcon = hasDoc ? ' <i class="ti ti-eye" style="font-size:11px;vertical-align:middle"></i>' : '';
       const clickAttr = hasDoc ? ` onclick="apriAnteprima('${c.documento_url}','${(c.corso||'').replace(/'/g,"\\'")}')" style="cursor:pointer"` : '';
-      return `<span class="pill ${cls}"${clickAttr} title="${titleTxt}">${esc(t.nome)} ${esc(t.cognome)} · ${label}${docIcon}</span>`;
+      return `<span class="pill ${cls} pill-cert"${clickAttr} title="${titleTxt}">${esc(t.nome)} ${esc(t.cognome)} · ${label}${docIcon}<button
+        class="pill-x" title="Elimina questa certificazione"
+        onclick="event.stopPropagation();eliminaCertificazione('${c.id}')">✕</button></span>`;
     }).join('');
     h += `<div style="background:var(--card);padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:1.25rem;flex-wrap:wrap">
       <div style="min-width:180px">
@@ -1342,6 +1355,19 @@ function brandMatrix(certs) {
     </div>`;
   });
   return h + '</div>';
+}
+
+/* Cancellare una certificazione è roba da admin: il tecnico non ha il pulsante
+   e la regola RLS glielo vieta comunque. Qui è l'unico posto dove le
+   certificazioni sono elencate una per una, quindi il gesto sta qui. */
+async function eliminaCertificazione(id) {
+  const c = CERTS.find(x => x.id === id); if (!c) return;
+  const t = TECNICI.find(x => x.id === c.tech_id);
+  if (!confirm(`Eliminare "${c.corso}" di ${t ? t.nome + ' ' + t.cognome : 'questo tecnico'}?\n\nSparisce dallo storico, dal cruscotto competenze e dalla mappa.`)) return;
+  const { error } = await sb.from('certificazioni').delete().eq('id', id);
+  if (error) { toast('Errore: ' + error.message); return; }
+  toast('Certificazione eliminata.');
+  await load();
 }
 
 /* Le scoperture vere: brand su cui il team non regge. Si calcolano su TUTTE

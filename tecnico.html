@@ -925,7 +925,6 @@ function renderCert() {
       <div class="cert-actions">
         ${c.documento_url ? `<button class="btn-sm" onclick="apriAnteprima('${c.documento_url}','${c.corso.replace(/'/g,"\\'")}')" title="Anteprima documento" style="display:inline-flex;align-items:center;gap:5px;border:1px solid var(--green);color:var(--green);background:transparent;padding:4px 10px;border-radius:6px;font-size:.7rem"><i class="ti ti-eye" style="font-size:13px"></i> Anteprima</button>` : ''}
         <button class="btn-sm" onclick="editCert('${c.id}')">Modifica</button>
-        <button class="btn-danger-sm" onclick="deleteCert('${c.id}','${c.corso.replace(/'/g,"\\'")}')">Elimina</button>
       </div>
     </div>`;
   }).join('');
@@ -1359,11 +1358,6 @@ async function salvaCert() {
   finally { bloccaPulsantiCert(false); }
 }
 
-async function deleteCert(id, nome) {
-  if (!confirm(`Eliminare la certificazione "${nome}"?`)) return;
-  const {error} = await sb.from('certificazioni').delete().eq('id', id);
-  if (!error) { toast('Eliminata.'); await caricaDati(); } else toast('Errore.');
-}
 
 function closeOverlay(id) { document.getElementById(id).classList.remove('open'); }
 
