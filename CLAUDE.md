@@ -46,7 +46,11 @@ Tabelle usate dal codice:
 
 **Il legame tra catalogo e righe è `brand` + `nome`, non l'id**: `certificazioni.corso` e `corsi_assegnati.corso` contengono il testo del nome. Rinominare un corso in catalogo scollega le righe già registrate — `salvaCorsoCatalogo()` avvisa prima di farlo.
 
-Gli script SQL in root si eseguono a mano nel SQL Editor del dashboard (la CLI Supabase non è autenticata e gli strumenti MCP non hanno permessi di scrittura su questo progetto): `catalogo_setup.sql`, `pianificazione_setup.sql`, `audit_log_setup.sql`. Sono idempotenti.
+- `audit_log` — traccia le eliminazioni fatte da `elimina-tecnico`. Sola lettura per gli admin, scritta solo con service_role. Creata da `audit_log_setup.sql`
+
+Gli script SQL in root si eseguono nel SQL Editor del dashboard (la CLI Supabase non è installata e gli strumenti MCP non hanno permessi di scrittura su questo progetto): `catalogo_setup.sql`, `pianificazione_setup.sql`, `audit_log_setup.sql`, `blocca_cancellazioni_setup.sql`. Sono idempotenti.
+
+**Cancellare è solo da admin**: `blocca_cancellazioni_setup.sql` mette policy RESTRICTIVE sulla `delete` di `certificazioni`, `corsi_assegnati` e `corsi_catalogo`, tramite la funzione `public.e_admin()`. Le Edge Function non sono toccate: girano con service_role, che salta le RLS.
 
 `supabase_setup.sql` è **datato**: non contiene `corsi_assegnati`, né `tecnici.attivo`, né `certificazioni.solo_corso`, e le sue policy RLS non riflettono lo stato attuale. Trattalo come storia, non come sorgente di verità — verifica lo schema reale prima di scrivere query.
 
@@ -72,7 +76,11 @@ Area di lavoro del branch `competenze-v2`. Deriva un livello 0–5 per vendor/ve
 Le sezioni si mostrano con `showSection(id, btn)` e le sotto-tab con `setVTab(tab, btn)`; il grafico Chart.js va distrutto/ricreato (`compChartInst`) a ogni render.
 
 ### Notifiche scadenze
-`functions/check-scadenze/index.ts` (Deno): chiama la RPC `aggiorna_stato_scadute`, cerca le certificazioni che scadono esattamente tra 60/30/7 giorni e invia una mail HTML via SMTP Office365 parlato a mano sul socket (`Deno.connect` + `startTls`). Schedulata con `pg_cron` alle 08:00. Il link "Apri pannello admin" nella mail contiene ancora il placeholder `tuoaccount.github.io`.
+`functions/check-scadenze/index.ts` (Deno): chiama la RPC `aggiorna_stato_scadute`, cerca le certificazioni che scadono esattamente tra 60/30/7 giorni e invia una mail HTML tramite l'**API di Resend**. Schedulata con `pg_cron` alle 08:00.
+
+Prima parlava SMTP Office365 a mano sul socket (`Deno.connect` + `startTls`) con la password di `admin@kaplet.it`: Microsoft disattiva SMTP AUTH per default sui tenant, e quel codice ignorava tutte le risposte del server, quindi una mail rifiutata non lo sapeva nessuno. Ora l'esito finisce nella risposta HTTP della function (`{ok, n, mail}`), e uno stato 500 significa che la mail non è partita.
+
+Secret e variabili: **`RESEND_API_KEY`** (obbligatorio), più gli opzionali `MAIL_DA`, `MAIL_A`, `URL_ADMIN`. Il dominio mittente va verificato su Resend, altrimenti si può spedire solo all'indirizzo di registrazione.
 
 ## Convenzioni
 

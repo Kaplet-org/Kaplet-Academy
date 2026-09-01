@@ -1,17 +1,22 @@
 // Kaplet Academy - Edge Function: check-scadenze
 // Deploy: supabase functions deploy check-scadenze
 // Trigger: pg_cron ogni giorno alle 08:00
+//
+// Le mail partono da Resend, non piu da SMTP Office365 parlato a mano sul
+// socket: Microsoft disattiva SMTP AUTH per default sui tenant, e la password
+// della casella andava rigenerata a ogni scadenza. Serve il secret
+// RESEND_API_KEY. Il dominio mittente va verificato su Resend, altrimenti si
+// puo spedire solo verso l'indirizzo con cui si e fatta la registrazione.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const SMTP = {
-  host: "smtp.office365.com",
-  port: 587,
-  user: "admin@kaplet.it",
-  pass: Deno.env.get("SMTP_PASSWORD") ?? "",
-  from: "Kaplet Academy <admin@kaplet.it>",
-  to:   "admin@kaplet.it",
+const MAIL = {
+  chiave: Deno.env.get("RESEND_API_KEY") ?? "",
+  da:     Deno.env.get("MAIL_DA") ?? "Kaplet Academy <academy@kaplet.it>",
+  a:      Deno.env.get("MAIL_A")  ?? "admin@kaplet.it",
+  // dove punta il pulsante "Apri pannello admin" dentro la mail
+  pannello: Deno.env.get("URL_ADMIN") ?? "https://kaplet.github.io/Kaplet-Academy/admin.html",
 };
 
 serve(async () => {
@@ -37,14 +42,27 @@ serve(async () => {
     (data ?? []).forEach(c => notifiche.push({ cert: c, giorni: gg }));
   }
 
-  if (notifiche.length > 0) await sendMail(notifiche);
+  // L'esito dell'invio finisce nella risposta: prima la funzione diceva
+  // sempre ok, anche quando il server rifiutava la mail.
+  let esito: Record<string, unknown> = { inviata: false, motivo: "nessuna scadenza oggi" };
+  if (notifiche.length > 0) {
+    try {
+      esito = { inviata: true, id: await sendMail(notifiche) };
+    } catch (e) {
+      esito = { inviata: false, motivo: String(e instanceof Error ? e.message : e) };
+    }
+  }
 
-  return new Response(JSON.stringify({ ok: true, n: notifiche.length }), {
+  const ok = notifiche.length === 0 || esito.inviata === true;
+  return new Response(JSON.stringify({ ok, n: notifiche.length, mail: esito }), {
+    status: ok ? 200 : 500,
     headers: { "Content-Type": "application/json" },
   });
 });
 
-async function sendMail(notifiche: any[]) {
+async function sendMail(notifiche: any[]): Promise<string> {
+  if (!MAIL.chiave) throw new Error("manca il secret RESEND_API_KEY");
+
   const soggetto = notifiche.length === 1
     ? `Kaplet Academy - Certificazione in scadenza: ${notifiche[0].cert.tecnici.nome} ${notifiche[0].cert.tecnici.cognome}`
     : `Kaplet Academy - ${notifiche.length} certificazioni in scadenza`;
@@ -102,7 +120,7 @@ async function sendMail(notifiche: any[]) {
         <tbody>${righe}</tbody>
       </table>
       <div style="margin-top:24px;text-align:center">
-        <a href="https://kaplet.github.io/Kaplet-Academy/admin.html"
+        <a href="${MAIL.pannello}"
            style="display:inline-block;background:#36CD81;color:#0C0E0D;text-decoration:none;
                   padding:11px 26px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase">
           Apri pannello admin
@@ -118,39 +136,23 @@ async function sendMail(notifiche: any[]) {
   </div>
 </body></html>`;
 
-  const enc = new TextEncoder();
-  const dec = new TextDecoder();
-  const conn = await Deno.connect({ hostname: SMTP.host, port: SMTP.port });
+  const risposta = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${MAIL.chiave}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: MAIL.da,
+      to: [MAIL.a],
+      subject: soggetto,
+      html,
+    }),
+  });
 
-  const r = async () => { const b = new Uint8Array(4096); const n = await conn.read(b); return dec.decode(b.subarray(0, n ?? 0)); };
-  const w = async (s: string) => conn.write(enc.encode(s + "\r\n"));
-
-  await r();
-  await w("EHLO kaplet"); await r();
-  await w("STARTTLS"); await r();
-
-  const tls = await Deno.startTls(conn, { hostname: SMTP.host });
-  const rt = async () => { const b = new Uint8Array(4096); const n = await tls.read(b); return dec.decode(b.subarray(0, n ?? 0)); };
-  const wt = async (s: string) => tls.write(enc.encode(s + "\r\n"));
-
-  await wt("EHLO kaplet"); await rt();
-  await wt("AUTH LOGIN"); await rt();
-  await wt(btoa(SMTP.user)); await rt();
-  await wt(btoa(SMTP.pass)); await rt();
-  await wt(`MAIL FROM:<${SMTP.user}>`); await rt();
-  await wt(`RCPT TO:<${SMTP.to}>`); await rt();
-  await wt("DATA"); await rt();
-  await wt([
-    `From: ${SMTP.from}`,
-    `To: ${SMTP.to}`,
-    `Subject: ${soggetto}`,
-    `MIME-Version: 1.0`,
-    `Content-Type: text/html; charset=UTF-8`,
-    ``,
-    html,
-    `.`
-  ].join("\r\n"));
-  await rt();
-  await wt("QUIT");
-  tls.close();
+  const corpo = await risposta.json().catch(() => ({}));
+  if (!risposta.ok) {
+    throw new Error(`Resend ha risposto ${risposta.status}: ${corpo?.message ?? JSON.stringify(corpo)}`);
+  }
+  return corpo?.id ?? "";
 }
