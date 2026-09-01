@@ -286,5 +286,21 @@ on conflict (id) do update set
   prezzo      = excluded.prezzo,
   paths       = excluded.paths;
 
--- Controllo finale: deve dire 183
-select count(*) as corsi_in_catalogo from public.corsi_catalogo;
+-- ============================================================
+-- 4. Corsi ritirati
+--    Non si cancellano: le certificazioni e le assegnazioni già
+--    registrate devono continuare a trovare il loro corso.
+--    Sta qui e non nella INSERT sopra perché l'upsert non tocca `attivo`:
+--    così rilanciare lo script non li fa tornare in catalogo.
+-- ============================================================
+
+-- KU-C-034 "Avigilon Unity Video" (in aula, 8h): Kaplet lo considera un
+-- doppione di KU-C-033 "Avigilon Unity Video8" (e-learning, 21h).
+update public.corsi_catalogo set attivo = false where id = 'KU-C-034';
+
+-- Controllo finale: 183 in tabella, 182 ancora in catalogo
+select
+  count(*)                          as corsi_in_tabella,
+  count(*) filter (where attivo)    as corsi_in_catalogo,
+  count(*) filter (where not attivo) as corsi_ritirati
+from public.corsi_catalogo;

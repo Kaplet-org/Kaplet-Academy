@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> Le cose ancora da eseguire su Supabase (deploy delle function, script SQL) sono elencate in **`DA-FARE.md`**, nell'ordine giusto.
+
 ## Comandi
 
 Non c'è build, bundler, package.json, linter o test suite. Il sito è HTML statico servito da GitHub Pages (branch `main`, cartella root): il deploy è `git push` su `main`.
