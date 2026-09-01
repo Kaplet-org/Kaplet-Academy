@@ -75,6 +75,13 @@ Area di lavoro del branch `competenze-v2`. Deriva un livello 0–5 per vendor/ve
 
 Le sezioni si mostrano con `showSection(id, btn)` e le sotto-tab con `setVTab(tab, btn)`; il grafico Chart.js va distrutto/ricreato (`compChartInst`) a ogni render.
 
+### Impegno formativo mensile
+Regola aziendale: ogni tecnico, ogni mese, almeno **2 giornate di corso** e **2 certificazioni**. I due numeri sono duplicati in due punti e vanno cambiati insieme: `MIN_GIORNATE`/`MIN_CERT` in `admin.html` e le stesse costanti in `functions/impegno-mensile/index.ts`.
+
+Una giornata conta se il corso ha `data_inizio` e **non** è in stato `da_fare` (pianificato ≠ fatto); i giorni si contano come sovrapposizione fra `[data_inizio, data_fine_prevista]` e il mese, quindi un corso a cavallo di due mesi pesa su entrambi per la sua parte. Le certificazioni contano per `data_conseguimento`.
+
+Il riquadro sta in cima alla sezione *Team* di `admin.html` (`renderImpegno`), con un menu per guardare gli ultimi 12 mesi. La mail mensile è `functions/impegno-mensile/index.ts`, schedulata da `impegno_mensile_cron.sql` il giorno 1 alle 08:00; `?prova=1` la fa girare sul mese in corso e spedisce anche quando sono tutti in regola.
+
 ### Notifiche scadenze
 `functions/check-scadenze/index.ts` (Deno): chiama la RPC `aggiorna_stato_scadute`, cerca le certificazioni che scadono esattamente tra 60/30/7 giorni e invia una mail HTML tramite l'**API di Resend**. Schedulata con `pg_cron` alle 08:00.
 

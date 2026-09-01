@@ -235,6 +235,24 @@ tr:hover td { background: var(--card2); }
 
 /* CORSI ASSEGNATI GRID */
 .ca-filters { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
+/* Impegno formativo mensile: chi ha fatto il minimo e chi è indietro */
+.imp-box { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 1.5rem; overflow: hidden; }
+.imp-head {
+  background: var(--card2); padding: .9rem 1.2rem; display: flex; align-items: center;
+  justify-content: space-between; gap: 1rem; flex-wrap: wrap; border-bottom: 1px solid var(--border);
+}
+.imp-tit { font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; color: var(--green); }
+.imp-regola { font-size: .7rem; color: var(--gray); font-weight: 300; margin-top: 3px; }
+.imp-esito { font-size: .8rem; font-weight: 300; }
+.imp-griglia { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1px; background: var(--border); }
+.imp-cella { background: var(--card); padding: .8rem 1.1rem; display: flex; align-items: center; gap: 10px; }
+.imp-nome { font-size: .8rem; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.imp-conti { display: flex; gap: 10px; font-size: .68rem; white-space: nowrap; }
+.imp-conto b { font-weight: 400; }
+.imp-manca { color: var(--danger); }
+.imp-fatto { color: var(--green); }
+.imp-punto { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
 /* Le card in testata sono l'unico riepilogo: quando è scelto un tecnico
    diventano i suoi corsi per stato, e si possono cliccare per filtrare. */
 .stat.cliccabile { cursor: pointer; transition: opacity .15s; }
@@ -540,6 +558,7 @@ textarea.finput { height: auto; padding: 12px 14px; resize: vertical; line-heigh
         <button class="btn-primary" onclick="openModalAssegna()">+ Assegna corsi</button>
       </div>
     </div>
+    <div class="imp-box" id="imp-box"></div>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Tecnico</th><th>Ruolo</th><th>Certificazioni</th><th>Corsi assegnati</th><th>Avanzamento</th><th>Azioni</th></tr></thead>
@@ -1106,7 +1125,7 @@ async function load() {
 
   aggiornaStatistiche();
   popolaFiltriPiano(); popolaFiltriCatalogo();
-  renderTeam(); renderCorsi(); renderCatalogo(); renderScadenze(); renderMatrix(); renderCompetenze(); renderPiano(); caricaSettings();
+  renderTeam(); renderImpegno(); renderCorsi(); renderCatalogo(); renderScadenze(); renderMatrix(); renderCompetenze(); renderPiano(); caricaSettings();
 }
 
 /* ── TEAM ── */
@@ -2043,6 +2062,92 @@ async function salvaAssegna() {
     selTec = []; closeOverlay('modal-assegna'); toast(`Corso assegnato a ${rows.length} tecnico/i!`); await load();
   } catch(e) { err.textContent='Errore: '+e.message; err.classList.add('show'); }
   finally { btn.disabled=false; btn.textContent='Assegna'; }
+}
+
+/* ── IMPEGNO FORMATIVO MENSILE ─────────────────────────────────────
+   Regola Kaplet: ogni tecnico, ogni mese, almeno MIN_GIORNATE giornate di
+   corso E almeno MIN_CERT certificazioni. I due numeri stanno solo qui:
+   per alzare o abbassare l'asticella si cambiano queste due righe (e le
+   stesse due nella Edge Function impegno-mensile). */
+const MIN_GIORNATE = 2;
+const MIN_CERT     = 2;
+
+/* Giorni di un corso che cadono dentro il mese indicato.
+   Un corso 'da_fare' non conta: è pianificato, non fatto. */
+function giornateNelMese(c, anno, mese) {
+  if (!c.data_inizio || c.stato === 'da_fare') return 0;
+  const inizio = toDate(c.data_inizio);
+  const fine   = toDate(c.data_fine_prevista || c.data_inizio);
+  const primo  = new Date(anno, mese, 1);
+  const ultimo = new Date(anno, mese + 1, 0);
+  const da = inizio > primo  ? inizio : primo;
+  const a  = fine   < ultimo ? fine   : ultimo;
+  if (a < da) return 0;
+  return Math.round((a - da) / 86400000) + 1;
+}
+
+function impegnoMensile(techId, anno, mese) {
+  const giornate = CORSI_ASS
+    .filter(c => c.tech_id === techId)
+    .reduce((n, c) => n + giornateNelMese(c, anno, mese), 0);
+  const certificazioni = CERTS.filter(c => {
+    if (c.tech_id !== techId || !c.data_conseguimento) return false;
+    const d = toDate(c.data_conseguimento);
+    return d.getFullYear() === anno && d.getMonth() === mese;
+  }).length;
+  return { giornate, certificazioni, ok: giornate >= MIN_GIORNATE && certificazioni >= MIN_CERT };
+}
+
+let IMP_MESE = null;   // 'AAAA-MM', null = mese corrente
+
+function cambiaMeseImpegno(v) { IMP_MESE = v; renderImpegno(); }
+
+function renderImpegno() {
+  const oggi = new Date();
+  const [anno, mese] = IMP_MESE
+    ? [parseInt(IMP_MESE.slice(0,4), 10), parseInt(IMP_MESE.slice(5,7), 10) - 1]
+    : [oggi.getFullYear(), oggi.getMonth()];
+
+  // gli ultimi 12 mesi, per poter guardare indietro
+  const opzioni = [];
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(oggi.getFullYear(), oggi.getMonth() - i, 1);
+    const v = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    opzioni.push(`<option value="${v}" ${v === `${anno}-${String(mese+1).padStart(2,'0')}` ? 'selected' : ''}>${MESI_BREVI[d.getMonth()]} ${d.getFullYear()}</option>`);
+  }
+
+  const persone = TECNICI.filter(t => t.attivo !== false);
+  const righe = persone.map(t => ({ t, ...impegnoMensile(t.id, anno, mese) }));
+  const inRegola = righe.filter(r => r.ok).length;
+  const indietro = righe.length - inRegola;
+
+  document.getElementById('imp-box').innerHTML = `
+    <div class="imp-head">
+      <div>
+        <div class="imp-tit">Impegno formativo del mese</div>
+        <div class="imp-regola">Ogni mese servono almeno <b style="color:var(--white);font-weight:400">${MIN_GIORNATE} giornate di corso</b> e <b style="color:var(--white);font-weight:400">${MIN_CERT} certificazioni</b> a testa.</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div class="imp-esito">
+          ${indietro
+            ? `<span style="color:var(--danger)">${indietro}</span><span style="color:var(--gray)"> su ${righe.length} indietro</span>`
+            : `<span style="color:var(--green)">Tutti in regola</span>`}
+        </div>
+        <select class="ca-select" onchange="cambiaMeseImpegno(this.value)">${opzioni.join('')}</select>
+      </div>
+    </div>
+    <div class="imp-griglia">
+      ${righe.length ? righe.map(r => `
+        <div class="imp-cella" title="${esc(r.t.nome)} ${esc(r.t.cognome)}: ${r.giornate} giornate, ${r.certificazioni} certificazioni">
+          <div class="imp-punto" style="background:${r.ok ? 'var(--green)' : 'var(--danger)'}"></div>
+          <div class="imp-nome">${esc(r.t.nome)} ${esc(r.t.cognome)}</div>
+          <div class="imp-conti">
+            <span class="imp-conto ${r.giornate >= MIN_GIORNATE ? 'imp-fatto' : 'imp-manca'}"><b>${r.giornate}</b>/${MIN_GIORNATE} gg</span>
+            <span class="imp-conto ${r.certificazioni >= MIN_CERT ? 'imp-fatto' : 'imp-manca'}"><b>${r.certificazioni}</b>/${MIN_CERT} cert.</span>
+          </div>
+        </div>`).join('')
+      : '<div class="imp-cella" style="color:var(--gray)">Nessun tecnico attivo</div>'}
+    </div>`;
 }
 
 /* ── CATALOGO CORSI ────────────────────────────────────────────────
