@@ -189,6 +189,8 @@ tr:hover td { background: var(--card2); }
 }
 .rb-admin  { color: var(--green); border-color: var(--green-border); background: var(--green-dim); }
 .rb-tec    { color: var(--gray); border-color: var(--border); }
+/* La mansione sta accanto ai permessi ma è un'altra cosa: colore diverso */
+.rb-mansione { color: var(--warn); border-color: rgba(255,214,10,0.25); background: rgba(255,214,10,0.06); margin-left: 4px; }
 
 /* COMP TAB */
 .comp-tab { display:none; }
@@ -951,6 +953,17 @@ textarea.finput { height: auto; padding: 12px 14px; resize: vertical; line-heigh
         <div id="mu-ruoli" class="ruoli-box"></div>
       </div>
       <div class="fld">
+        <label class="flabel">Mansione</label>
+        <select class="fsel" id="mu-mansione">
+          <option value="">— non indicata —</option>
+          <option value="engineer">Engineer</option>
+          <option value="sales">Sales</option>
+          <option value="presales">Pre-Sales</option>
+          <option value="altro">Other</option>
+        </select>
+        <div class="fhint">Che mestiere fa. Non cambia i permessi né i corsi assegnati: quelli dipendono dai percorsi qui sopra.</div>
+      </div>
+      <div class="fld">
         <label class="flabel">Tipo account *</label>
         <select class="fsel" id="mu-tipo">
           <option value="false">Tecnico (vede solo i suoi corsi)</option>
@@ -983,6 +996,17 @@ textarea.finput { height: auto; padding: 12px 14px; resize: vertical; line-heigh
       <div class="fld"><label class="flabel">Ruoli (path formativi)</label>
         <div class="fhint" style="margin-bottom:8px">Seleziona uno o più ruoli</div>
         <div id="mm-ruoli" class="ruoli-box"></div>
+      </div>
+      <div class="fld">
+        <label class="flabel">Mansione</label>
+        <select class="fsel" id="mm-mansione">
+          <option value="">— non indicata —</option>
+          <option value="engineer">Engineer</option>
+          <option value="sales">Sales</option>
+          <option value="presales">Pre-Sales</option>
+          <option value="altro">Other</option>
+        </select>
+        <div class="fhint">Che mestiere fa. Non cambia i permessi né i corsi assegnati: quelli dipendono dai percorsi qui sopra.</div>
       </div>
       <div class="fld">
         <label class="flabel">Tipo account *</label>
@@ -1148,7 +1172,11 @@ function renderTeam() {
         return `<tr style="${disattivato ? 'opacity:0.45' : ''}">
           <td><div class="tec-info"><div class="av">${t.nome[0].toUpperCase()}</div>
             <div><div class="tec-nome">${esc(t.nome)} ${esc(t.cognome)}${disattivato ? ' <span style="font-size:.6rem;color:var(--danger);text-transform:uppercase;letter-spacing:.05em">· disattivato</span>' : ''}</div><div class="tec-email">${esc(t.email)}</div></div></div></td>
-          <td><span class="rb ${t.is_admin?'rb-admin':'rb-tec'}">${t.is_admin?'Admin':'Tecnico'}</span>${t.ruolo ? `<div style="font-size:.6rem;color:var(--gray);margin-top:3px">${t.ruolo}</div>` : ''}</td>
+          <td>
+            <span class="rb ${t.is_admin?'rb-admin':'rb-tec'}">${t.is_admin?'Admin':'Tecnico'}</span>
+            ${t.mansione ? `<span class="rb rb-mansione">${esc(labelMansione(t.mansione))}</span>` : ''}
+            ${t.ruolo ? `<div style="font-size:.6rem;color:var(--gray);margin-top:4px" title="${esc(parseRuoli(t.ruolo).map(labelRuolo).join(' · '))}">${esc(ruoliBrevi(t.ruolo))}</div>` : ''}
+          </td>
           <td><div class="pills">${pills||'<span style="font-size:.7rem;color:rgba(255,255,255,.2)">Nessuna</span>'}</div>
               <div style="font-size:.62rem;color:var(--gray);margin-top:4px">${att.length} attive · ${certs.length} totali</div></td>
           <td><span style="color:var(--green)">${done}</span><span style="color:var(--gray)">/${ca.length}</span></td>
@@ -2065,6 +2093,11 @@ async function salvaAssegna() {
   finally { btn.disabled=false; btn.textContent='Assegna'; }
 }
 
+/* Mansione: che mestiere fa la persona. Cosa diversa dai permessi
+   (is_admin) e dai percorsi formativi (tecnici.ruolo). */
+const MANSIONI = { engineer: 'Engineer', sales: 'Sales', presales: 'Pre-Sales', altro: 'Other' };
+const labelMansione = m => MANSIONI[m] || '';
+
 /* ── IMPEGNO FORMATIVO MENSILE ─────────────────────────────────────
    Regola Kaplet: ogni tecnico, ogni mese, almeno MIN_GIORNATE giornate di
    corso E almeno MIN_CERT certificazioni. I due numeri stanno solo qui:
@@ -2798,6 +2831,7 @@ function openModalUtente() {
   document.getElementById('mu-email').value = '';
   document.getElementById('mu-pass').value = '';
   document.getElementById('mu-tipo').value = 'false';
+  document.getElementById('mu-mansione').value = '';
   buildRuoliBox('mu-ruoli', []);
   document.getElementById('mu-err').classList.remove('show');
   document.getElementById('modal-utente').classList.add('open');
@@ -2837,6 +2871,13 @@ async function creaUtente() {
     const result = await resp.json();
     if (!resp.ok) throw new Error(result.error || 'Errore sconosciuto');
 
+    // La Edge Function crea-utente non sa niente della mansione e non è
+    // versionata in questo repo: si scrive qui, subito dopo la creazione.
+    const mansione = document.getElementById('mu-mansione').value || null;
+    if (mansione && result.id) {
+      await sb.from('tecnici').update({ mansione }).eq('id', result.id);
+    }
+
     // AUTO-ASSEGNAZIONE CORSI in base ai ruoli flaggati (solo tecnici)
     let msgCorsi = '';
     if (!is_admin && ruoliSel.length && result.id) {
@@ -2871,6 +2912,7 @@ function openModalModifica(tJson) {
   document.getElementById('mm-cognome').value = t.cognome || '';
   document.getElementById('mm-email').value = t.email || '';
   document.getElementById('mm-tipo').value = t.is_admin ? 'true' : 'false';
+  document.getElementById('mm-mansione').value = t.mansione || '';
   document.getElementById('mm-riassegna').value = 'no';
   buildRuoliBox('mm-ruoli', parseRuoli(t.ruolo));
   document.getElementById('mm-err').classList.remove('show');
@@ -2884,6 +2926,7 @@ async function salvaModifica() {
   const ruoliSel= getRuoliSelezionati('mm-ruoli');
   const ruolo   = ruoliSel.join(',');
   const is_admin= document.getElementById('mm-tipo').value === 'true';
+  const mansione= document.getElementById('mm-mansione').value || null;
   const riassegna = document.getElementById('mm-riassegna').value === 'si';
   const err     = document.getElementById('mm-err');
   const btn     = document.getElementById('btn-salva-modifica');
@@ -2896,7 +2939,7 @@ async function salvaModifica() {
   btn.disabled = true; btn.textContent = 'Salvataggio...';
   try {
     const { error } = await sb.from('tecnici')
-      .update({ nome, cognome, ruolo: ruolo || null, is_admin })
+      .update({ nome, cognome, ruolo: ruolo || null, is_admin, mansione })
       .eq('id', id);
     if (error) throw error;
 

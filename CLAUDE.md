@@ -42,7 +42,12 @@ Auth Supabase email/password. Ogni pagina protetta ripete la guardia: niente ses
 
 ### Dati
 Tabelle usate dal codice:
-- `tecnici` — `id` (= `auth.users.id`), `nome`, `cognome`, `ruolo`, `email`, `is_admin`, `attivo`, `data_ingresso`
+- `tecnici` — `id` (= `auth.users.id`), `nome`, `cognome`, `ruolo`, `mansione`, `email`, `is_admin`, `attivo`, `data_ingresso`
+
+**Tre cose diverse che si chiamavano tutte "ruolo"**, da non confondere:
+- `is_admin` — i **permessi**: Admin o Tecnico, decide quale pagina si apre
+- `tecnici.ruolo` — i **percorsi formativi**, chiavi separate da virgola, decidono quali corsi vengono assegnati
+- `tecnici.mansione` — il **mestiere**: `engineer` | `sales` | `presales` | `altro`. Puramente descrittiva: non tocca permessi né assegnazioni. Creata da `mansione_setup.sql`
 - `certificazioni` — `tech_id`, `brand`, `corso`, `data_conseguimento`, `data_scadenza`, `documento_url`, `note`, `stato` (`attiva`/`scaduta`), `solo_corso`
 - `corsi_assegnati` — `tech_id`, `brand`, `corso`, `anno`, `stato` (`da_fare`/`in_corso`/`completato`), `scadenza`, `note`, `assegnato_da`, `assegnato_il`, `data_inizio`, `data_fine_prevista`, `data_esame`
 - `corsi_catalogo` — il catalogo corsi: `id` (KU-C-###), `brand`, `gruppo`, `nome`, `descrizione`, `erogazione`, `durata`, `prezzo`, `link`, `paths` (`text[]`), `attivo`. Creata da `catalogo_setup.sql`
@@ -54,7 +59,7 @@ Tabelle usate dal codice:
 
 `corsi_ai_setup.sql` aggiunge quattro corsi AI gratuiti (Anthropic e OpenAI) sul percorso **`core_ai`** ("Core Path - AI") e mette quel percorso addosso a ogni tecnico attivo: sono obbligatori per chiunque. **Ai nuovi assunti va spuntato `core_ai` insieme agli altri percorsi**, altrimenti i corsi AI non li ricevono. È una migrazione additiva, `catalogo_setup.sql` resta la fotografia dell'Excel di partenza.
 
-Gli script SQL in root si eseguono nel SQL Editor del dashboard (la CLI Supabase non è installata e gli strumenti MCP non hanno permessi di scrittura su questo progetto): `catalogo_setup.sql`, `corsi_ai_setup.sql`, `pianificazione_setup.sql`, `audit_log_setup.sql`, `blocca_cancellazioni_setup.sql`, `cron_setup.sql`. Sono idempotenti.
+Gli script SQL in root si eseguono nel SQL Editor del dashboard (la CLI Supabase non è installata e gli strumenti MCP non hanno permessi di scrittura su questo progetto): `catalogo_setup.sql`, `corsi_ai_setup.sql`, `mansione_setup.sql`, `pianificazione_setup.sql`, `audit_log_setup.sql`, `blocca_cancellazioni_setup.sql`, `cron_setup.sql`. Sono idempotenti.
 
 **Cancellare è solo da admin**: `blocca_cancellazioni_setup.sql` mette policy RESTRICTIVE sulla `delete` di `certificazioni`, `corsi_assegnati` e `corsi_catalogo`, tramite la funzione `public.e_admin()`. Le Edge Function non sono toccate: girano con service_role, che salta le RLS.
 
