@@ -54,7 +54,7 @@ Tabelle usate dal codice:
 
 `corsi_ai_setup.sql` aggiunge quattro corsi AI gratuiti (Anthropic e OpenAI) su **tutti e 17 i percorsi** e li assegna a tutti i tecnici attivi: sono obbligatori per chiunque. È una migrazione additiva, `catalogo_setup.sql` resta la fotografia dell'Excel di partenza.
 
-Gli script SQL in root si eseguono nel SQL Editor del dashboard (la CLI Supabase non è installata e gli strumenti MCP non hanno permessi di scrittura su questo progetto): `catalogo_setup.sql`, `pianificazione_setup.sql`, `audit_log_setup.sql`, `blocca_cancellazioni_setup.sql`. Sono idempotenti.
+Gli script SQL in root si eseguono nel SQL Editor del dashboard (la CLI Supabase non è installata e gli strumenti MCP non hanno permessi di scrittura su questo progetto): `catalogo_setup.sql`, `corsi_ai_setup.sql`, `pianificazione_setup.sql`, `audit_log_setup.sql`, `blocca_cancellazioni_setup.sql`, `cron_setup.sql`. Sono idempotenti.
 
 **Cancellare è solo da admin**: `blocca_cancellazioni_setup.sql` mette policy RESTRICTIVE sulla `delete` di `certificazioni`, `corsi_assegnati` e `corsi_catalogo`, tramite la funzione `public.e_admin()`. Le Edge Function non sono toccate: girano con service_role, che salta le RLS.
 
@@ -89,7 +89,7 @@ Una giornata conta se il corso ha `data_inizio` e **non** è in stato `da_fare` 
 Il riquadro sta nella sezione *Pianificazione* di `admin.html` (`renderImpegno`, chiamata da `renderPiano`), con un menu per guardare gli ultimi 12 mesi; segue il tecnico filtrato. La mail mensile è `functions/impegno-mensile/index.ts`, schedulata da `impegno_mensile_cron.sql` il giorno 1 alle 08:00; `?prova=1` la fa girare sul mese in corso e spedisce anche quando sono tutti in regola.
 
 ### Notifiche scadenze
-`functions/check-scadenze/index.ts` (Deno): chiama la RPC `aggiorna_stato_scadute`, cerca le certificazioni che scadono esattamente tra 60/30/7 giorni e invia una mail HTML tramite l'**API di Resend**. Schedulata con `pg_cron` alle 08:00.
+`functions/check-scadenze/index.ts` (Deno): chiama la RPC `aggiorna_stato_scadute`, cerca le certificazioni che scadono esattamente tra 60/30/7 giorni e invia una mail HTML tramite l'**API di Resend**. Schedulata con `pg_cron` alle 08:00 — ma attenzione: **pg_cron e pg_net non erano installati** su questo progetto fino al 2 settembre 2026, quindi per mesi la function esisteva e non la chiamava nessuno. Ora ci pensa `cron_setup.sql`, che le installa e crea i job.
 
 Prima parlava SMTP Office365 a mano sul socket (`Deno.connect` + `startTls`) con la password di `admin@kaplet.it`: Microsoft disattiva SMTP AUTH per default sui tenant, e quel codice ignorava tutte le risposte del server, quindi una mail rifiutata non lo sapeva nessuno. Ora l'esito finisce nella risposta HTTP della function (`{ok, n, mail}`), e uno stato 500 significa che la mail non è partita.
 
