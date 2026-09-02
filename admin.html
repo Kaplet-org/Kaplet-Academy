@@ -188,7 +188,7 @@ tr:hover td { background: var(--card2); }
   letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 8px; border: 1px solid;
 }
 .rb-admin  { color: var(--green); border-color: var(--green-border); background: var(--green-dim); }
-.rb-tec    { color: var(--gray); border-color: var(--border); }
+.rb-operatore { color: var(--gray); border-color: var(--border); }
 /* La mansione sta accanto ai permessi ma è un'altra cosa: colore diverso */
 .rb-mansione { color: var(--warn); border-color: rgba(255,214,10,0.25); background: rgba(255,214,10,0.06); margin-left: 4px; }
 
@@ -563,7 +563,7 @@ textarea.finput { height: auto; padding: 12px 14px; resize: vertical; line-heigh
   <!-- TEAM -->
   <div class="section active" id="section-team">
     <div class="section-head">
-      <div class="section-title">Tutti i tecnici</div>
+      <div class="section-title">Tutti gli operatori</div>
       <div style="display:flex;gap:0.75rem">
         <button class="btn-secondary" onclick="openModalUtente()">+ Aggiungi utente</button>
         <button class="btn-secondary" onclick="openModalCert()">+ Certificazione</button>
@@ -573,7 +573,7 @@ textarea.finput { height: auto; padding: 12px 14px; resize: vertical; line-heigh
     <div id="richieste-box"></div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Tecnico</th><th>Ruolo</th><th>Certificazioni</th><th>Corsi assegnati</th><th>Avanzamento</th><th>Azioni</th></tr></thead>
+        <thead><tr><th>Operatore</th><th>Ruolo</th><th>Certificazioni</th><th>Corsi assegnati</th><th>Avanzamento</th><th>Azioni</th></tr></thead>
         <tbody id="team-body"><tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--gray)">Caricamento...</td></tr></tbody>
       </table>
     </div>
@@ -586,7 +586,7 @@ textarea.finput { height: auto; padding: 12px 14px; resize: vertical; line-heigh
       <button class="btn-primary" onclick="openModalAssegna()">+ Assegna corsi</button>
     </div>
     <div class="ca-filters">
-      <select class="ca-select" id="f-tec" onchange="scegliTecnico(this.value)"><option value="">Tutti i tecnici</option></select>
+      <select class="ca-select" id="f-tec" onchange="scegliTecnico(this.value)"><option value="">Tutti gli operatori</option></select>
       <select class="ca-select" id="f-stato" onchange="renderCorsi()">
         <option value="">Tutti gli stati</option>
         <option value="da_fare">Da fare</option>
@@ -634,7 +634,7 @@ textarea.finput { height: auto; padding: 12px 14px; resize: vertical; line-heigh
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <select class="ca-select" id="pf-anno" onchange="renderPiano()"></select>
-        <select class="ca-select" id="pf-tec" onchange="scegliTecnico(this.value)"><option value="">Tutti i tecnici</option></select>
+        <select class="ca-select" id="pf-tec" onchange="scegliTecnico(this.value)"><option value="">Tutti gli operatori</option></select>
         <select class="ca-select" id="pf-vista" onchange="renderPiano()">
           <option value="tecnico">Raggruppa per tecnico</option>
           <option value="data">Ordina per data</option>
@@ -791,7 +791,7 @@ textarea.finput { height: auto; padding: 12px 14px; resize: vertical; line-heigh
       <button class="modal-close" onclick="closeOverlay('modal-cert')">✕</button>
     </div>
     <div class="modal-body">
-      <div class="fld"><label class="flabel">Tecnico *</label><select class="fsel" id="mc-tec"><option value="">Seleziona...</option></select></div>
+      <div class="fld"><label class="flabel">Operatore *</label><select class="fsel" id="mc-tec"><option value="">Seleziona...</option></select></div>
       <div class="fld"><label class="flabel">Brand *</label><select class="fsel" id="mc-brand" onchange="fillCorsiCert()"><option value="">Seleziona brand...</option></select></div>
       <div class="fld"><label class="flabel">Corso *</label><select class="fsel" id="mc-corso"><option value="">Prima seleziona brand...</option></select></div>
       <div class="fgrid">
@@ -842,7 +842,7 @@ textarea.finput { height: auto; padding: 12px 14px; resize: vertical; line-heigh
       <div class="fld"><label class="flabel">Corso *</label><select class="fsel" id="ma-corso"><option value="">Prima seleziona brand...</option></select></div>
       <div class="fld">
         <label class="flabel">Assegna a *</label>
-        <div class="fhint" style="margin-bottom:6px">Seleziona uno o più tecnici</div>
+        <div class="fhint" style="margin-bottom:6px">Seleziona uno o più operatori</div>
         <div class="tec-list" id="ma-tec-list"></div>
       </div>
       <div class="fgrid">
@@ -976,7 +976,7 @@ textarea.finput { height: auto; padding: 12px 14px; resize: vertical; line-heigh
       <div class="fld">
         <label class="flabel">Tipo account *</label>
         <select class="fsel" id="mu-tipo">
-          <option value="false">Tecnico (vede solo i suoi corsi)</option>
+          <option value="false">Operatore (vede solo i suoi corsi)</option>
           <option value="true">Admin (vede e gestisce tutto)</option>
         </select>
       </div>
@@ -1021,7 +1021,7 @@ textarea.finput { height: auto; padding: 12px 14px; resize: vertical; line-heigh
       <div class="fld">
         <label class="flabel">Tipo account *</label>
         <select class="fsel" id="mm-tipo">
-          <option value="false">Tecnico (vede solo i suoi corsi)</option>
+          <option value="false">Operatore (vede solo i suoi corsi)</option>
           <option value="true">Admin (vede e gestisce tutto)</option>
         </select>
       </div>
@@ -1149,7 +1149,7 @@ async function load() {
   // Senza, dopo ogni salvataggio il tecnico selezionato spariva.
   const ft = document.getElementById('f-tec');
   const tecPrima = ft.value;
-  ft.innerHTML = '<option value="">Tutti i tecnici</option>' + tecniciApprovati().map(t => `<option value="${t.id}">${esc(t.nome)} ${esc(t.cognome)}</option>`).join('');
+  ft.innerHTML = '<option value="">Tutti gli operatori</option>' + tecniciApprovati().map(t => `<option value="${t.id}">${esc(t.nome)} ${esc(t.cognome)}</option>`).join('');
   if (TECNICI.some(t => t.id === tecPrima)) ft.value = tecPrima;
 
   const brands = [...new Set(CORSI_ASS.map(c => c.brand))].sort();
@@ -1169,7 +1169,7 @@ function renderTeam() {
   // chi è ancora in attesa o è stato rifiutato vive nel riquadro sopra
   const inSquadra = TECNICI.filter(t => (t.stato_accesso || 'approvato') === 'approvato');
   document.getElementById('team-body').innerHTML = !inSquadra.length
-    ? '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--gray)">Nessun tecnico</td></tr>'
+    ? '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--gray)">Nessun operatore</td></tr>'
     : inSquadra.map(t => {
         const certs = CERTS.filter(c => c.tech_id === t.id);
         const att   = certs.filter(c => c.stato==='attiva' && (!c.data_scadenza || new Date(c.data_scadenza) >= oggi));
@@ -1185,7 +1185,7 @@ function renderTeam() {
           <td><div class="tec-info"><div class="av">${t.nome[0].toUpperCase()}</div>
             <div><div class="tec-nome">${esc(t.nome)} ${esc(t.cognome)}${disattivato ? ' <span style="font-size:.6rem;color:var(--danger);text-transform:uppercase;letter-spacing:.05em">· disattivato</span>' : ''}</div><div class="tec-email">${esc(t.email)}</div></div></div></td>
           <td>
-            <span class="rb ${t.is_admin?'rb-admin':'rb-tec'}">${t.is_admin?'Admin':'Tecnico'}</span>
+            <span class="rb ${t.is_admin?'rb-admin':'rb-operatore'}">${t.is_admin?'Admin':'Operatore'}</span>
             ${t.mansione ? `<span class="rb rb-mansione">${esc(labelMansione(t.mansione))}</span>` : ''}
             ${t.ruolo ? `<div style="font-size:.6rem;color:var(--gray);margin-top:4px" title="${esc(parseRuoli(t.ruolo).map(labelRuolo).join(' · '))}">${esc(ruoliBrevi(t.ruolo))}</div>` : ''}
           </td>
@@ -1355,13 +1355,13 @@ function grigliaMatrix(certs) {
   const brands = [...new Set(certs.map(c => c.brand))].sort();
   // solo i tecnici che compaiono, altrimenti la griglia è mezza vuota
   const tecnici = TECNICI.filter(t => certs.some(c => c.tech_id === t.id));
-  if (!tecnici.length) return '<div class="empty"><div class="empty-title">Nessun tecnico da mostrare</div></div>';
+  if (!tecnici.length) return '<div class="empty"><div class="empty-title">Nessun operatore da mostrare</div></div>';
 
   const perCella = {};
   certs.forEach(c => { (perCella[c.tech_id + '|' + c.brand] = perCella[c.tech_id + '|' + c.brand] || []).push(c); });
 
   const testa = `<thead><tr>
-      <th class="mx-ang">Tecnico</th>
+      <th class="mx-ang">Operatore</th>
       ${brands.map(b => `<th><div class="mx-brand-v" style="color:${bc(b)}">${esc(b)}</div></th>`).join('')}
       <th style="padding:0 .8rem">Tot</th>
     </tr></thead>`;
@@ -1389,7 +1389,7 @@ function grigliaMatrix(certs) {
   }).join('');
 
   const totali = `<tr>
-      <td class="mx-tec" style="color:var(--gray);font-weight:300">Tecnici per brand</td>
+      <td class="mx-tec" style="color:var(--gray);font-weight:300">Operatori per brand</td>
       ${brands.map(b => {
         const n = new Set(certs.filter(c => c.brand === b).map(c => c.tech_id)).size;
         return `<td class="mx-tot" style="${n === 1 ? 'color:var(--warn)' : ''}">${n}</td>`;
@@ -1952,7 +1952,7 @@ async function certificazioneEsistente(techId, corso) {
 function messaggioErroreCert(e) {
   switch (e?.code) {
     case '23505': return 'Questo tecnico ha già una certificazione per lo stesso corso. Ricarica la pagina e modifica quella esistente.';
-    case '23503': return 'Tecnico non valido: ricarica la pagina e riprova.';
+    case '23503': return 'Operatore non valido: ricarica la pagina e riprova.';
     case '23514': return 'Alcuni valori non sono ammessi per questa certificazione.';
     case '42501': return 'Non hai il permesso di salvare questa certificazione.';
     default:      return e?.message || 'Errore sconosciuto.';
@@ -2262,7 +2262,7 @@ function renderImpegno(soloTecnico) {
             <span class="imp-conto ${r.certificazioni >= MIN_CERT ? 'imp-fatto' : (inCorso ? 'imp-attesa' : 'imp-manca')}"><b>${r.certificazioni}</b>/${MIN_CERT} cert.</span>
           </div>
         </div>`).join('')
-      : '<div class="imp-cella" style="color:var(--gray)">Nessun tecnico attivo</div>'}
+      : '<div class="imp-cella" style="color:var(--gray)">Nessun operatore attivo</div>'}
     </div>`;
 }
 
@@ -2496,14 +2496,14 @@ function addGiorni(iso, n) {
 
 const nomeTec = id => {
   const t = TECNICI.find(x => x.id === id);
-  return t ? t.nome + ' ' + t.cognome : 'Tecnico rimosso';
+  return t ? t.nome + ' ' + t.cognome : 'Operatore rimosso';
 };
 
 function popolaFiltriPiano() {
   const st = document.getElementById('pf-tec');
   if (st) {
     const prec = st.value;
-    st.innerHTML = '<option value="">Tutti i tecnici</option>' +
+    st.innerHTML = '<option value="">Tutti gli operatori</option>' +
       tecniciApprovati().map(t => `<option value="${t.id}">${esc(t.nome)} ${esc(t.cognome)}</option>`).join('');
     st.value = prec;
   }
@@ -2731,10 +2731,10 @@ function aggiornaStatistiche() {
 
   let carte;
   if (!ft) {
-    // Nessun tecnico scelto: il quadro del team, come è sempre stato
+    // Nessun operatore scelto: il quadro del team, come è sempre stato
     const att = CERTS.filter(c => c.stato==='attiva' && (!c.data_scadenza || new Date(c.data_scadenza) >= oggi));
     carte = [
-      { n: tecniciApprovati().length, lab: 'Tecnici',   cls: 'green' },
+      { n: tecniciApprovati().length, lab: 'Operatori',   cls: 'green' },
       { n: att.length,       lab: 'Cert. attive',     cls: 'green' },
       { n: CORSI_ASS.length, lab: 'Corsi assegnati',  cls: '' },
       { n: att.filter(c => c.data_scadenza && gg(c.data_scadenza) <= 60).length, lab: 'In scadenza 60gg', cls: 'warn' },
