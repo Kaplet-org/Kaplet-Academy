@@ -239,6 +239,15 @@ tr:hover td { background: var(--card2); }
 .ca-filters { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
 /* Impegno formativo mensile: chi ha fatto il minimo e chi è indietro */
 .imp-box { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 1.5rem; overflow: hidden; }
+/* Richieste di accesso: chi si è registrato e aspetta un giudizio */
+.ric-box { border: 1px solid rgba(255,214,10,0.3); background: rgba(255,214,10,0.04); border-radius: 12px; padding: 1.1rem 1.3rem; margin-bottom: 1.5rem; }
+.ric-tit { font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; color: var(--warn); margin-bottom: .8rem; }
+.ric-riga { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: .7rem 0; border-top: 1px solid var(--border); }
+.ric-riga:first-of-type { border-top: none; padding-top: 0; }
+.ric-chi { flex: 1; min-width: 180px; }
+.ric-nome { font-size: .85rem; }
+.ric-mail { font-size: .68rem; color: var(--gray); font-weight: 300; }
+.ric-rifiutata { opacity: .5; }
 .imp-head {
   background: var(--card2); padding: .9rem 1.2rem; display: flex; align-items: center;
   justify-content: space-between; gap: 1rem; flex-wrap: wrap; border-bottom: 1px solid var(--border);
@@ -561,6 +570,7 @@ textarea.finput { height: auto; padding: 12px 14px; resize: vertical; line-heigh
         <button class="btn-primary" onclick="openModalAssegna()">+ Assegna corsi</button>
       </div>
     </div>
+    <div id="richieste-box"></div>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Tecnico</th><th>Ruolo</th><th>Certificazioni</th><th>Corsi assegnati</th><th>Avanzamento</th><th>Azioni</th></tr></thead>
@@ -1139,7 +1149,7 @@ async function load() {
   // Senza, dopo ogni salvataggio il tecnico selezionato spariva.
   const ft = document.getElementById('f-tec');
   const tecPrima = ft.value;
-  ft.innerHTML = '<option value="">Tutti i tecnici</option>' + TECNICI.map(t => `<option value="${t.id}">${esc(t.nome)} ${esc(t.cognome)}</option>`).join('');
+  ft.innerHTML = '<option value="">Tutti i tecnici</option>' + tecniciApprovati().map(t => `<option value="${t.id}">${esc(t.nome)} ${esc(t.cognome)}</option>`).join('');
   if (TECNICI.some(t => t.id === tecPrima)) ft.value = tecPrima;
 
   const brands = [...new Set(CORSI_ASS.map(c => c.brand))].sort();
@@ -1150,15 +1160,17 @@ async function load() {
 
   aggiornaStatistiche();
   popolaFiltriPiano(); popolaFiltriCatalogo();
-  renderTeam(); renderCorsi(); renderCatalogo(); renderScadenze(); renderMatrix(); renderCompetenze(); renderPiano(); caricaSettings();
+  renderTeam(); renderRichieste(); renderCorsi(); renderCatalogo(); renderScadenze(); renderMatrix(); renderCompetenze(); renderPiano(); caricaSettings();
 }
 
 /* ── TEAM ── */
 function renderTeam() {
   const oggi = new Date();
-  document.getElementById('team-body').innerHTML = !TECNICI.length
+  // chi è ancora in attesa o è stato rifiutato vive nel riquadro sopra
+  const inSquadra = TECNICI.filter(t => (t.stato_accesso || 'approvato') === 'approvato');
+  document.getElementById('team-body').innerHTML = !inSquadra.length
     ? '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--gray)">Nessun tecnico</td></tr>'
-    : TECNICI.map(t => {
+    : inSquadra.map(t => {
         const certs = CERTS.filter(c => c.tech_id === t.id);
         const att   = certs.filter(c => c.stato==='attiva' && (!c.data_scadenza || new Date(c.data_scadenza) >= oggi));
         const ca    = CORSI_ASS.filter(c => c.tech_id === t.id);
@@ -1958,7 +1970,7 @@ async function upsertCertificazione(riga) {
 
 /* ── MODAL CERT ── */
 function openModalCert() {
-  document.getElementById('mc-tec').innerHTML = '<option value="">Seleziona...</option>' + TECNICI.map(t => `<option value="${t.id}">${esc(t.nome)} ${esc(t.cognome)}</option>`).join('');
+  document.getElementById('mc-tec').innerHTML = '<option value="">Seleziona...</option>' + tecniciApprovati().map(t => `<option value="${t.id}">${esc(t.nome)} ${esc(t.cognome)}</option>`).join('');
   const brands = [...new Set(COURSES.map(c => c.brand))].sort();
   document.getElementById('mc-brand').innerHTML = '<option value="">Seleziona brand...</option>' + brands.map(b => `<option value="${b}">${b}</option>`).join('');
   document.getElementById('mc-corso').innerHTML = '<option value="">Prima seleziona brand...</option>';
@@ -2058,7 +2070,7 @@ function openModalAssegna() {
   document.getElementById('ma-scad').value = ''; document.getElementById('ma-note').value = ''; selTec = [];
   const y = new Date().getFullYear();
   document.getElementById('ma-anno').innerHTML = [y, y+1].map(yr => `<option value="${yr}" ${yr===y?'selected':''}>${yr}</option>`).join('');
-  document.getElementById('ma-tec-list').innerHTML = TECNICI.map(t => `
+  document.getElementById('ma-tec-list').innerHTML = tecniciApprovati().map(t => `
     <div class="tec-list-item" id="tli-${t.id}" onclick="toggleTec('${t.id}')">
       <div class="tli-check" id="tli-cb-${t.id}"></div>
       <div><div class="tli-nome">${esc(t.nome)} ${esc(t.cognome)}</div><div class="tli-ruolo">${t.ruolo||''}</div></div>
@@ -2091,6 +2103,65 @@ async function salvaAssegna() {
     selTec = []; closeOverlay('modal-assegna'); toast(`Corso assegnato a ${rows.length} tecnico/i!`); await load();
   } catch(e) { err.textContent='Errore: '+e.message; err.classList.add('show'); }
   finally { btn.disabled=false; btn.textContent='Assegna'; }
+}
+
+let MM_APPROVA = false;   // la modale modifica sta approvando una richiesta?
+
+/* Chi fa parte davvero della squadra. Chi si è registrato e aspetta non
+   deve comparire nei conteggi né negli elenchi dove si assegnano corsi:
+   esiste, ma non è ancora nessuno. */
+const tecniciApprovati = () => TECNICI.filter(t => (t.stato_accesso || 'approvato') === 'approvato');
+
+/* ── RICHIESTE DI ACCESSO ──
+   I tecnici si registrano da soli e restano in attesa: qui l'admin li
+   approva assegnando mansione e percorsi, oppure li rifiuta. Una richiesta
+   rifiutata non si cancella, così chi ritenta non ricrea la riga da capo. */
+function renderRichieste() {
+  const box = document.getElementById('richieste-box');
+  if (!box) return;
+  const attesa = TECNICI.filter(t => t.stato_accesso === 'in_attesa');
+  const rifiutate = TECNICI.filter(t => t.stato_accesso === 'rifiutato');
+  if (!attesa.length && !rifiutate.length) { box.innerHTML = ''; return; }
+
+  const riga = (t, rifiutata) => `
+    <div class="ric-riga ${rifiutata ? 'ric-rifiutata' : ''}">
+      <div class="av">${esc((t.nome || '?')[0].toUpperCase())}</div>
+      <div class="ric-chi">
+        <div class="ric-nome">${esc(t.nome)} ${esc(t.cognome)}${rifiutata ? ' <span style="font-size:.6rem;color:var(--danger);text-transform:uppercase;letter-spacing:.05em">· rifiutata</span>' : ''}</div>
+        <div class="ric-mail">${esc(t.email)}${t.data_ingresso ? ' · richiesta il ' + fmt(t.data_ingresso) : ''}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn-primary" style="padding:7px 14px;font-size:.68rem" onclick='apriApprovazione(${JSON.stringify(JSON.stringify(t))})'>Approva e imposta i ruoli</button>
+        ${rifiutata ? '' : `<button class="btn-danger-sm" onclick="rifiutaRichiesta('${t.id}')">Rifiuta</button>`}
+      </div>
+    </div>`;
+
+  box.innerHTML = `<div class="ric-box">
+    <div class="ric-tit">${attesa.length ? `Richieste di accesso da approvare (${attesa.length})` : 'Richieste rifiutate'}</div>
+    ${attesa.map(t => riga(t, false)).join('')}
+    ${rifiutate.map(t => riga(t, true)).join('')}
+  </div>`;
+}
+
+// L'approvazione passa dalla stessa modale della modifica: si approva
+// assegnando mansione e percorsi, non a scatola chiusa.
+
+function apriApprovazione(tJson) {
+  openModalModifica(tJson);       // azzera MM_APPROVA
+  MM_APPROVA = true;              // ...quindi si alza dopo
+  document.querySelector('#modal-modifica .modal-title').textContent = 'Approva e imposta i ruoli';
+  document.getElementById('btn-salva-modifica').textContent = 'Approva utente';
+  document.getElementById('mm-riassegna').value = 'si';   // all'approvazione i corsi servono
+}
+
+async function rifiutaRichiesta(id) {
+  const t = TECNICI.find(x => x.id === id); if (!t) return;
+  if (!confirm(`Rifiutare la richiesta di ${t.nome} ${t.cognome} (${t.email})?\n\nNon potrà entrare. La richiesta resta registrata, così puoi cambiare idea.`)) return;
+  const { error } = await sb.from('tecnici')
+    .update({ stato_accesso: 'rifiutato', attivo: false }).eq('id', id);
+  if (error) { toast('Errore: ' + error.message); return; }
+  toast('Richiesta rifiutata.');
+  await load();
 }
 
 /* Mansione: che mestiere fa la persona. Cosa diversa dai permessi
@@ -2157,7 +2228,7 @@ function renderImpegno(soloTecnico) {
   // tutti sotto il minimo, ed è normale. Rosso solo sui mesi chiusi.
   const inCorso = anno === oggi.getFullYear() && mese === oggi.getMonth();
 
-  const persone = TECNICI.filter(t => t.attivo !== false && (!soloTecnico || t.id === soloTecnico));
+  const persone = tecniciApprovati().filter(t => t.attivo !== false && (!soloTecnico || t.id === soloTecnico));
   const righe = persone.map(t => ({ t, ...impegnoMensile(t.id, anno, mese) }));
   const inRegola = righe.filter(r => r.ok).length;
   const indietro = righe.length - inRegola;
@@ -2433,7 +2504,7 @@ function popolaFiltriPiano() {
   if (st) {
     const prec = st.value;
     st.innerHTML = '<option value="">Tutti i tecnici</option>' +
-      TECNICI.map(t => `<option value="${t.id}">${esc(t.nome)} ${esc(t.cognome)}</option>`).join('');
+      tecniciApprovati().map(t => `<option value="${t.id}">${esc(t.nome)} ${esc(t.cognome)}</option>`).join('');
     st.value = prec;
   }
   const sa = document.getElementById('pf-anno');
@@ -2663,7 +2734,7 @@ function aggiornaStatistiche() {
     // Nessun tecnico scelto: il quadro del team, come è sempre stato
     const att = CERTS.filter(c => c.stato==='attiva' && (!c.data_scadenza || new Date(c.data_scadenza) >= oggi));
     carte = [
-      { n: TECNICI.length,   lab: 'Tecnici',          cls: 'green' },
+      { n: tecniciApprovati().length, lab: 'Tecnici',   cls: 'green' },
       { n: att.length,       lab: 'Cert. attive',     cls: 'green' },
       { n: CORSI_ASS.length, lab: 'Corsi assegnati',  cls: '' },
       { n: att.filter(c => c.data_scadenza && gg(c.data_scadenza) <= 60).length, lab: 'In scadenza 60gg', cls: 'warn' },
@@ -2907,6 +2978,11 @@ async function creaUtente() {
 /* ── MODAL MODIFICA UTENTE ── */
 function openModalModifica(tJson) {
   const t = JSON.parse(tJson);
+  // Aprendo dalla tabella si torna sempre alla modifica normale: senza
+  // questo, un'approvazione annullata lascerebbe la modale in quello stato.
+  MM_APPROVA = false;
+  document.querySelector('#modal-modifica .modal-title').textContent = 'Modifica utente';
+  document.getElementById('btn-salva-modifica').textContent = 'Salva modifiche';
   document.getElementById('mm-id').value = t.id;
   document.getElementById('mm-nome').value = t.nome || '';
   document.getElementById('mm-cognome').value = t.cognome || '';
@@ -2938,9 +3014,9 @@ async function salvaModifica() {
 
   btn.disabled = true; btn.textContent = 'Salvataggio...';
   try {
-    const { error } = await sb.from('tecnici')
-      .update({ nome, cognome, ruolo: ruolo || null, is_admin, mansione })
-      .eq('id', id);
+    const patch = { nome, cognome, ruolo: ruolo || null, is_admin, mansione };
+    if (MM_APPROVA) { patch.stato_accesso = 'approvato'; patch.attivo = true; }
+    const { error } = await sb.from('tecnici').update(patch).eq('id', id);
     if (error) throw error;
 
     let msgCorsi = '';
@@ -2958,7 +3034,8 @@ async function salvaModifica() {
     }
 
     closeOverlay('modal-modifica');
-    toast('Utente aggiornato' + msgCorsi + '!');
+    toast((MM_APPROVA ? 'Utente approvato' : 'Utente aggiornato') + msgCorsi + '!');
+    MM_APPROVA = false;
     await load();
   } catch(e) {
     err.textContent = 'Errore: ' + e.message; err.classList.add('show');

@@ -91,6 +91,55 @@ input::placeholder { color: rgba(255,255,255,0.2); }
         </button>
       </form>
       <div class="msg error" id="login-error"></div>
+      <div class="msg" id="login-attesa" style="display:none"></div>
+      <div style="text-align:center;margin-top:1.25rem;font-size:.78rem;color:var(--gray);font-weight:300">
+        Primo accesso?
+        <button type="button" class="forgot-link" style="display:inline;padding:0;margin-left:4px" onclick="showPanel('panel-registrazione')">Crea il tuo account</button>
+      </div>
+    </div>
+
+    <!-- PANEL REGISTRAZIONE -->
+    <div class="panel" id="panel-registrazione">
+      <button class="back-link" onclick="showPanel('panel-login')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Torna al login
+      </button>
+      <div id="registrazione-form-wrap">
+        <div class="card-title">Crea il tuo account</div>
+        <div class="card-sub">Serve un indirizzo <strong>@kaplet.it</strong>. Dopo la registrazione un amministratore deve approvarti: fino a quel momento non potrai entrare.</div>
+        <form onsubmit="handleRegistrazione(event)">
+          <div class="form-group">
+            <label>Nome</label>
+            <input type="text" id="reg-nome" placeholder="Mario" required autocomplete="given-name">
+          </div>
+          <div class="form-group">
+            <label>Cognome</label>
+            <input type="text" id="reg-cognome" placeholder="Rossi" required autocomplete="family-name">
+          </div>
+          <div class="form-group">
+            <label>Email aziendale</label>
+            <input type="email" id="reg-email" placeholder="nome@kaplet.it" required autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="reg-password" placeholder="Minimo 8 caratteri" required minlength="8" autocomplete="new-password">
+          </div>
+          <div class="form-group">
+            <label>Ripeti la password</label>
+            <input type="password" id="reg-password2" placeholder="Ripeti la password" required minlength="8" autocomplete="new-password">
+          </div>
+          <button type="submit" class="btn-primary" id="btn-registrazione">
+            <span id="btn-registrazione-text">Crea account</span>
+            <div class="spinner" id="spinner-registrazione"></div>
+          </button>
+        </form>
+        <div class="msg error" id="registrazione-error"></div>
+      </div>
+      <div id="registrazione-success" style="display:none">
+        <div class="card-title">Richiesta inviata</div>
+        <div class="card-sub">Il tuo account è stato creato ed è <strong>in attesa di approvazione</strong>. Riceverai accesso quando un amministratore ti avrà assegnato ruolo e percorsi formativi.</div>
+        <button type="button" class="btn-primary" onclick="showPanel('panel-login')" style="margin-top:1rem">Torna al login</button>
+      </div>
     </div>
 
     <!-- PANEL RECOVERY -->
@@ -172,39 +221,129 @@ function showPanel(id) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.querySelectorAll('.msg').forEach(m => m.classList.remove('show'));
+  const attesa = document.getElementById('login-attesa');
+  if (attesa) attesa.style.display = 'none';
 }
 
 // ── REDIRECT PER RUOLO ──
 // FIX: usa onAuthStateChange per aspettare che il token sia 
 // effettivamente scritto in localStorage prima di fare il redirect
+// Rimette il pulsante di accesso in condizione di essere ripremuto
+function sbloccaLogin() {
+  const btn  = document.getElementById('btn-login');
+  const txt  = document.getElementById('btn-login-text');
+  const spin = document.getElementById('spinner-login');
+  if (btn)  btn.disabled = false;
+  if (txt)  txt.style.display = 'block';
+  if (spin) spin.style.display = 'none';
+}
+
+// Ferma l'accesso e spiega perché, invece di rimbalzare in silenzio
+async function fermaAccesso(messaggio) {
+  await sb.auth.signOut();
+  const box = document.getElementById('login-attesa');
+  box.textContent = messaggio;
+  box.className = 'msg show';
+  box.style.display = 'block';
+  box.style.borderColor = 'rgba(255,214,10,0.3)';
+  box.style.color = '#FFD60A';
+  sbloccaLogin();
+}
+
 async function redirectByRole(userId) {
   try {
-    const { data, error } = await sb.from('tecnici').select('is_admin, attivo').eq('id', userId).single();
-    if (error || !data) {
-      window.location.replace('tecnico.html');
+    let { data, error } = await sb.from('tecnici')
+      .select('is_admin, attivo, stato_accesso').eq('id', userId).maybeSingle();
+
+    // Chi si è registrato da solo può non avere ancora la sua riga: la crea
+    // qui, al primo accesso. Nasce in attesa — la policy non permette altro.
+    if (!error && !data) {
+      const { data: { user } } = await sb.auth.getUser();
+      const meta = (user && user.user_metadata) || {};
+      const { error: insErr } = await sb.from('tecnici').insert({
+        id: userId,
+        nome: meta.nome || '',
+        cognome: meta.cognome || '',
+        email: (user && user.email) || '',
+        is_admin: false,
+        attivo: false,
+        stato_accesso: 'in_attesa'
+      });
+      if (insErr) {
+        await fermaAccesso('Questo account non è abilitato. Contatta l\'amministratore.');
+        return;
+      }
+      await fermaAccesso('Registrazione ricevuta. Un amministratore deve approvarti prima che tu possa entrare.');
       return;
     }
-    // Blocca utenti disattivati
+    if (error || !data) { await fermaAccesso('Non riesco a leggere il tuo profilo. Riprova o contatta l\'amministratore.'); return; }
+
+    if (data.stato_accesso === 'in_attesa') {
+      await fermaAccesso('Il tuo account è in attesa di approvazione da parte di un amministratore.');
+      return;
+    }
+    if (data.stato_accesso === 'rifiutato') {
+      await fermaAccesso('La tua richiesta di accesso non è stata approvata.');
+      return;
+    }
     if (data.attivo === false) {
-      await sb.auth.signOut();
-      const err = document.getElementById('login-error');
-      err.textContent = 'Account disattivato. Contatta l\'amministratore.';
-      err.classList.add('show');
-      const btn = document.getElementById('btn-login');
-      const txt = document.getElementById('btn-login-text');
-      const spin = document.getElementById('spinner-login');
-      if (btn) btn.disabled = false;
-      if (txt) txt.style.display = 'block';
-      if (spin) spin.style.display = 'none';
+      await fermaAccesso('Account disattivato. Contatta l\'amministratore.');
       return;
     }
-    if (data.is_admin) {
-      window.location.replace('admin.html');
-    } else {
-      window.location.replace('tecnico.html');
-    }
+    window.location.replace(data.is_admin ? 'admin.html' : 'tecnico.html');
   } catch(e) {
-    window.location.replace('tecnico.html');
+    await fermaAccesso('Errore di accesso: ' + e.message);
+  }
+}
+
+// ── REGISTRAZIONE ──
+async function handleRegistrazione(e) {
+  e.preventDefault();
+  const nome     = document.getElementById('reg-nome').value.trim();
+  const cognome  = document.getElementById('reg-cognome').value.trim();
+  const email    = document.getElementById('reg-email').value.trim().toLowerCase();
+  const password = document.getElementById('reg-password').value;
+  const password2= document.getElementById('reg-password2').value;
+  const err      = document.getElementById('registrazione-error');
+  const btn      = document.getElementById('btn-registrazione');
+  const txt      = document.getElementById('btn-registrazione-text');
+  const spin     = document.getElementById('spinner-registrazione');
+  err.classList.remove('show');
+
+  // Comodità: il controllo che conta lo rifà il database sulla policy
+  if (!email.endsWith('@kaplet.it')) {
+    err.textContent = 'Serve un indirizzo aziendale @kaplet.it.'; err.classList.add('show'); return;
+  }
+  if (password !== password2) {
+    err.textContent = 'Le due password non coincidono.'; err.classList.add('show'); return;
+  }
+
+  btn.disabled = true; txt.style.display = 'none'; spin.style.display = 'block';
+  try {
+    const { data, error } = await sb.auth.signUp({
+      email, password,
+      options: { data: { nome, cognome }, emailRedirectTo: 'https://university.kaplet.it/login.html' }
+    });
+    if (error) throw error;
+
+    // Se la conferma via mail è disattivata la sessione c'è già: si crea
+    // subito la riga in attesa. Altrimenti la crea redirectByRole al primo
+    // accesso, dopo che l'utente ha confermato l'indirizzo.
+    if (data.session && data.user) {
+      await sb.from('tecnici').insert({
+        id: data.user.id, nome, cognome, email,
+        is_admin: false, attivo: false, stato_accesso: 'in_attesa'
+      });
+      await sb.auth.signOut();
+    }
+
+    document.getElementById('registrazione-form-wrap').style.display = 'none';
+    document.getElementById('registrazione-success').style.display = 'block';
+  } catch(ex) {
+    err.textContent = 'Errore: ' + ex.message;
+    err.classList.add('show');
+  } finally {
+    btn.disabled = false; txt.style.display = 'block'; spin.style.display = 'none';
   }
 }
 
