@@ -1500,14 +1500,49 @@ try { sbIdx = supabase.createClient(SUPA_URL_IDX, SUPA_KEY_IDX); } catch(e) {}
 document.documentElement.style.visibility = 'hidden';
 (async function checkAuth(){
   // 1. sessione: senza, si torna al login
+  let utente = null;
   try {
     const { data: { session } } = await sbIdx.auth.getSession();
     if (!session) { window.location.replace('login.html'); return; }
+    utente = session.user;
   } catch(e) {
     window.location.replace('login.html');
     return;
   }
-  // 2. catalogo: arriva dal database, la pagina non ha senso senza
+
+  // 2. profilo e approvazione.
+  //    Qui atterra anche chi ha appena confermato l'indirizzo dalla mail:
+  //    è il punto in cui il suo profilo nasce, in attesa. Senza questo
+  //    controllo un utente non approvato poteva comunque sfogliare il
+  //    catalogo, perché bastava avere una sessione.
+  try {
+    const { data: prof } = await sbIdx.from('tecnici')
+      .select('attivo, stato_accesso').eq('id', utente.id).maybeSingle();
+
+    if (!prof) {
+      const meta = utente.user_metadata || {};
+      await sbIdx.from('tecnici').insert({
+        id: utente.id,
+        nome: meta.nome || '', cognome: meta.cognome || '',
+        email: utente.email || '',
+        is_admin: false, attivo: false, stato_accesso: 'in_attesa'
+      });
+      await sbIdx.auth.signOut();
+      window.location.replace('login.html?attesa=1');
+      return;
+    }
+    if (prof.stato_accesso !== 'approvato' || prof.attivo === false) {
+      await sbIdx.auth.signOut();
+      window.location.replace('login.html?attesa=1');
+      return;
+    }
+  } catch(e) {
+    await sbIdx.auth.signOut();
+    window.location.replace('login.html');
+    return;
+  }
+
+  // 3. catalogo: arriva dal database, la pagina non ha senso senza
   try {
     await caricaCatalogo(sbIdx);
     costruisciRAW();

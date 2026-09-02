@@ -502,7 +502,11 @@ const csLabel = s => ({da_fare:'Da fare', in_corso:'In corso', completato:'Compl
 
     const { data, error } = await sb.from('tecnici').select('*').eq('id', session.user.id).single();
     if (error || !data) { window.location.replace('login.html'); return; }
-    if (data.attivo === false) { await sb.auth.signOut(); window.location.replace('login.html'); return; }
+    // Non basta essere autenticati: bisogna anche essere stati approvati
+    if (data.stato_accesso && data.stato_accesso !== 'approvato') {
+      await sb.auth.signOut(); window.location.replace('login.html?attesa=1'); return;
+    }
+    if (data.attivo === false) { await sb.auth.signOut(); window.location.replace('login.html?attesa=1'); return; }
     if (data.is_admin) { window.location.replace('admin.html'); return; }
 
     ME = data;

@@ -1122,8 +1122,14 @@ const csLabel = s => ({da_fare:'Da fare', in_corso:'In corso', completato:'Compl
 (async () => {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { window.location.href = 'login.html'; return; }
-  const { data: me } = await sb.from('tecnici').select('is_admin,nome,cognome').eq('id', session.user.id).single();
-  if (!me || !me.is_admin) { window.location.href = 'tecnico.html'; return; }
+  const { data: me } = await sb.from('tecnici')
+    .select('is_admin,nome,cognome,attivo,stato_accesso').eq('id', session.user.id).single();
+  if (!me) { window.location.href = 'login.html'; return; }
+  // Anche un admin deve essere approvato e attivo
+  if ((me.stato_accesso && me.stato_accesso !== 'approvato') || me.attivo === false) {
+    await sb.auth.signOut(); window.location.href = 'login.html?attesa=1'; return;
+  }
+  if (!me.is_admin) { window.location.href = 'tecnico.html'; return; }
   ME_ID = session.user.id;
   document.getElementById('nav-nome').textContent = me.nome + ' ' + me.cognome;
   await load();

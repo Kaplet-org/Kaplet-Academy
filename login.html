@@ -296,6 +296,19 @@ async function redirectByRole(userId) {
   }
 }
 
+// Chi viene rimbalzato da un'altra pagina arriva con ?attesa=1: senza questo
+// vedrebbe solo il login ricomparire, senza capire perché.
+(function avvisoAttesa() {
+  if (!new URLSearchParams(location.search).has('attesa')) return;
+  const box = document.getElementById('login-attesa');
+  if (!box) return;
+  box.textContent = 'Il tuo account è in attesa di approvazione da parte di un amministratore.';
+  box.className = 'msg show';
+  box.style.display = 'block';
+  box.style.borderColor = 'rgba(255,214,10,0.3)';
+  box.style.color = '#FFD60A';
+})();
+
 // ── REGISTRAZIONE ──
 async function handleRegistrazione(e) {
   e.preventDefault();
