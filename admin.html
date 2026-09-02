@@ -1059,11 +1059,12 @@ textarea.finput { height: auto; padding: 12px 14px; resize: vertical; line-heigh
       </div>
       <div class="fld">
         <label class="flabel">Allinea i corsi ai percorsi selezionati?</label>
-        <select class="fsel" id="mm-riassegna">
+        <select class="fsel" id="mm-riassegna" onchange="aggiornaAnteprimaCorsi()">
           <option value="no">No, lascia i corsi come sono</option>
           <option value="si">Sì, allinea: aggiungi quelli che mancano e togli quelli non più previsti</option>
         </select>
         <div class="fhint">Togliendo una spunta i corsi di quel percorso spariscono, ma solo se non sono ancora stati avviati: quelli in corso, completati o con delle date restano sempre.</div>
+        <div class="fhint" id="mm-anteprima" style="margin-top:6px"></div>
       </div>
       <div class="msg error" id="mm-err"></div>
     </div>
@@ -2308,6 +2309,7 @@ function apriApprovazione(tJson) {
   document.querySelector('#modal-modifica .modal-title').textContent = 'Approva e imposta i ruoli';
   document.getElementById('btn-salva-modifica').textContent = 'Approva utente';
   document.getElementById('mm-riassegna').value = 'si';   // all'approvazione i corsi servono
+  aggiornaAnteprimaCorsi();
 }
 
 async function rifiutaRichiesta(id) {
@@ -3061,6 +3063,8 @@ function buildRuoliBox(containerId, selezionati) {
 function toggleRuolo(el) {
   const sel = el.classList.toggle('sel');
   el.querySelector('.ruolo-cb').textContent = sel ? '✓' : '';
+  // spuntando un percorso l'anteprima deve seguire, non restare vecchia
+  if (el.closest('#mm-ruoli')) aggiornaAnteprimaCorsi();
 }
 
 function getRuoliSelezionati(containerId) {
@@ -3166,7 +3170,56 @@ function openModalModifica(tJson) {
   document.getElementById('mm-riassegna').value = 'no';
   buildRuoliBox('mm-ruoli', parseRuoli(t.ruolo));
   document.getElementById('mm-err').classList.remove('show');
+  aggiornaAnteprimaCorsi();
   document.getElementById('modal-modifica').classList.add('open');
+}
+
+/* Cosa comporta salvare, con i percorsi spuntati in questo momento.
+   Lo usano sia l'anteprima nella modale sia il salvataggio: se il conto
+   fosse duplicato, prima o poi direbbero due cose diverse. */
+function calcolaAllineamento(id, ruoliSel) {
+  const chiave = (b, n) => (b || '') + '|' + n;
+  const corsi  = getCorsiPerRuoli(ruoliSel);
+  const voluti = new Set(corsi.map(c => chiave(c.brand, c.nome)));
+  const suoi   = CORSI_ASS.filter(c => c.tech_id === id);
+  const nuovi  = corsi.filter(c => !suoi.some(x => chiave(x.brand, x.corso) === chiave(c.brand, c.nome)));
+  // Si toccano solo i corsi mai avviati: uno in corso, completato o con
+  // delle date è lavoro fatto o pianificato.
+  const daTogliere = suoi.filter(c =>
+    c.stato === 'da_fare' && !c.data_inizio && !c.data_fine_prevista && !c.data_esame &&
+    !voluti.has(chiave(c.brand, c.corso))
+  );
+  const intoccabili = suoi.filter(c =>
+    !voluti.has(chiave(c.brand, c.corso)) && !daTogliere.includes(c)
+  );
+  return { corsi, suoi, nuovi, daTogliere, intoccabili };
+}
+
+/* L'anteprima esiste per un motivo preciso: la tendina parte da "No", ed
+   è facilissimo salvare credendo di aver allineato i corsi e non aver
+   cambiato niente. È successo. */
+function aggiornaAnteprimaCorsi() {
+  const box = document.getElementById('mm-anteprima');
+  if (!box) return;
+  const id = document.getElementById('mm-id').value;
+  const allinea = document.getElementById('mm-riassegna').value === 'si';
+  const ruoliSel = getRuoliSelezionati('mm-ruoli');
+  const { suoi, nuovi, daTogliere, intoccabili } = calcolaAllineamento(id, ruoliSel);
+
+  if (!allinea) {
+    box.innerHTML = `<span style="color:var(--warn)">I corsi non verranno toccati.</span> Ne ha ${suoi.length}. Metti "Sì" per allinearli ai percorsi spuntati.`;
+    return;
+  }
+  if (!ruoliSel.length) {
+    box.innerHTML = `<span style="color:var(--warn)">Nessun percorso spuntato: non c'è niente a cui allineare.</span> I ${suoi.length} corsi attuali restano.`;
+    return;
+  }
+  const pezzi = [];
+  if (nuovi.length)      pezzi.push(`<span style="color:var(--green)">+${nuovi.length} da aggiungere</span>`);
+  if (daTogliere.length) pezzi.push(`<span style="color:var(--danger)">−${daTogliere.length} da togliere</span>`);
+  if (!pezzi.length)     pezzi.push('già allineati, niente da fare');
+  box.innerHTML = `Ne ha ${suoi.length} · ${pezzi.join(' · ')}`
+    + (intoccabili.length ? ` · ${intoccabili.length} restano perché già avviati o pianificati` : '');
 }
 
 async function salvaModifica() {
@@ -3188,21 +3241,11 @@ async function salvaModifica() {
 
   btn.disabled = true; btn.textContent = 'Salvataggio...';
   try {
-    // Il legame con le righe è brand + nome, non il solo nome: due vendor
-    // possono chiamare un corso allo stesso modo.
-    const chiave = (b, n) => (b || '') + '|' + n;
-    const corsiVoluti = riassegna && ruoliSel.length ? getCorsiPerRuoli(ruoliSel) : [];
-    const voluti = new Set(corsiVoluti.map(c => chiave(c.brand, c.nome)));
-    const suoi   = CORSI_ASS.filter(c => c.tech_id === id);
-    const nuovi  = corsiVoluti.filter(c => !suoi.some(x => chiave(x.brand, x.corso) === chiave(c.brand, c.nome)));
-
-    // Allineare vuol dire anche togliere. Si toccano solo i corsi mai
-    // avviati: uno in corso, completato o con delle date è lavoro fatto o
-    // pianificato, e non lo cancella un cambio di percorso.
-    const daTogliere = (riassegna && ruoliSel.length) ? suoi.filter(c =>
-      c.stato === 'da_fare' && !c.data_inizio && !c.data_fine_prevista && !c.data_esame &&
-      !voluti.has(chiave(c.brand, c.corso))
-    ) : [];
+    // Stesso calcolo dell'anteprima, così non possono dire due cose diverse
+    const allinea = riassegna && ruoliSel.length;
+    const { corsi: corsiVoluti, nuovi, daTogliere } = allinea
+      ? calcolaAllineamento(id, ruoliSel)
+      : { corsi: [], nuovi: [], daTogliere: [] };
 
     // La conferma sta qui, prima di scrivere qualsiasi cosa: annullando non
     // dev'essere cambiato niente.
@@ -3218,8 +3261,8 @@ async function salvaModifica() {
     const { error } = await sb.from('tecnici').update(patch).eq('id', id);
     if (error) throw error;
 
-    let msgCorsi = '';
-    if (riassegna && ruoliSel.length) {
+    let msgCorsi = riassegna ? '' : ' (corsi non toccati)';
+    if (allinea) {
       if (daTogliere.length) {
         const { error: dErr } = await sb.from('corsi_assegnati')
           .delete().in('id', daTogliere.map(c => c.id));
