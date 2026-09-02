@@ -90,6 +90,12 @@ Area di lavoro del branch `competenze-v2`. Deriva un livello 0–5 per vendor/ve
 - `calcolaLivello()` = `sqrt(somma pesi)` + bonus fino a 1 per numero di tecnici distinti, clampato a 5
 - I target per area vivono in `localStorage` (`kaplet_targets`), non in DB
 
+**Colori del cruscotto.** Due sistemi diversi, di proposito:
+- la *heatmap* usa `LIV_RAMPA`, cinque gradini di un solo verde: è una scala 0–5 e in ogni cella c'è il numero, quindi il colore fa da supporto
+- il *grafico a barre* usa `FASCE`, tre tonalità diverse (viola/giallo/verde): tre gradini dello stesso verde sono corretti come scala ma stavano a ΔE 13,6, sotto la soglia di 15 sopra cui due colori si distinguono a vista. Il verde resta sulla fascia alta perché nel pannello verde vuol dire "a posto"
+
+Nel grafico il numero è scritto dentro ogni segmento (plugin `numeriDentro`): il colore non è mai l'unica informazione. Prima di cambiare una palette, misurarla con lo skill `dataviz` invece di sceglierla a occhio.
+
 Le sezioni si mostrano con `showSection(id, btn)` e le sotto-tab con `setVTab(tab, btn)`; il grafico Chart.js va distrutto/ricreato (`compChartInst`) a ogni render.
 
 ### Impegno formativo mensile

@@ -1560,6 +1560,19 @@ function stelle(v, size) {
    bianco o col nero. La rampa vecchia partiva da #345142, che sul nero era a
    2,2:1 — invisibile, ed è il motivo per cui la heatmap non si leggeva. */
 const LIV_RAMPA = ['#187144', '#1F8753', '#269E62', '#2EB571', '#36CD81'];
+
+/* Le tre fasce del grafico NON usano la rampa qui sopra. Tre gradini dello
+   stesso verde sono corretti come scala ma illeggibili come colori da
+   distinguere: misurati, stavano a ΔE 13,6 — sotto la soglia di 15, cioè
+   "difficili da distinguere anche con vista normale". Servono tre tonalità
+   diverse: viola, giallo, verde stanno a ΔE 22,1 e reggono anche col
+   daltonismo. Il verde resta sulla fascia alta perché in tutto il pannello
+   verde vuol dire "a posto". */
+const FASCE = [
+  { chiave: 'basso', label: 'Base (livello 0–1)',       colore: '#A78BFA' },
+  { chiave: 'medio', label: 'Advanced (livello 2–3)',   colore: '#FFD60A' },
+  { chiave: 'alto',  label: 'Specialist (livello 4–5)', colore: '#36CD81' }
+];
 // il numero dentro la cella: bianco sui due gradini scuri, nero sui tre chiari
 const LIV_TESTO = ['#FFFFFF', '#FFFFFF', '#0C0E0D', '#0C0E0D', '#0C0E0D'];
 const LIV_BASSO = LIV_RAMPA[0], LIV_MEDIO = LIV_RAMPA[2], LIV_ALTO = LIV_RAMPA[4];
@@ -1805,16 +1818,40 @@ function renderCompChart(dati) {
   });
   compChartInst = new Chart(ctx, {
     type: 'bar',
+    // Scrive il numero dentro ogni segmento abbastanza alto da contenerlo:
+    // così il grafico si legge anche senza distinguere i colori.
+    plugins: [{
+      id: 'numeriDentro',
+      afterDatasetsDraw(chart) {
+        const g = chart.ctx;
+        g.save();
+        g.font = '600 11px ' + getComputedStyle(document.body).fontFamily;
+        g.textAlign = 'center';
+        g.textBaseline = 'middle';
+        g.fillStyle = '#0C0E0D';   // i tre colori sono tutti chiari
+        chart.data.datasets.forEach((ds, i) => {
+          const meta = chart.getDatasetMeta(i);
+          if (meta.hidden) return;
+          meta.data.forEach((barra, j) => {
+            const v = ds.data[j];
+            if (!v) return;
+            const { y, base } = barra.getProps(['y', 'base'], true);
+            if (Math.abs(base - y) < 16) return;   // segmento troppo basso
+            g.fillText(String(v), barra.x, (y + base) / 2);
+          });
+        });
+        g.restore();
+      }
+    }],
     data: {
       labels,
-      // Tre gradini distanti della stessa rampa: le fasce sono ordinate,
-      // quindi un solo verde che si schiarisce, non tre colori diversi.
       // Il bordo del colore del fondo stacca un segmento dall'altro.
-      datasets: [
-        { label: 'Base (livello 0–1)',        data: conta.map(c=>c.basso), backgroundColor: LIV_RAMPA[0] },
-        { label: 'Advanced (livello 2–3)',    data: conta.map(c=>c.medio), backgroundColor: LIV_RAMPA[2] },
-        { label: 'Specialist (livello 4–5)',  data: conta.map(c=>c.alto),  backgroundColor: LIV_RAMPA[4] }
-      ].map(d => ({...d, borderColor: FONDO_SCHEDA, borderWidth: 2, borderRadius: 4, borderSkipped: false }))
+      datasets: FASCE.map(f => ({
+        label: f.label,
+        data: conta.map(c => c[f.chiave]),
+        backgroundColor: f.colore,
+        borderColor: FONDO_SCHEDA, borderWidth: 2, borderRadius: 4, borderSkipped: false
+      }))
     },
     options: {
       responsive: true, maintainAspectRatio: false,
