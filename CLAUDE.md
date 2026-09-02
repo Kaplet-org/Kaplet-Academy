@@ -52,7 +52,7 @@ Tabelle usate dal codice:
 
 - `audit_log` — traccia le eliminazioni fatte da `elimina-tecnico`. Sola lettura per gli admin, scritta solo con service_role. Creata da `audit_log_setup.sql`
 
-`corsi_ai_setup.sql` aggiunge quattro corsi AI gratuiti (Anthropic e OpenAI) su **tutti e 17 i percorsi** e li assegna a tutti i tecnici attivi: sono obbligatori per chiunque. È una migrazione additiva, `catalogo_setup.sql` resta la fotografia dell'Excel di partenza.
+`corsi_ai_setup.sql` aggiunge quattro corsi AI gratuiti (Anthropic e OpenAI) sul percorso **`core_ai`** ("Core Path - AI") e mette quel percorso addosso a ogni tecnico attivo: sono obbligatori per chiunque. **Ai nuovi assunti va spuntato `core_ai` insieme agli altri percorsi**, altrimenti i corsi AI non li ricevono. È una migrazione additiva, `catalogo_setup.sql` resta la fotografia dell'Excel di partenza.
 
 Gli script SQL in root si eseguono nel SQL Editor del dashboard (la CLI Supabase non è installata e gli strumenti MCP non hanno permessi di scrittura su questo progetto): `catalogo_setup.sql`, `corsi_ai_setup.sql`, `pianificazione_setup.sql`, `audit_log_setup.sql`, `blocca_cancellazioni_setup.sql`, `cron_setup.sql`. Sono idempotenti.
 
@@ -63,7 +63,7 @@ Gli script SQL in root si eseguono nel SQL Editor del dashboard (la CLI Supabase
 ### Catalogo corsi e percorsi (`js/courses.js`)
 I corsi **non stanno più nel file**: vivono nella tabella `corsi_catalogo` e li gestisce l'admin dalla sezione *Catalogo*. `js/courses.js` è ora solo il caricatore e la tassonomia. Espone:
 - `COURSES` — array **vuoto all'avvio**, riempito da `caricaCatalogo(sb)`. Non viene mai sostituito, solo svuotato e riempito, così i riferimenti già presi restano validi. Elementi: `{id, brand, gruppo, nome, desc, erogazione, durata, prezzo, link, paths[]}`
-- `RUOLI` — 17 percorsi con `{key, label, gruppo}`, chiavi con prefisso `core_*`, `adv_*`, `spec_*`
+- `RUOLI` — 18 percorsi con `{key, label, gruppo}`, chiavi con prefisso `core_*`, `adv_*`, `spec_*`
 - `caricaCatalogo(sb)`, `getCorsiPerRuoli(keys)`, `parseRuoli(str)`, `labelRuolo(key)`, `corsoDiCatalogo(brand, nome)`
 
 **Ogni pagina deve fare `await caricaCatalogo(sb)` prima di disegnare.** Admin e tecnico lo infilano nel `Promise.all` di `load()`/`caricaDati()`; `index.html` lo fa dentro `checkAuth()` e poi chiama `costruisciRAW()` + `initCourses()` — lì `RAW` è un `let` riempito dopo, non più un `const` costruito a inizio script.

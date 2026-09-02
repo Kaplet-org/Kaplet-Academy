@@ -5,7 +5,7 @@ Aggiornato il 2 settembre 2026. **Non resta niente in sospeso su Supabase.**
 ## Tutto quello che è attivo
 
 - Catalogo corsi in database: 187 corsi (183 iniziali + 4 AI), `KU-C-034` ritirato
-- Quattro corsi AI obbligatori su tutti e 17 i percorsi, assegnati a tutti i tecnici
+- Quattro corsi AI obbligatori sul percorso `core_ai`, che tutti i tecnici hanno
 - Registro `audit_log`; solo gli admin possono cancellare (policy RESTRICTIVE)
 - Edge Function: `crea-utente`, `elimina-tecnico`, `check-scadenze`, `impegno-mensile`
 - **Mail verificate funzionanti** (`?prova=1` su entrambe → `mail.inviata: true`)
