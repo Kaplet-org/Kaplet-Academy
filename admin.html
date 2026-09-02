@@ -577,6 +577,32 @@ textarea.finput { height: auto; padding: 12px 14px; resize: vertical; line-heigh
       </div>
     </div>
     <div id="richieste-box"></div>
+    <div class="ca-filters">
+      <input type="text" class="ca-select" id="tm-cerca" placeholder="Cerca per nome o email..." oninput="renderTeam()" style="min-width:220px">
+      <select class="ca-select" id="tm-tipo" onchange="renderTeam()">
+        <option value="">Tutti i tipi di account</option>
+        <option value="admin">Solo Admin</option>
+        <option value="operatore">Solo Operatori</option>
+      </select>
+      <select class="ca-select" id="tm-mansione" onchange="renderTeam()">
+        <option value="">Tutte le mansioni</option>
+        <option value="engineer">Engineer</option>
+        <option value="sales">Sales</option>
+        <option value="presales">Pre-Sales</option>
+        <option value="altro">Other</option>
+        <option value="__nessuna">Senza mansione</option>
+      </select>
+      <select class="ca-select" id="tm-percorso" onchange="renderTeam()">
+        <option value="">Tutti i percorsi</option>
+        <option value="__nessuno">Senza percorso</option>
+      </select>
+      <select class="ca-select" id="tm-stato" onchange="renderTeam()">
+        <option value="">Attivi e disattivati</option>
+        <option value="attivi">Solo attivi</option>
+        <option value="disattivati">Solo disattivati</option>
+      </select>
+    </div>
+    <div id="tm-info" style="font-size:.72rem;color:var(--gray);margin:0 0 1rem;font-weight:300"></div>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Operatore</th><th>Ruolo</th><th>Certificazioni</th><th>Corsi assegnati</th><th>Avanzamento</th><th>Azioni</th></tr></thead>
@@ -1172,6 +1198,7 @@ async function load() {
 
   aggiornaStatistiche();
   popolaFiltriPiano(); popolaFiltriCatalogo();
+  popolaFiltroPercorsiTeam();
   renderTeam(); renderRichieste(); renderCorsi(); renderCatalogo(); renderScadenze(); renderMatrix(); renderCompetenze(); renderPiano(); caricaSettings();
 }
 
@@ -1180,9 +1207,35 @@ function renderTeam() {
   const oggi = new Date();
   // chi è ancora in attesa o è stato rifiutato vive nel riquadro sopra
   const inSquadra = TECNICI.filter(t => (t.stato_accesso || 'approvato') === 'approvato');
-  document.getElementById('team-body').innerHTML = !inSquadra.length
-    ? '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--gray)">Nessun operatore</td></tr>'
-    : inSquadra.map(t => {
+
+  const q         = (document.getElementById('tm-cerca').value || '').trim().toLowerCase();
+  const fTipo     = document.getElementById('tm-tipo').value;
+  const fMansione = document.getElementById('tm-mansione').value;
+  const fPercorso = document.getElementById('tm-percorso').value;
+  const fStato    = document.getElementById('tm-stato').value;
+
+  const filtrati = inSquadra.filter(t => {
+    if (fTipo === 'admin'     && !t.is_admin) return false;
+    if (fTipo === 'operatore' &&  t.is_admin) return false;
+    if (fMansione === '__nessuna' && t.mansione) return false;
+    if (fMansione && fMansione !== '__nessuna' && t.mansione !== fMansione) return false;
+    const percorsi = parseRuoli(t.ruolo);
+    if (fPercorso === '__nessuno' && percorsi.length) return false;
+    if (fPercorso && fPercorso !== '__nessuno' && !percorsi.includes(fPercorso)) return false;
+    if (fStato === 'attivi'      && t.attivo === false) return false;
+    if (fStato === 'disattivati' && t.attivo !== false) return false;
+    if (q && !`${t.nome} ${t.cognome} ${t.email}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  const conFiltri = !!(q || fTipo || fMansione || fPercorso || fStato);
+  document.getElementById('tm-info').innerHTML = conFiltri
+    ? `<b style="color:var(--white);font-weight:400">${filtrati.length}</b> su ${inSquadra.length} · <button class="btn-link-inline" onclick="azzeraFiltriTeam()">togli i filtri</button>`
+    : `${inSquadra.length} ${inSquadra.length === 1 ? 'persona' : 'persone'}`;
+
+  document.getElementById('team-body').innerHTML = !filtrati.length
+    ? `<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--gray)">${inSquadra.length ? 'Nessuno con questi filtri' : 'Nessun operatore'}</td></tr>`
+    : filtrati.map(t => {
         const certs = CERTS.filter(c => c.tech_id === t.id);
         const att   = certs.filter(c => c.stato==='attiva' && (!c.data_scadenza || new Date(c.data_scadenza) >= oggi));
         const ca    = CORSI_ASS.filter(c => c.tech_id === t.id);
@@ -2165,6 +2218,12 @@ const tecniciApprovati = () => TECNICI.filter(t => (t.stato_accesso || 'approvat
    I tecnici si registrano da soli e restano in attesa: qui l'admin li
    approva assegnando mansione e percorsi, oppure li rifiuta. Una richiesta
    rifiutata non si cancella, così chi ritenta non ricrea la riga da capo. */
+function azzeraFiltriTeam() {
+  ['tm-cerca', 'tm-tipo', 'tm-mansione', 'tm-percorso', 'tm-stato']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  renderTeam();
+}
+
 let MOSTRA_RIFIUTATE = false;
 function toggleRifiutate() { MOSTRA_RIFIUTATE = !MOSTRA_RIFIUTATE; renderRichieste(); }
 
@@ -2367,6 +2426,21 @@ function renderImpegno(soloTecnico) {
    COURSES arriva da corsi_catalogo (js/courses.js). Qui l'admin lo
    modifica; dopo ogni scrittura si ricarica e si ridisegna tutto,
    perché il catalogo alimenta anche assegnazioni, percorsi e competenze. */
+
+/* Il menu dei percorsi nasce da RUOLI, così resta allineato da solo quando
+   se ne aggiunge uno. */
+function popolaFiltroPercorsiTeam() {
+  const sel = document.getElementById('tm-percorso');
+  if (!sel) return;
+  const prima = sel.value;
+  let lastGrp = '', opts = '';
+  RUOLI.forEach(r => {
+    if (r.gruppo !== lastGrp) { opts += `<optgroup label="${esc(r.gruppo)}">`; lastGrp = r.gruppo; }
+    opts += `<option value="${r.key}">${esc(r.label)}</option>`;
+  });
+  sel.innerHTML = '<option value="">Tutti i percorsi</option><option value="__nessuno">Senza percorso</option>' + opts;
+  sel.value = prima;
+}
 
 function popolaFiltriCatalogo() {
   const brands = [...new Set(COURSES.map(c => c.brand))].sort();

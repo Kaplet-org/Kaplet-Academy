@@ -102,6 +102,8 @@ Area di lavoro del branch `competenze-v2`. Deriva un livello 0–5 per vendor/ve
 
 Nel grafico il numero è scritto dentro ogni segmento (plugin `numeriDentro`): il colore non è mai l'unica informazione. Prima di cambiare una palette, misurarla con lo skill `dataviz` invece di sceglierla a occhio.
 
+I filtri della sezione *Team* (`tm-*`) coprono quello che la tabella mostra davvero: ricerca, tipo di account, mansione, percorso e attivo/disattivato. Il menu dei percorsi si costruisce da `RUOLI` (`popolaFiltroPercorsiTeam`), così aggiungendo un percorso compare da solo.
+
 Le sezioni si mostrano con `showSection(id, btn)` e le sotto-tab con `setVTab(tab, btn)`; il grafico Chart.js va distrutto/ricreato (`compChartInst`) a ogni render.
 
 ### Impegno formativo mensile
