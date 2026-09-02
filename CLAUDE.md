@@ -52,6 +52,8 @@ Tabelle usate dal codice:
 
 - `audit_log` — traccia le eliminazioni fatte da `elimina-tecnico`. Sola lettura per gli admin, scritta solo con service_role. Creata da `audit_log_setup.sql`
 
+`corsi_ai_setup.sql` aggiunge quattro corsi AI gratuiti (Anthropic e OpenAI) su **tutti e 17 i percorsi** e li assegna a tutti i tecnici attivi: sono obbligatori per chiunque. È una migrazione additiva, `catalogo_setup.sql` resta la fotografia dell'Excel di partenza.
+
 Gli script SQL in root si eseguono nel SQL Editor del dashboard (la CLI Supabase non è installata e gli strumenti MCP non hanno permessi di scrittura su questo progetto): `catalogo_setup.sql`, `pianificazione_setup.sql`, `audit_log_setup.sql`, `blocca_cancellazioni_setup.sql`. Sono idempotenti.
 
 **Cancellare è solo da admin**: `blocca_cancellazioni_setup.sql` mette policy RESTRICTIVE sulla `delete` di `certificazioni`, `corsi_assegnati` e `corsi_catalogo`, tramite la funzione `public.e_admin()`. Le Edge Function non sono toccate: girano con service_role, che salta le RLS.
