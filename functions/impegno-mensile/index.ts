@@ -20,7 +20,11 @@ const MAIL = {
   chiave: Deno.env.get("RESEND_API_KEY") ?? "",
   da:     Deno.env.get("MAIL_DA") ?? "Kaplet University <onboarding@resend.dev>",
   a:      Deno.env.get("MAIL_A")  ?? "admin@kaplet.it",
-  pannello: Deno.env.get("URL_ADMIN") ?? "https://university.kaplet.it/admin.html",
+  // Dove punta il pulsante "Apri pannello admin" dentro la mail.
+  // NON usare university.kaplet.it: è un inoltro Aruba che mostra il sito
+  // dentro un iframe e serve la home per qualunque indirizzo, quindi i link
+  // profondi non arrivano dove devono.
+  pannello: Deno.env.get("URL_ADMIN") ?? "https://kaplet.github.io/Kaplet-Academy/admin.html",
 };
 
 const MESI = ["gennaio","febbraio","marzo","aprile","maggio","giugno",

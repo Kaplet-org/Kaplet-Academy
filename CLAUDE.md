@@ -112,6 +112,24 @@ Prima parlava SMTP Office365 a mano sul socket (`Deno.connect` + `startTls`) con
 
 Secret e variabili: **`RESEND_API_KEY`** (obbligatorio), più gli opzionali `MAIL_DA`, `MAIL_A`, `URL_ADMIN`. Il dominio mittente va verificato su Resend, altrimenti si può spedire solo all'indirizzo di registrazione.
 
+## Il dominio university.kaplet.it non è il sito
+
+`university.kaplet.it` è un **inoltro Aruba con iframe**: qualunque percorso —
+`/login.html`, `/admin.html`, perfino uno inesistente — restituisce sempre la
+stessa paginetta che carica `https://kaplet.github.io/Kaplet-Academy` dentro un
+iframe. Quindi:
+
+- **i link profondi non funzionano**: portano tutti alla home
+- **i redirect di autenticazione si rompono**: Supabase mette il token nel
+  frammento dell'URL e l'involucro lo scarta (recupero password, conferma email)
+- la sessione vive in localStorage dell'origine *interna*, cioè
+  `kaplet.github.io`: è storage di terza parte, che i browser stanno chiudendo
+
+Per questo tutti i link nel codice puntano a `kaplet.github.io/Kaplet-Academy`.
+**Non "correggerli" al dominio** senza aver prima sistemato il DNS: servirebbe un
+CNAME verso `kaplet-org.github.io` più il dominio impostato in GitHub Pages, che
+crea anche il file `CNAME` nel repo. Fatto quello, si può tornare al dominio.
+
 ## Convenzioni
 
 Le modali sono `flex-direction: column` con `max-height: 100%` dentro un `.overlay` con padding: testata e piede fermi, scorre solo `.modal-body`. Non rimettere `overflow-y: auto` sul `.modal` intero — così il piede con Salva finisce sotto il bordo su finestre basse. Vale in `admin.html`, `tecnico.html` e `index.html`.
