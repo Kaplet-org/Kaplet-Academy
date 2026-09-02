@@ -3046,9 +3046,12 @@ async function creaUtente() {
       await sb.from('tecnici').update({ mansione }).eq('id', result.id);
     }
 
-    // AUTO-ASSEGNAZIONE CORSI in base ai ruoli flaggati (solo tecnici)
+    // AUTO-ASSEGNAZIONE CORSI in base ai percorsi selezionati.
+    // Vale anche per gli admin: sono persone che seguono corsi come le
+    // altre. Prima venivano saltati, e i loro percorsi restavano senza
+    // nemmeno un corso assegnato.
     let msgCorsi = '';
-    if (!is_admin && ruoliSel.length && result.id) {
+    if (ruoliSel.length && result.id) {
       const corsi = getCorsiPerRuoli(ruoliSel);
       if (corsi.length) {
         const anno = new Date().getFullYear();
@@ -3117,16 +3120,21 @@ async function salvaModifica() {
     if (error) throw error;
 
     let msgCorsi = '';
-    if (riassegna && !is_admin && ruoliSel.length) {
+    if (riassegna && ruoliSel.length) {
       const corsi = getCorsiPerRuoli(ruoliSel);
       const esistenti = CORSI_ASS.filter(c => c.tech_id === id).map(c => c.corso);
       const nuovi = corsi.filter(c => !esistenti.includes(c.nome));
+      if (!corsi.length) msgCorsi = ' (i percorsi scelti non hanno corsi)';
+      else if (!nuovi.length) msgCorsi = ' (i corsi di quei percorsi li aveva già)';
       if (nuovi.length) {
         const { data: { session } } = await sb.auth.getSession();
         const anno = new Date().getFullYear();
         const rows = nuovi.map(c => ({ tech_id: id, brand: c.brand || '—', corso: c.nome, anno, stato: 'da_fare', assegnato_da: session.user.id }));
         const { error: aErr } = await sb.from('corsi_assegnati').insert(rows);
-        if (!aErr) msgCorsi = ' (+' + nuovi.length + ' corsi)';
+        // Prima l'errore veniva ignorato: l'utente risultava salvato e i
+        // corsi non arrivavano, senza che nessuno lo sapesse.
+        if (aErr) throw new Error('Utente salvato, ma i corsi non sono stati assegnati: ' + aErr.message);
+        msgCorsi = ' (+' + nuovi.length + ' corsi)';
       }
     }
 
