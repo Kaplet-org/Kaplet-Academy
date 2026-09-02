@@ -74,6 +74,11 @@ const RUOLI = [
     "gruppo": "Core Path"
   },
   {
+    "key": "core_compliance",
+    "label": "Core Path - Compliance",
+    "gruppo": "Core Path"
+  },
+  {
     "key": "adv_presales_av",
     "label": "Advanced Path - Pre-Sales AV",
     "gruppo": "Advanced Path"
