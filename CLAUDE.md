@@ -83,6 +83,8 @@ I corsi **non stanno più nel file**: vivono nella tabella `corsi_catalogo` e li
 
 **Ogni pagina deve fare `await caricaCatalogo(sb)` prima di disegnare.** Admin e tecnico lo infilano nel `Promise.all` di `load()`/`caricaDati()`; `index.html` lo fa dentro `checkAuth()` e poi chiama `costruisciRAW()` + `initCourses()` — lì `RAW` è un `let` riempito dopo, non più un `const` costruito a inizio script.
 
+**Allineare i corsi, non solo aggiungerli.** `salvaModifica` con "allinea" aggiunge i corsi dei percorsi selezionati **e toglie** quelli che non appartengono più a nessuno di essi. Toglie solo righe `da_fare` senza `data_inizio`, `data_fine_prevista` né `data_esame`: un corso avviato, completato o pianificato non lo cancella un cambio di percorso. Prima aggiungeva soltanto, quindi togliere una spunta non toglieva niente e le assegnazioni si accumulavano.
+
 `tecnici.ruolo` non è testo libero: contiene le **chiavi dei path separate da virgola** (es. `core_net,adv_eng_net`). Quando l'admin assegna i ruoli a un tecnico, `getCorsiPerRuoli` genera automaticamente le righe in `corsi_assegnati`.
 
 Eliminare un corso dal pannello è un **ritiro**, non una `delete`: mette `attivo = false` e `caricaCatalogo` filtra su `attivo`, così le certificazioni già registrate continuano a trovare il loro corso.

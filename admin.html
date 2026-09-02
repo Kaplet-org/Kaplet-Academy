@@ -1032,12 +1032,12 @@ textarea.finput { height: auto; padding: 12px 14px; resize: vertical; line-heigh
         </select>
       </div>
       <div class="fld">
-        <label class="flabel">Assegna corsi dei ruoli selezionati?</label>
+        <label class="flabel">Allinea i corsi ai percorsi selezionati?</label>
         <select class="fsel" id="mm-riassegna">
-          <option value="no">No, lascia i corsi attuali</option>
-          <option value="si">Sì, aggiungi i corsi dei ruoli flaggati (senza duplicati)</option>
+          <option value="no">No, lascia i corsi come sono</option>
+          <option value="si">Sì, allinea: aggiungi quelli che mancano e togli quelli non più previsti</option>
         </select>
-        <div class="fhint">Utile se hai aggiunto o cambiato i ruoli</div>
+        <div class="fhint">Togliendo una spunta i corsi di quel percorso spariscono, ma solo se non sono ancora stati avviati: quelli in corso, completati o con delle date restano sempre.</div>
       </div>
       <div class="msg error" id="mm-err"></div>
     </div>
@@ -3114,6 +3114,31 @@ async function salvaModifica() {
 
   btn.disabled = true; btn.textContent = 'Salvataggio...';
   try {
+    // Il legame con le righe è brand + nome, non il solo nome: due vendor
+    // possono chiamare un corso allo stesso modo.
+    const chiave = (b, n) => (b || '') + '|' + n;
+    const corsiVoluti = riassegna && ruoliSel.length ? getCorsiPerRuoli(ruoliSel) : [];
+    const voluti = new Set(corsiVoluti.map(c => chiave(c.brand, c.nome)));
+    const suoi   = CORSI_ASS.filter(c => c.tech_id === id);
+    const nuovi  = corsiVoluti.filter(c => !suoi.some(x => chiave(x.brand, x.corso) === chiave(c.brand, c.nome)));
+
+    // Allineare vuol dire anche togliere. Si toccano solo i corsi mai
+    // avviati: uno in corso, completato o con delle date è lavoro fatto o
+    // pianificato, e non lo cancella un cambio di percorso.
+    const daTogliere = (riassegna && ruoliSel.length) ? suoi.filter(c =>
+      c.stato === 'da_fare' && !c.data_inizio && !c.data_fine_prevista && !c.data_esame &&
+      !voluti.has(chiave(c.brand, c.corso))
+    ) : [];
+
+    // La conferma sta qui, prima di scrivere qualsiasi cosa: annullando non
+    // dev'essere cambiato niente.
+    if (daTogliere.length && !confirm(
+          `${daTogliere.length} corsi non appartengono più ai percorsi selezionati e verranno tolti.\n\n` +
+          `Sono tutti corsi mai avviati. Quelli in corso, completati o con delle date restano.\n\nProcedo?`)) {
+      btn.disabled = false; btn.textContent = 'Salva modifiche';
+      return;
+    }
+
     const patch = { nome, cognome, ruolo: ruolo || null, is_admin, mansione };
     if (MM_APPROVA) { patch.stato_accesso = 'approvato'; patch.attivo = true; }
     const { error } = await sb.from('tecnici').update(patch).eq('id', id);
@@ -3121,11 +3146,14 @@ async function salvaModifica() {
 
     let msgCorsi = '';
     if (riassegna && ruoliSel.length) {
-      const corsi = getCorsiPerRuoli(ruoliSel);
-      const esistenti = CORSI_ASS.filter(c => c.tech_id === id).map(c => c.corso);
-      const nuovi = corsi.filter(c => !esistenti.includes(c.nome));
-      if (!corsi.length) msgCorsi = ' (i percorsi scelti non hanno corsi)';
-      else if (!nuovi.length) msgCorsi = ' (i corsi di quei percorsi li aveva già)';
+      if (daTogliere.length) {
+        const { error: dErr } = await sb.from('corsi_assegnati')
+          .delete().in('id', daTogliere.map(c => c.id));
+        if (dErr) throw new Error('Utente salvato, ma non sono riuscito a togliere i corsi: ' + dErr.message);
+        msgCorsi = ' (−' + daTogliere.length + ' corsi)';
+      }
+      if (!corsiVoluti.length) msgCorsi += ' (i percorsi scelti non hanno corsi)';
+      else if (!nuovi.length && !daTogliere.length) msgCorsi = ' (i corsi erano già allineati)';
       if (nuovi.length) {
         const { data: { session } } = await sb.auth.getSession();
         const anno = new Date().getFullYear();
@@ -3134,7 +3162,7 @@ async function salvaModifica() {
         // Prima l'errore veniva ignorato: l'utente risultava salvato e i
         // corsi non arrivavano, senza che nessuno lo sapesse.
         if (aErr) throw new Error('Utente salvato, ma i corsi non sono stati assegnati: ' + aErr.message);
-        msgCorsi = ' (+' + nuovi.length + ' corsi)';
+        msgCorsi += ' (+' + nuovi.length + ' corsi)';
       }
     }
 
