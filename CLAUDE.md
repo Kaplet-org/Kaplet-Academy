@@ -40,7 +40,9 @@ Conseguenza pratica: **una modifica trasversale (palette, guardia di sessione, h
 ### Auth e ruoli
 **I tecnici si registrano da soli** (`login.html`, pannello *Crea il tuo account*) e restano bloccati finché un admin non li approva dalla sezione *Team*. `tecnici.stato_accesso` vale `in_attesa` | `approvato` | `rifiutato`; `registrazione_setup.sql` crea il campo, la policy di inserimento (solo la propria riga, solo `@kaplet.it`, solo non-admin/non-attiva/in attesa) e il trigger `blocca_autopromozione`, che impedisce a chi non è admin di cambiarsi `is_admin`, `attivo` o `stato_accesso`.
 
-Una richiesta rifiutata **non si cancella**: la riga resta con `stato_accesso = 'rifiutato'`, altrimenti al primo accesso successivo `redirectByRole` la ricreerebbe da capo.
+Una richiesta rifiutata **non si cancella**: la riga resta con `stato_accesso = 'rifiutato'`, altrimenti al primo accesso successivo la guardia la ricreerebbe da capo. Nel riquadro le rifiutate sono nascoste dietro un "mostra", così non si accumulano sotto gli occhi.
+
+Per farle sparire davvero c'è **Elimina**, che passa da `elimina-tecnico` e toglie anche l'account in `auth.users`: senza quello, con la stessa mail non ci si può registrare di nuovo e un test non si ripete.
 
 Negli elenchi del pannello si usa `tecniciApprovati()`, non `TECNICI`: chi aspetta non deve comparire nei conteggi né dove si assegnano corsi.
 

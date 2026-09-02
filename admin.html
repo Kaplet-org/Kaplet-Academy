@@ -248,6 +248,12 @@ tr:hover td { background: var(--card2); }
 .ric-nome { font-size: .85rem; }
 .ric-mail { font-size: .68rem; color: var(--gray); font-weight: 300; }
 .ric-rifiutata { opacity: .5; }
+.btn-link-inline {
+  background: none; border: none; padding: 0; cursor: pointer;
+  font-family: var(--font); font-size: inherit; color: var(--green);
+  text-decoration: underline; text-underline-offset: 2px;
+}
+.btn-link-inline:hover { color: var(--white); }
 .imp-head {
   background: var(--card2); padding: .9rem 1.2rem; display: flex; align-items: center;
   justify-content: space-between; gap: 1rem; flex-wrap: wrap; border-bottom: 1px solid var(--border);
@@ -2159,12 +2165,26 @@ const tecniciApprovati = () => TECNICI.filter(t => (t.stato_accesso || 'approvat
    I tecnici si registrano da soli e restano in attesa: qui l'admin li
    approva assegnando mansione e percorsi, oppure li rifiuta. Una richiesta
    rifiutata non si cancella, così chi ritenta non ricrea la riga da capo. */
+let MOSTRA_RIFIUTATE = false;
+function toggleRifiutate() { MOSTRA_RIFIUTATE = !MOSTRA_RIFIUTATE; renderRichieste(); }
+
 function renderRichieste() {
   const box = document.getElementById('richieste-box');
   if (!box) return;
-  const attesa = TECNICI.filter(t => t.stato_accesso === 'in_attesa');
+  const attesa    = TECNICI.filter(t => t.stato_accesso === 'in_attesa');
   const rifiutate = TECNICI.filter(t => t.stato_accesso === 'rifiutato');
+
+  // Niente da approvare e nessuna rifiutata: il riquadro sparisce del tutto
   if (!attesa.length && !rifiutate.length) { box.innerHTML = ''; return; }
+
+  // Solo rifiutate, e nascoste: resta una riga discreta, non un riquadro giallo
+  if (!attesa.length && !MOSTRA_RIFIUTATE) {
+    box.innerHTML = `<div style="font-size:.72rem;color:var(--gray);font-weight:300;margin-bottom:1.25rem">
+      ${rifiutate.length} richiest${rifiutate.length===1?'a rifiutata':'e rifiutate'} ·
+      <button class="btn-link-inline" onclick="toggleRifiutate()">mostra</button>
+    </div>`;
+    return;
+  }
 
   const riga = (t, rifiutata) => `
     <div class="ric-riga ${rifiutata ? 'ric-rifiutata' : ''}">
@@ -2176,14 +2196,48 @@ function renderRichieste() {
       <div style="display:flex;gap:6px;flex-wrap:wrap">
         <button class="btn-primary" style="padding:7px 14px;font-size:.68rem" onclick='apriApprovazione(${JSON.stringify(JSON.stringify(t))})'>Approva e imposta i ruoli</button>
         ${rifiutata ? '' : `<button class="btn-danger-sm" onclick="rifiutaRichiesta('${t.id}')">Rifiuta</button>`}
+        <button class="btn-danger-sm" style="border-color:rgba(239,68,68,0.5)" onclick="eliminaRichiesta('${t.id}')">Elimina</button>
       </div>
     </div>`;
 
   box.innerHTML = `<div class="ric-box">
     <div class="ric-tit">${attesa.length ? `Richieste di accesso da approvare (${attesa.length})` : 'Richieste rifiutate'}</div>
     ${attesa.map(t => riga(t, false)).join('')}
-    ${rifiutate.map(t => riga(t, true)).join('')}
+    ${MOSTRA_RIFIUTATE ? rifiutate.map(t => riga(t, true)).join('') : ''}
+    ${rifiutate.length ? `<div style="margin-top:.8rem;font-size:.7rem;color:var(--gray);font-weight:300">
+        ${rifiutate.length} rifiutat${rifiutate.length===1?'a':'e'} ·
+        <button class="btn-link-inline" onclick="toggleRifiutate()">${MOSTRA_RIFIUTATE ? 'nascondi' : 'mostra'}</button>
+      </div>` : ''}
   </div>`;
+}
+
+/* Elimina davvero: via il profilo e via l'account di accesso. Serve per i
+   test — se resta l'account, con quella mail non ci si può registrare di
+   nuovo e la prova non si ripete. Passa dalla stessa Edge Function che
+   elimina un tecnico, che gira con service_role. */
+async function eliminaRichiesta(id) {
+  const t = TECNICI.find(x => x.id === id); if (!t) return;
+  if (t.id === ME_ID) { toast('Non puoi eliminare il tuo stesso account.'); return; }
+  if (!confirm(`Eliminare definitivamente ${t.nome} ${t.cognome} (${t.email})?\n\nSparisce anche l'account di accesso, quindi con quella mail ci si potrà registrare di nuovo.\n\nNon si torna indietro.`)) return;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error('Sessione scaduta: rifai il login.');
+    const resp = await fetch(SUPA_URL + '/functions/v1/elimina-tecnico', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + session.access_token,
+        'apikey': SUPA_KEY
+      },
+      body: JSON.stringify({ tech_id: id, conferma_cognome: t.cognome || '' })
+    });
+    const result = await resp.json().catch(() => ({}));
+    if (!resp.ok && resp.status !== 207) throw new Error(result.error || `Errore ${resp.status}`);
+    toast(`${t.nome} ${t.cognome} eliminato.`);
+    await load();
+  } catch(e) {
+    toast('Errore: ' + e.message);
+  }
 }
 
 // L'approvazione passa dalla stessa modale della modifica: si approva
