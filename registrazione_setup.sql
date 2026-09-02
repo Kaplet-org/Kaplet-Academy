@@ -35,7 +35,16 @@ create index if not exists idx_tecnici_in_attesa
   on public.tecnici (stato_accesso) where stato_accesso = 'in_attesa';
 
 -- ============================================================
--- 2. Registrarsi: si può creare SOLO la propria riga, e solo in attesa
+-- 2. Il percorso formativo diventa facoltativo
+--    Chi si registra non ne ha ancora uno: con `ruolo` NOT NULL
+--    l'inserimento del profilo falliva e la richiesta non arrivava a
+--    nessuno. Faceva fallire anche il salvataggio di un utente a cui si
+--    tolgono tutti i percorsi.
+-- ============================================================
+alter table public.tecnici alter column ruolo drop not null;
+
+-- ============================================================
+-- 3. Registrarsi: si può creare SOLO la propria riga, e solo in attesa
 -- ============================================================
 drop policy if exists "ci si registra da soli, in attesa" on public.tecnici;
 create policy "ci si registra da soli, in attesa"
@@ -50,7 +59,7 @@ create policy "ci si registra da soli, in attesa"
   );
 
 -- ============================================================
--- 3. Nessuno si promuove da solo
+-- 4. Nessuno si promuove da solo
 --    Le policy RLS non sanno confrontare il vecchio col nuovo valore:
 --    per questo serve un trigger.
 -- ============================================================
@@ -79,7 +88,7 @@ create trigger trg_blocca_autopromozione
   for each row execute function public.blocca_autopromozione();
 
 -- ============================================================
--- 4. Verifica
+-- 5. Verifica
 -- ============================================================
 select
   count(*)                                            as tecnici,
