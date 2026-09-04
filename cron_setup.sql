@@ -20,7 +20,7 @@ create extension if not exists pg_cron;
 create extension if not exists pg_net with schema extensions;
 
 -- ============================================================
--- 2. I due lavori
+-- 2. I lavori schedulati
 -- ============================================================
 do $$
 declare
@@ -51,9 +51,21 @@ begin
       body    := '{}'::jsonb
     );
   $cmd$, base || 'impegno-mensile', chiave));
+  -- Promemoria corsi: ogni lunedì alle 08:00.
+  -- A ciascuno il suo elenco di corsi non completati, all'admin il riepilogo.
+  perform cron.unschedule('promemoria-settimanale')
+    where exists (select 1 from cron.job where jobname = 'promemoria-settimanale');
+
+  perform cron.schedule('promemoria-settimanale', '0 8 * * 1', format($cmd$
+    select net.http_post(
+      url     := %L,
+      headers := jsonb_build_object('Content-Type','application/json','Authorization','Bearer ' || %L),
+      body    := '{}'::jsonb
+    );
+  $cmd$, base || 'promemoria-settimanale', chiave));
 end $$;
 
 -- ============================================================
--- 3. Verifica: devono comparire due righe attive
+-- 3. Verifica: devono comparire tre righe attive
 -- ============================================================
 select jobid, jobname, schedule, active from cron.job order by jobname;
